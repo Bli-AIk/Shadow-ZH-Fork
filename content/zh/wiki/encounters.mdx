@@ -1,0 +1,56 @@
+export const metadata = {
+    title: '遭遇战',
+    description: '敌人所在的地方。',
+}
+
+# 遭遇战
+
+<Box>
+
+每场战斗都是一次**遭遇战**。每一组不同的怪物、每一个不同的 Boss、每一个单独的怪物，它们全都是**遭遇战**。Undertale 使用了这一系统，Deltarune 也使用了，我们也会如此。
+
+</Box>
+
+<Box>
+## 遭遇战基础
+---
+
+要开始创建遭遇战，你需要在 `encounters` 文件夹中新建一个文件。让我们制作一个只有单个怪物的遭遇战，使用之前制作的 Dummy 敌人。
+
+```lua
+local Dummy, super = Class(Encounter)
+
+function Dummy:init()
+    super.init(self)
+
+    -- Text displayed at the bottom of the screen at the start of the encounter
+    self.text = "* The tutorial begins...?"
+
+    -- Battle music ("battle" is rude buster)
+    self.music = "battle"
+    -- Enables the purple grid battle background
+    self.background = true
+
+    -- Add the dummy enemy to the encounter
+    self:addEnemy("dummy")
+
+    --- Uncomment this line to add another!
+    --self:addEnemy("dummy")
+end
+
+return Dummy
+```
+
+好啦，就这样完成了。
+
+</Box>
+
+<Box>
+## 高级遭遇战
+---
+
+好吧，好吧，有些遭遇战会比这更复杂。例如，如果你想在没有背景时也隐藏世界，可以将 `self.hide_world` 设置为 true。战斗也可以通过设置 `self.no_end_message = true` 来跳过“YOU WON!”文本。
+
+遭遇战还拥有大量回调函数，你可以[在这里](/wiki/api/Encounter)阅读相关内容。
+
+</Box>

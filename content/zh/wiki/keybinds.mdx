@@ -1,0 +1,71 @@
+export const metadata = {
+    title: '按键绑定',
+    description: '想添加一个跳舞按钮之类的东西吗？',
+}
+
+# 自定义按键绑定
+
+<Box>
+
+按键绑定很重要。它们让你能够真正游玩游戏。
+Kristal 提供了许多按键绑定，从玩家移动到调试功能都有涵盖。
+
+不过，如果你想添加自己的按键绑定呢？比如说，一个跳舞按钮？
+
+</Box>
+
+<Box>
+## 注册按键绑定
+
+要注册按键绑定，你必须在项目（或库）的 `mod.json`/`lib.json` 中创建一个 `keybinds` 部分，
+并填入你希望在项目或库中使用的按键。
+
+例如，下面是一个跳舞按键绑定：
+
+```json
+{
+    "keybinds": [
+        {
+            "name": "Dance",
+            "id": "dance",
+            "keys": ["a"],
+            "gamepad": ["gamepad:leftshoulder"]
+        }
+    ]
+}
+```
+
+它应该看起来像这样：
+
+<>![](/wiki/dance_bind.png)</>
+
+按键应该使用**小写字母**，手柄按钮则应为[这里列出的按钮之一](https://love2d.org/wiki/GamepadButton)，并在前面加上 `gamepad:`。
+
+此外，`lsup`、`lsdown`、`lsleft` 和 `lsright` 表示左摇杆的四个方向，`rsup`、`rsdown`、`rsleft` 和 `rsright` 表示右摇杆的四个方向。`lefttrigger` 和 `righttrigger` 分别表示左扳机和右扳机。
+
+</Box>
+
+<Box>
+## 使用按键绑定
+
+使用新的自定义按键绑定，就像使用 Kristal 中的其他按键绑定一样。
+
+你可以使用 `Input` 检查按键绑定是否被按下：
+
+```lua
+if Input.down("dance") then
+    Game.world.player:setAnimation("dancing")
+end
+```
+
+或者，如果你使用的是回调函数，可以检查按下的按键是否为跳舞按键：
+
+```lua
+function Mod:onKeyPressed(key)
+    if Input.is("dance", key) then
+        Game.world.player:setAnimation("dancing")
+    end
+end
+```
+
+</Box>
