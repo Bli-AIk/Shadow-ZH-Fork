@@ -1,0 +1,2023 @@
+import Box from 'components/Box'
+import styles from '../../wiki-styles/using-events.module.css'
+
+export const metadata = {
+    title: '在自定义地图中使用事件',
+    description: '了解 Kristal 中所有事件的使用方法。',
+}
+
+# 使用大地图事件 [using-overworld-events]
+
+
+<Box className={styles.content_table}>
+
+    ## 目录 [table-of-contents]
+
+    |通用教程|事件教程|控制器教程|角色教程|
+    |---|---|---|---|
+    |[使用文本](#text-tutorial)<br></br>[创建脚本](#making-scripts)<br></br>[路径系统教程](#path-system-tutorial)|[可交互对象](#interactable)<br></br>[脚本](#script)<br></br>[宝箱](#treasure-chest)<br></br>[赛博垃圾桶](#cyber-trash-can)<br></br>[存档点](#savepoint)<br></br>[过渡](#transitions)<br></br>[轮廓](#outline)<br></br>[滑行区域](#slide-area)<br></br>[剪影](#silhouette)<br></br>[摄像机目标](#camera-target)<br></br>[隐藏队伍](#hide-party)<br></br>[设置旗标事件](#set-flag-event)<br></br>[力场](#forcefield)<br></br>[魔法玻璃](#magic-glass)<br></br>[瓦片对象](#tile-object)<br></br>[传送门](#warp-door)<br></br>[快速存档事件](#quick-save-event)<br></br>[镜面区域](#mirror-area)<br></br>[推动方块](#push-block)<br></br>[瓦片按钮](#tile-button)<br></br>[暗泉](#making-dark-fountains)<br></br>[FountainFloor](#making-dark-fountains)|[切换控制器](#toggle-controller)<br></br>[暗泉阴影控制器](#making-dark-fountains)|[NPC](#npc)<br></br>[追逐敌人](#chaser-enemy)|
+
+</Box>
+
+<Box>
+
+    请先阅读[设计地图](/wiki/designing-a-map)，因为本教程将帮助你理解 Kristal 中的所有事件。
+
+</Box>
+
+<Box className={styles.center_table}>
+
+    ## 基础知识 [the-basics]
+    ---
+    在本教程中，你将全面了解 Kristal 中的事件、如何从 Tiled 配置它们，以及如何使用它们的一些示例。
+
+    本教程稍微复杂一些。因此，你需要先理解一些基础概念。
+
+    ### Tiled 属性 [tiled-properties]
+    ---
+    创建新事件时，可以通过事件的属性修改它的行为。
+
+    为对象添加自定义属性时，必须确保在 Tiled 中使用的类型与代码中定义的类型一致。
+
+    下表定义了 Kristal 类型与 Tiled 类型之间的转换关系：
+    | Kristal（Lua） | Tiled |
+    |---|---|
+    |number|int \| float|
+    |boolean|bool|
+    |string|string|
+    |array []||
+    |any|int \| bool \| string|
+
+    如你所见，数组不能直接在 Tiled 中定义，但我们可以使用另一套系统来定义这些字段。
+    [查看教程](#text-tutorial)
+
+    `any` 类型表示该属性的 Tiled 类型可以是 int、bool 或 string 中的任意一种。
+
+    number 通常是 int（整数，即不带小数的数字），但有时也可以是 float（带小数的数字）。
+
+    在本教程中，事件属性使用以下定义：**name: type = default**。
+
+    `name` 是**自定义属性的名称**。
+
+    `type` 是该属性的 **Lua 类型**。
+
+    `default` 是**未在 Tiled 中定义该属性时**，它**将拥有的值**。
+    如果属性没有这个参数，则表示该属性没有默认值。
+
+    ### 地图图层颜色 [map-layer-colors]
+    ---
+    如[地图图层页面](/wiki/map-layers)所述，Kristal 定义了几种图层。在本页面的教程和截图中，你会使用其中的大部分。
+    因此，我需要先说明每个图层使用的颜色，这样你才能理解我在 Tiled 中的操作。
+
+    需要注意的是，这些颜色只是我个人选择的颜色，你可以为图层使用自己喜欢的颜色。但请让它们**在整个项目中保持一致**。
+    以下是示例中使用的颜色。
+
+    <div style={{
+        display: 'flex',
+        justifyContent: 'center',
+        alignItems: 'center',
+    }}>
+
+    |图层|颜色|
+    |---|---|
+    |`objects`|<span style={{color: "#ff00ff"}}>粉色。</span> #ff00ff <br></br> (255, 0, 255) ![](/wiki/pink_color.png)|
+    |`controllers`|<span style={{color: "#ffc800"}}>金色。</span>#ffc800<br></br> (255, 200, 0)  ![](/wiki/controllers_layer_color.png)|
+    |`markers`|<span style={{color: "#7f00ff"}}>紫色。</span>#7f00ff<br></br> (127, 0, 255)![](/wiki/markers_layer_color.png)|
+    |`collision`|<span style={{color: "#0000ff"}}>蓝色。</span> #0000ff <br></br> (0, 0, 255) ![](/wiki/collision_layer_color.png)|
+    |`enemycollision`|<span style={{color: "#00ffff"}}>青色。</span> #00ffff<br></br> (0, 255, 255)![](/wiki/enemycollision_layer_color.png)|
+    |`blockcollision`|<span style={{color: "#00ffff"}}>青色。</span> #00ffff<br></br> (0, 255, 255)![](/wiki/enemycollision_layer_color.png)|
+    |`paths`|<span style={{color: "#00ff00"}}>绿色。</span> #00ff00 (0, 255, 0)![](/wiki/paths_layer_color.png)|
+    |`battleareas`|<span style={{color: "#ff0000"}}>红色。</span> #ff0000 (0, 0, 255)![](/wiki/battleareas_layer_color.png)|
+    |`battleborder`|无，因为它是一个**瓦片图层**|
+
+    </div>
+
+    `battleareas` 和 `battleborder` 在[战斗区域页面](/wiki/battle-areas)中有说明。
+
+</Box>
+
+<Box>
+
+    ## 文本教程 [text-tutorial]
+    ---
+
+    一些事件的文本属性通常定义为 string[]，也就是字符串数组。由于你无法直接在 Tiled 中创建数组，所以必须使用 Kristal 实现的自定义定义方式。
+
+    使用这套系统，你可以创建一个文本框来显示文本，创建多个文本框来显示更多文本，或者让文本在玩家每次交互时发生变化。
+
+    参考[编写文本教程](/wiki/writing-text)，了解这些字段应该填写什么值。
+
+    根据你想要的用途，这些属性的语法也有所不同。
+
+    ### 单个文本框 [one-textbox]
+    ---
+
+    如果只想显示能放进一个文本框的一小段文字，可以创建一个名为 `text: string` 的自定义属性，并填入想显示的文本。
+
+    在这个例子中，我们向地图添加一个洞，并添加一段氛围文本："* 这只是一个洞。"
+
+    首先，创建一个新的瓦片图层，用于在基础地图上添加细节，然后在任意位置添加一个洞。
+
+    <>![](/wiki/text_tutorial_1.png)</>
+
+    现在……来添加氛围文本吧。作为示例，我们创建一个[可交互对象](#interactable)，并添加自定义属性 `text`，值为：* 这只是一个洞。
+
+    <>![](/wiki/text_tutorial_2.png)</>
+
+    与这个洞交互时应该会发生以下情况。
+
+    <>![](/wiki/text_tutorial_3.png)</>
+
+
+    ### 多个文本框 [multiple-textboxes]
+    ---
+
+    如果想显示的文本无法放进一个文本框，可以使用多个文本框显示全部文本。
+
+    这需要使用多个自定义属性，每个文本框对应一个属性，语法如下：**textX**。
+    X 是文本框的编号。
+
+    例如，我们想创建一个显示以下文本的[可交互对象](#interactable)：
+    - 文本框 1：* 看起来这只是一个洞。
+    - 文本框 2：* 仔细一看，这是一个装满莎莎酱的洞。
+    - 文本框 3：* 你决定不踩进这个洞里。
+
+    要创建这个交互，我们需要创建一个可交互对象，并为它添加以下属性：
+    - `text1`：* 看起来这只是一个洞。
+    - `text2`：* 仔细一看，[wait:5]这是一个装满莎莎酱的洞。
+    - `text3`：* 你决定不踩进这个洞里。
+
+    <>![](/wiki/event_text_tutorial.png)</>
+
+    <video controls preload="none">
+        <source src="/wiki/event_text_tutorial1.mp4" type="video/mp4" />
+        你的浏览器不支持此视频。抱歉！
+    </video>
+
+    ### 多次交互显示不同文本 [different-text-in-multiples-interactions]
+    ---
+
+    如果想根据与对象交互的次数显示不同文本，可以轻松地使用以下语法：**textX_Y**。X 是交互次数，Y 是该次交互中文本框的编号。
+
+    例如，我们要修改之前创建的[可交互对象](#interactable)，为它添加更多交互。
+
+    #### 交互 1 [interaction-1]
+
+    - 文本框 1：* 看起来这只是一个洞。
+    - 文本框 2：* 仔细一看，这是一个装满莎莎酱的洞。
+    - 文本框 3：* 你决定不踩进这个洞里。
+
+    #### 交互 2 [interaction-2]
+
+    - 文本框 1：* 你又检查了一遍这个洞。
+    - 文本框 2：* 里面还是装满了莎莎酱。
+
+    #### 交互 3 [interaction-3]
+
+    - 文本框 1：* 你又检查了一遍这个洞。
+    - 文本框 2：* 看起来莎莎酱已经不见了。
+    - 文本框 3：* 抱歉，Kris，但你来得太晚了。（Susie 的对话）
+
+    #### 交互 4 [interaction-4]
+
+    - 文本框 1：* 只是一个洞。
+
+    要创建这个交互，删除旧属性并添加以下新属性：
+    - `text1_1`：* 看起来这只是一个洞。
+    - `text1_2`：* 仔细一看，[wait:5]这是一个装满莎莎酱的洞。
+    - `text1_3`：* 你决定不踩进这个洞里。
+    - `text2_1`：* 你又检查了一遍这个洞。
+    - `text2_2`：* 里面还是装满了莎莎酱。
+    - `text3_1`：* 你又检查了一遍这个洞。
+    - `text3_2`：* 看起来莎莎酱已经不见了。
+    - `text3_3`：[voice:susie][face:susie/closed_grin]* 抱歉，Kris，[wait:5]但你来得\n 太晚了。
+    - `text4_1`：* 只是一个洞。
+
+    <>![](/wiki/event_text_tutorial_multiple.png)</>
+
+    <video controls preload="none">
+        <source src="/wiki/event_text_tutorial2.mp4" type="video/mp4" />
+        你的浏览器不支持此视频。抱歉！
+    </video>
+
+</Box>
+
+<Box>
+
+    ## 创建脚本 [making-scripts]
+    ---
+    脚本是可以在某些事件上执行的函数。它类似于过场动画，但拥有不同的参数，而且不需要使用过场动画系统。
+
+    要创建脚本，请在 `/scripts/world/scripts` 中创建一个 `"file".lua` 文件。**file** 是脚本的名称，也是调用该脚本时使用的名称。
+
+    在本例中，我们创建一个 test_script.lua，并将它存放在该目录中。然后需要编写将要执行的代码。
+
+    你可以将以下代码作为自己脚本的占位模板。
+    ```lua
+    ---将要执行的函数
+    ---@param event Event 执行此脚本的事件
+    ---@param player Player 执行此脚本的玩家
+    ---@param facing string 玩家面朝的方向。仅当脚本由可交互对象或 NPC 事件执行时设置
+    return function(event, player, facing)
+        -- 要执行的代码
+    end
+    ```
+
+    如你所见，这个函数有多个参数，但具体参数会根据调用脚本的事件而变化。
+
+    如果使用[可交互对象](#interactable)或[NPC](#npc)，函数会收到 `event`、`player` 和 `facing`。facing 会被设置为
+    `"left"`、`"up"`、`"down"` 或 `"right"`。
+
+    如果使用[脚本](#script)，函数会收到 `event` 和 `player`。
+
+    如果使用[瓦片按钮](#tile-button)，则只有 `event` 会被设置。
+
+    作为示例，我们来做点傻事：让 Kris 摆出 T 姿并播放一段滑稽的音效。
+
+    ```lua
+    ---将要执行的函数
+    ---@param event Event 执行此脚本的事件
+    ---@param player Player 执行此脚本的玩家
+    ---@param facing string 玩家面朝的方向。仅当脚本由可交互对象事件执行时设置。可以是 "up"、"down"、"left" 或 "right"
+    return function(event, player, facing)
+        -- 将玩家精灵（本例中为 Kris）改为 t_pose 精灵
+        player:setSprite("t_pose")
+        -- 播放 Lancer 的 splat 音效
+        Assets.playSound("splat")
+    end
+    ```
+
+    创建一个[可交互对象](#interactable)并在其中添加自定义字段 `script`，值为 **test_script**，或者创建一个[脚本](#script)并为它设置相同的属性，即可执行这个脚本。
+
+</Box>
+
+<Box>
+    ## 路径系统教程 [path-system-tutorial]
+    ---
+
+    路径用于定义大地图中某些对象的移动方式。简单来说，它是一系列点，对象会在这些点之间移动。
+
+    要创建路径，创建一个名称以 `paths` 开头的新对象图层。然后使用 Tiled 的 **插入多边形工具（P）** 创建一个多边形。
+    多边形的**周长**就是对象将要沿着移动的路径。别忘了给多边形添加**名称**，之后你需要通过它引用该路径。
+
+    如果想创建圆形路径，使用 **插入椭圆工具（C）** 创建想要的圆形。路径就是椭圆的**圆周**。别忘了给它**命名**，因为之后需要通过名称引用这条路径。
+    这种路径**不能用于过场动画**。
+
+    路径的创建就是这些内容。现在来看看如何使用这套系统的一些示例。
+
+    ### 示例 [examples]
+    ---
+    #### 在 NPC 上使用路径 [using-paths-on-an-npc]
+    ---
+
+    首先，前往[NPC 教程](#npc)创建一个 NPC。然后让它真正移动起来。
+
+    现在你已经有了 NPC，接下来为它创建一条移动路径。
+
+    使用**插入多边形工具（P）**创建一个多边形，定义 NPC 要经过的路径，然后给路径**命名**。
+    我把它命名为 `test_path1`。由于 NPC 会沿着它循环移动，你应该**闭合**这个多边形。
+
+    ![](/wiki/path_tutorial_1.png)
+
+    查看 NPC 与路径相关的自定义属性，可以看到以下内容：
+    - `path: string` -> NPC 要沿着移动的路径形状名称。
+    - `speed: number = 6` -> 如果定义了 `path`，NPC 沿指定路径移动的速度。
+    - `progress: number = 0` -> 如果定义了 `path`，NPC 沿路径移动的初始进度，以 0 到 1 之间的小数表示。
+    0 表示路径起点，1 表示路径终点。
+
+    现在把这些属性添加到 NPC。由于我创建的路径名称是 `test_path1`，所以最后对 NPC 做了如下配置。
+
+    ![](/wiki/path_tutorial_2.png)
+
+    这就是它在游戏中的效果！
+
+    <video controls preload="none">
+    <source src="/wiki/path_tutorial_1.mp4" type="video/mp4" />
+        你的浏览器不支持此视频。抱歉！
+    </video>
+
+    #### 在追逐敌人上使用路径 [using-paths-on-a-chaser-enemy]
+    ---
+    [追逐敌人教程](#chaser-enemy)中有关于这一点的教程。
+
+    #### 在过场动画中使用路径 [using-paths-in-cutscenes]
+    ---
+
+    你**不能在过场动画中使用椭圆**作为路径，**只能使用多边形**。
+
+    `WorldCutscenes` 使用路径让角色沿着定义好的路径行走或滑行。
+
+    你可以在过场动画中使用以下函数调用路径：
+    - [WorldCutscene:walkPath(chara, path, options)](/wiki/api/WorldCutscene#walkPath)
+    - [WorldCutscene:slidePath(obj, path, options)](/wiki/api/WorldCutscene#slidePath)
+
+    `walkPath` 和 `slidePath` 的主要区别在于，`walkPath` 会让角色播放行走动画，而 `slidePath` 只会移动对象。
+
+    看起来很简单，对吧？不过，考虑到这些函数拥有许多选项，事情就没那么简单了。
+    由于选项已经在 API 中定义好了，我会直接在示例中使用它们。
+
+    首先，我会在 **room1** 组中创建一个新的过场动画，并将其命名为 **testing_paths**。
+
+    文件位置为 `scripts/world/cutcenes/room1.lua`
+
+    ```lua
+    ---@param cutscene WorldCutscene 过场动画对象
+    ---@param event Event 执行此过场动画的事件
+    testing_paths = function (cutscene, event)
+    end
+    ```
+
+    我们已经有了占位过场动画。现在来创建角色要使用的路径。
+    我不想让路径循环，所以不会闭合这些多边形。
+
+    这就是我创建的路径。
+
+    ![](/wiki/path_tutorial_3.png)
+
+    如你所见，我创建了一些相当奇怪的路径，只是为了好玩。我还创建了一个[脚本事件](#script)来执行这个过场动画，并为它设置了以下自定义属性。
+
+    ![](/wiki/path_tutorial_4.png)
+
+    现在可以实际编写使用这些路径的过场动画了。这是我最后写出的代码。
+
+    ```lua
+    --- 用于测试过场动画中路径的测试过场动画
+    ---@param cutscene WorldCutscene 过场动画对象
+    ---@param event TileButton 执行此过场动画的事件
+    testing_paths = function (cutscene, event)
+
+        -- 获取欢乐帮，因为我们要移动他们
+        local kris = cutscene:getCharacter("kris")
+        local susie = cutscene:getCharacter("susie")
+        local ralsei = cutscene:getCharacter("ralsei")
+
+        -- 检查 nil 总是有用的
+        if kris and susie and ralsei then
+
+            -- 我们要移动 Susie 和 Ralsei，所以需要让他们停止跟随 Kris
+            cutscene:detachFollowers()
+
+            -- 查看 walkPath 中的选项，了解这个表的含义
+            local options = {
+                facing = "right",
+                speed = 4,
+                snap = false
+            }
+            cutscene:walkPath(kris, "path_kris", options)
+            cutscene:walkPath(ralsei, "path_ralsei", options)
+
+            -- 查看 slidePath 中的选项，了解这个表的含义
+            options = {
+                facing = "right",
+                time = 2,
+                ease = "in-out-sine",
+                snap = false
+            }
+            cutscene:slidePath(susie, "path_susie", options)
+
+            -- 等待他们走完路径
+            -- 如果为所有人使用 time，就能准确知道他们需要多长时间
+            cutscene:wait(5)
+
+            -- 只是添加一些有趣的文本
+            cutscene:text("* What was that?", "concern_smile", ralsei)
+            cutscene:text("* I don't know,[wait:5] I just wanted to do something fun.", "small_smile", susie)
+            cutscene:text("* And...[wait:5] was it fun?", "concern_smile", ralsei)
+            cutscene:text("* Not really...[wait:5] just nauseating.", "nervous_side", susie)
+            cutscene:text("* .[wait:5].[wait:5].[wait:5]", "neutral", susie)
+            cutscene:text("* .[wait:5].[wait:5].[wait:5]", "neutral_side", susie)
+            cutscene:text("* Lets just go already.", "nervous_side", susie)
+
+            -- 让跟随者重新跟上 Kris
+            cutscene:attachFollowers()
+
+            cutscene:wait(1)
+
+        end
+    end
+    ```
+
+    这就是这个过场动画在游戏中的效果。
+
+    <video controls preload="none">
+    <source src="/wiki/path_tutorial_2.mp4" type="video/mp4" />
+        你的浏览器不支持此视频。抱歉！
+    </video>
+
+</Box>
+
+<Box>
+
+    ## 可交互对象 [interactable]
+    ---
+    可交互对象是在玩家与其交互时激活脚本、过场动画或文本的对象，也就是玩家按下操作按钮（通常是 “Z” 键）时激活。
+
+    这个 [`Event`](/wiki/api/Event) 应该是一个 `area`，因此请使用矩形创建它，并在 `objects` 图层上将其命名为 `interactable`。
+
+    你可以使用它为大地图中的对象**添加氛围文本**。
+
+    事件拥有以下属性：
+    - `solid: boolean = false` -> 如果为 **true**，玩家会像撞到碰撞体一样与此对象发生碰撞。
+    <br></br>如果为 **false**，玩家可以穿过该对象。
+    - `cutscene: string` -> 与此对象交互时要启动的过场动画名称。
+    记得使用 **group.name** 的格式命名。
+    - `script: string` -> 与此对象交互时要执行的脚本文件名称。
+    - `text: string[]` -> 玩家与对象交互时文本框中显示的文本。[查看该属性的教程](#text-tutorial)。
+    - `setflag: string` -> 玩家交互时要设置为 `setvalue` 的旗标名称。
+    使用此属性时可以定义 `setvalue`。
+    - `setvalue: any = true` -> 要将 `set_flag` 指定的旗标设置成的值。
+    - `once: boolean = false` -> 如果为 **true**，每个存档文件中只能与此事件交互一次。
+    <br></br>如果为 **false**，可以随意与此事件交互任意次数。
+
+    `cutscene`、`script` 和 `text` 互斥，因此一个可交互对象只能使用其中一个。
+
+    ### 示例 [examples]
+    ---
+    #### 使用脚本 [using-an-script]
+    按照[创建脚本教程](#making-scripts)操作，并将 `test_script` 添加到 `script` 自定义属性中。
+
+    <>![](/wiki/interactable_script_tutorial.png)</>
+
+    #### 使用过场动画 [using-a-cutscene]
+    过程与使用脚本相同，也可以使用[过场动画教程](/wiki/cutscenes)中的测试过场动画。只需添加 `cutscene` 属性，并将值设置为：`examples.center`。
+
+    <>![](/wiki/interactable_cutscene_tutorial.png)</>
+
+    #### 氛围文本 [flavor-text]
+    参考[文本教程](#text-tutorial)，其中以添加氛围文本为例创建了一个可交互对象。
+
+</Box>
+
+<Box>
+
+    ## 脚本 [script]
+
+    脚本是玩家走进后会立即触发的大地图 [`Event`](/wiki/api/Event)。
+
+    在地图的 `objects` 图层上将一个对象命名为 `script`，即可创建此对象。
+
+    事件拥有以下属性：
+    - `cutscene: string` -> 触发此脚本事件时要启动的过场动画名称。
+    记得使用 **group.cutscene** 的格式。
+    - `script: string` -> 触发此脚本事件时要运行的脚本文件名称。
+    - `setflag: string` -> 玩家交互时要设置为 `setvalue` 的旗标名称。
+    使用此属性时必须定义 `setvalue`。
+    - `setvalue: any = true` -> 要将 `set_flag` 指定的旗标设置成的值。
+    - `once: boolean = true` -> 如果为 **true**，此事件触发后会自行销毁。
+    <br></br>如果为 **false**，可以随意触发此事件任意次数。
+    - `temp: boolean = false` -> 脚本是否临时持久存在：即使 `once` 为 true 且脚本已经触发，脚本仍会显示。
+
+    ### 示例 [example]
+    ---
+    我在其他事件的几个示例中使用了脚本，例如[路径系统教程](/wiki/using-events#path-system-tutorial)
+    或[瓦片对象](/wiki/using-events#tile-object)中。
+
+</Box>
+
+<Box>
+
+    ## 宝箱 [treasure-chest]
+    ---
+    要创建这个 [`Event`](/wiki/api/Event)，请在 `objects` 图层上放置一个 `point` 或 `one tile area`，并将其命名为 `chest`。
+
+    事件拥有以下属性：
+    - `item: string` -> 这个宝箱中包含的物品名称，不能与 `money` 一起使用。
+    - `money: number` -> 这个宝箱中包含的金钱数量，不能与 `item` 一起使用。
+    - `setflag: string` -> 打开宝箱时可选的要设置的旗标。它会作为**全局旗标**储存。
+    - `setvalue: any = true` -> 要为 `setflag` 指定的旗标设置的值。如果未定义，则旗标会被设置为 **true**。
+
+    ### 示例 [examples]
+    ---
+    我们已经创建过一个会给钱的宝箱，现在来创建一个会给物品的宝箱。
+
+    在地图中添加一个**点**或**单瓦片区域**，将其命名为 `chest`，然后创建一个名为 `item` 的自定义属性，并将类型设置为 `string`。
+
+    接着将值设置为物品名称。如果想使用 Kristal 默认提供的物品，请前往你克隆的 Kristal 源代码所在文件夹，再进入 `data/items` 文件夹，选择想使用的物品。
+
+    每个物品的开头都有一个包含物品 ID 的声明，如下例所示。取出这个 ID，并将其粘贴到 item 属性的值中。
+
+    ```lua
+    local item, super = Class(HealItem, "butjuice") -- butjuice 是此物品的 ID
+    ```
+    <>![](/wiki/treasure_chest_item_tutorial.png)</>
+
+    <>![](/wiki/treasure_chest_item_tutorial_2.png)</>
+
+</Box>
+
+<Box>
+
+    ## 赛博垃圾桶 [cyber-trash-can]
+    ---
+
+    赛博垃圾桶的工作方式与[宝箱](#treasure-chest)相同，是一种在交互时给予物品或金钱的事件。
+
+    `CyberTrashCan` 是一个 [`Event`](/wiki/api/Event)。在地图的 `objects` 图层上将对象命名为 `cybertrash`，即可创建此对象。
+
+    事件拥有以下属性：
+    - `item: string` -> 这个垃圾桶中包含的物品名称，不能与 `money` 一起使用。
+    - `money: number` -> 这个垃圾桶中包含的金钱数量，不能与 `item` 一起使用。
+    - `set_flag: string` -> 打开垃圾桶时可选的要设置的旗标。
+    - `set_value: any = true` -> 要为 `setflag` 指定的旗标设置的值。如果未定义，则旗标会被设置为 **true**。
+
+</Box>
+
+<Box>
+
+    ## 存档点 [savepoint]
+    ---
+
+    这些星星可以让玩家**保存**游戏。
+
+    要创建这个 [`Event`](/wiki/api/Event)，请在 `objects` 图层上定义一个**点**或**单瓦片区域**，并将其命名为 `savepoint`。
+
+    存档点是 [`Interactable`](#interactable) 的子类，因此会继承它的所有自定义属性。
+
+    这是该事件的属性：
+    - `marker: string` -> 玩家在重新加载游戏或 Game Over 后从此存档点重生时所使用的标记名称。应该始终定义此属性。
+    - `simple: boolean = Project configuration` -> 如果为 **true**，存档点会使用简单版本，即没有招募和储物功能，类似于第 1 章。
+    <br></br>如果为 **false**，存档点会使用包含这两个选项的菜单。
+    <br></br>默认情况下，它使用项目属性中 **mod.json** 文件所配置的值。
+    - `text_once: boolean = false` -> 如果为 **true**，存档点只会在第一次交互时显示可交互文本。
+    <br></br>如果为 **false**，存档点总是显示交互文本。
+    - `heals: boolean = true` -> 如果为 **true**，队伍与存档点交互时会恢复生命值。
+    <br></br>如果为 **false**，存档点不会治疗队伍。
+
+    以下是存档点从可交互对象继承并修改的属性：
+    - `solid: boolean = true` -> 存档点始终将此值设为 **true**，无法改变这一行为。
+    - `text: string[]` -> 玩家与存档点交互时文本框中显示的文本。[查看该属性的教程](#text-tutorial)
+    - `cutscene: string` -> 存档点不使用此属性，因此不要尝试定义它。
+    - `script: string` -> 存档点不使用此属性，因此不要尝试定义它。
+    - `setflag: string` -> 存档点不使用此属性，因此不要尝试定义它。
+    - `setvalue: any = true` -> 存档点不使用此属性，因此不要尝试定义它。
+    - `once: boolean = false` -> 存档点不使用此属性，因此不要尝试定义它。
+
+    ### 示例 [example]
+    ---
+    在这个例子中，我们需要在 `objects` 图层上创建 `savepoint`，并创建存档点用来重生的标记。
+
+    类似下面这样即可。
+
+    <>![](/wiki/savepoint_tutorial_1.png)</>
+
+    然后添加以下自定义属性：
+    - `marker`：respawn
+    - `simple`：false
+    - `text1`：* 环顾四周，[wait:5]你只能看到一根巨大的骨头。
+    - `text2`：* 你能感受到体内的钙之力。。
+
+    最终效果如下。
+
+    <>![](/wiki/savepoint_tutorial_2.png)</>
+
+    保存游戏后退出项目，再次进入，检查自己是否会在该标记处重生。
+
+    使用 `Ctrl+Shift+R` 模拟重新加载存档，使用 `Ctrl+B` 测试 Game Over。
+
+</Box>
+
+<Box>
+
+    ## 过渡 [transitions]
+    ---
+    过渡对象允许玩家加载其他地图或商店。
+
+    这个 [`Event`](/wiki/api/Event) 是一个 `area`，因此需要在 `objects` 图层上使用**矩形工具**创建，并将其命名为 `transition`。
+
+    该事件拥有以下属性：
+    - `map: string` -> 要将玩家传送到的地图名称。
+    - `shop: string` -> 要将玩家传送到的商店名称。
+
+    你可以选择过渡到地图或商店，因此只需在自定义属性中定义其中一个。
+    - `x: number` -> 玩家在地图中重生位置的 x 坐标。
+    - `y: number` -> 玩家在地图中重生位置的 y 坐标。
+    - `marker: string = spawn` -> 玩家重生位置的标记名称。
+
+    你可以定义 x、y 坐标，也可以定义玩家要重生到的标记。后者是更好的选择。如果两者都没有定义，那么玩家会在新地图中定义了 `spawn` 的情况下重生在 **spawn** 标记处。
+
+    - `facing: string` -> 玩家在新地图重生时面朝的方向。可以是 `left`、`right`、`up` 或 `down`。
+    - `sound: string` -> 玩家激活此过渡时可选的播放音效。
+    - `pitch: number` -> 进入音效播放时的音高。
+    - `exit_delay: number` -> 进入新地图后播放离开音效前额外等待的时间，单位为秒。
+    - `exit_sound: string` -> 玩家进入新地图时可选的播放音效。
+    - `exit_pitch: number` -> 离开音效播放时的音高。
+
+    ### 示例 [example]
+    ---
+    本例重点介绍地图过渡。如果想了解商店过渡，请参阅[创建商店教程](/wiki/making-shops)。
+
+    要测试它，首先需要创建一张用于过渡的新地图。再次按照[创建地图](/wiki/designing-a-map#creating-a-map)教程操作，但这次将地图做得更大一些，50x25 应该就够了。
+    地图可以按你的喜好命名，但本例中我会将它命名为 **example_map_2**。
+
+    创建你想要的地图，我在示例中做出了如下地图。
+
+    <>![](/wiki/transition_tutorial_1.png)</>
+
+    现在回到 example_map，添加过渡和出口点。
+
+    本例中，我们会过渡到新地图，并让它播放一段音效。
+
+    创建一个 `transition` 对象，并添加以下自定义属性：
+    - `map`：example_map_2
+    - `sound`：splat
+    - `facing`：right
+
+    如你所见，我们没有指定玩家要在哪里重生，所以游戏会改用 `spawn` 标记。
+
+    如果不定义这个标记，游戏会改用地图中央，因此务必确保存在这个标记。
+
+    过渡通常是双向的，所以还要为另一个过渡添加一个用于让我们重生的点。
+    名称并不重要，可以使用任意名称！
+
+    这是我最后创建的结果：
+
+    <>![](/wiki/transition_tutorial_2.png)</>
+
+    现在前往新地图，添加另一个 `transition`。这次使用以下属性：
+    - `map`：example_map
+    - `marker`：exit
+    - `sound`：splat
+    - `pitch`：2
+    - `facing`：left
+
+    <>![](/wiki/transition_tutorial_3.png)</>
+
+    现在来试试新的过渡吧！
+
+    <video controls preload="none">
+    <source src="/wiki/transition_tutorial_1.mp4" type="video/mp4" />
+        你的浏览器不支持此视频。抱歉！
+    </video>
+
+    如果想让过渡具有 Deltarune 中那种感觉，可以像本例一样把它们放在地图边缘。
+
+    <>![](/wiki/transition_tutorial_4.png)</>
+
+    本例使用了[世界工具](/wiki/world-tool)。如你所见，过渡位于地图边界之外，这会制造出玩家正要前往同一区域另一部分的错觉。
+
+    <video controls preload="none">
+    <source src="/wiki/transition_tutorial_2.mp4" type="video/mp4" />
+        你的浏览器不支持此视频。抱歉！
+    </video>
+
+</Box>
+
+<Box>
+    ## 轮廓 [outline]
+    ---
+    轮廓是地图中的一个区域，会为其中所有角色绘制带颜色的模板轮廓。
+    轮廓颜色由角色的 `Actor` 在 `self.color` 字段中定义。
+
+    这个 [`Event`](/wiki/api/Event) 是一个 `area`。在地图的 `objects` 图层上将对象命名为 `outline`，即可创建此对象。
+
+    此事件没有自定义属性。
+
+    ### 示例 [example]
+    ---
+    首先，在 `objects` 图层上创建一个区域，并将其命名为 `outline`。
+
+    <>![](/wiki/outline_tutorial_1.png)</>
+
+    就是这样！现在像下图一样和你的队伍一起走进这个区域。
+
+    <>![](/wiki/outline_tutorial_2.png)</>
+    <video controls preload="none">
+    <source src="/wiki/outline_tutorial.mp4" type="video/mp4" />
+        你的浏览器不支持此视频。抱歉！
+    </video>
+
+</Box>
+
+<Box>
+    ## 滑行区域 [slide-area]
+    ---
+    滑行区域是地图中的一个区域，玩家进入后会向下滑行。
+
+    要创建这个 [`Event`](/wiki/api/Event)，请在 `objects` 图层上创建一个 `area`，并将其命名为 `slidearea`。
+
+    该事件的可配置属性：
+    - `lock: boolean = false` -> 如果为 **true**，玩家向下滑行时无法移动。
+    <br></br>如果为 **false**，玩家向下滑行时可以左右移动。
+
+    ### 示例 [example]
+    ---
+    要测试此事件，修改当前地图并添加一个滑行区域。可以使用颜色较深的骨头标记这些区域，然后像示例图片一样添加 `slidearea`，亲自走进这个区域进行测试！
+
+    <>![](/wiki/slidearea_tutorial.png)</>
+    <video controls preload="none">
+    <source src="/wiki/slidearea_tutorial.mp4" type="video/mp4" />
+        你的浏览器不支持此视频。抱歉！
+    </video>
+
+</Box>
+
+<Box>
+
+    ## 剪影 [silhouette]
+    ---
+    剪影是一个区域 [`Event`](/wiki/api/Event)，会在事件范围内角色的上方绘制剪影。
+    实际效果是让角色的颜色变暗。
+
+    这个事件是一个 `area`。在地图的 `objects` 图层上将对象命名为 `silhouette`，即可创建此对象。
+
+    该事件拥有以下自定义属性：
+    - `color: color = { 0, 0, 0, 0.5 }` -> 用于剪影的颜色。
+    <br></br>使用 `Color Tiled type` 定义此属性，格式为 `RGBA`。
+
+    ### 示例 [example]
+    ---
+    首先，在 `objects` 图层上创建想要的 `area`，然后将其命名为 `silhouette`，如下例所示。
+
+    <>![](/wiki/silhouette_tutorial_1.png)</>
+
+    走进这个事件的区域后，就会发生以下情况。
+
+    <>![](/wiki/silhouette_tutorial_2.png)</>
+
+    <video controls preload="none">
+    <source src="/wiki/silhouette_tutorial.mp4" type="video/mp4" />
+        你的浏览器不支持此视频。抱歉！
+    </video>
+
+    如果想自定义绘制在角色上方的颜色，可以使用 `color` 属性。
+    由于该属性使用 `Color Tiled type`，所以要按以下方式定义。
+
+    <>![](/wiki/silhouette_tutorial_3.png)</>
+
+    然后使用颜色选择器选择想要的颜色。
+
+    <>![](/wiki/silhouette_tutorial_4.png)</>
+
+    这就是最终效果！
+
+    <>![](/wiki/silhouette_tutorial_5.png)</>
+
+</Box>
+
+<Box>
+
+    ## 摄像机目标 [camera-target]
+    ---
+
+    这是一个大地图区域 [`Event`](/wiki/api/Event)，玩家位于其中时会让摄像机对准指定位置。
+    这在你希望玩家关注某个特定对象时很有用。
+
+    这个事件是一个 `area`。在地图的 `objects` 图层上将对象命名为 `cameratarget`，即可创建此事件。
+
+    该事件的可配置属性：
+    - `x: number` -> 摄像机需要聚焦的位置的 x 坐标。
+    - `y: number` -> 摄像机需要聚焦的位置的 y 坐标。
+    - `marker: string` -> 指示摄像机需要聚焦位置的标记名称。
+
+    建议**使用标记**而不是直接填写 x、y 值，因为这样更简单，也可以在 Tiled 中移动标记。
+
+    - `lockx: boolean = true` -> 如果为 **true**，摄像机的 x 位置会锁定到目标位置。
+    <br></br>如果为 **false**，摄像机可以沿 x 轴自由移动。
+    - `locky: boolean = true` -> 如果为 **true**，摄像机的 y 位置会锁定到目标位置。
+    <br></br>如果为 **false**，摄像机可以沿 y 轴自由移动。
+
+    如果想偏移摄像机而不是简单地将其锁定在某处，这些属性就很有用。
+
+    - `speed: number = 16` -> 摄像机移动到目标位置的速度。
+    - `returnspeed: number = 16` -> 摄像机返回原始目标（通常是玩家）的速度。
+    - `time: number = 0.25` -> 摄像机移动到目标位置所需的时间，单位为秒。
+    - `returntime: number = 0.25` -> 摄像机返回原始目标（通常是玩家）所需的时间，单位为秒。
+
+    你可以使用 **speed** 或 **time** 来决定摄像机如何移动到目标位置，不要同时使用两者，因为 **time** 的优先级高于 **speed**。
+
+    如果都没有提供，则会使用摄像机默认值：speed 为 16，time 为 0.25。
+
+    ### 示例 [examples]
+    ---
+    首先，创建一个将摄像机锁定到房间中央的例子。
+    只需创建 `cameratarget` 和摄像机要聚焦的 `marker`，然后将目标添加到 `cameratarget` 的自定义属性中。
+
+    <>![](/wiki/cameratarget_tutorial_1.png)</>
+
+    效果如下！
+
+    <video controls preload="none">
+    <source src="/wiki/cameratarget_tutorial_1.mp4" type="video/mp4" />
+        你的浏览器不支持此视频。抱歉！
+    </video>
+
+    现在试试用这个事件制造偏移。只需移动 `cameratarget` 和标记，并将 `lockx` 或 `locky` 设置为 false。
+
+    本例让摄像机的 y 位置稍微偏移了一点，因此我修改了标记名称，因为原来的名称对于这个例子并不太合理。
+
+    <>![](/wiki/cameratarget_tutorial_2.png)</>
+
+    <video controls preload="none">
+    <source src="/wiki/cameratarget_tutorial_2.mp4" type="video/mp4" />
+        你的浏览器不支持此视频。抱歉！
+    </video>
+
+</Box>
+
+<Box>
+
+    ## 隐藏队伍 [hide-party]
+    ---
+
+    这是大地图中的一个区域，玩家走进事件时会隐藏[跟随者](/wiki/api/Follower)以及[player](/wiki/api/Player)。
+
+    这个事件是一个 `area`。在地图的 `objects` 图层上将对象命名为 `hideparty`，即可创建此事件。
+
+    该事件的可配置属性：
+    - `alpha: number = 0` -> 此区域内跟随者的目标 alpha 值，也就是它们最终会变得多透明。
+
+    ### 示例 [example]
+    ---
+    在地图中的任意位置创建一个 `area`，并将其命名为 `hideparty`，如下例所示。
+
+    <>![](/wiki/hideparty_tutorial.png)</>
+
+    就是这样，现在试试看吧！
+
+    <video controls preload="none">
+    <source src="/wiki/hideparty_tutorial.mp4" type="video/mp4" />
+        你的浏览器不支持此视频。抱歉！
+    </video>
+
+</Box>
+
+<Box>
+
+    ## 设置旗标事件 [set-flag-event]
+    ---
+
+    这是一个大地图区域，玩家走进时会将旗标设置为指定值。
+
+    这个 [`Event`](/wiki/api/Event) 是一个 `area`。在地图的 `objects` 图层上将对象命名为 `setflag`，即可创建此事件。
+
+    该事件的可配置属性：
+    - `flag: string` -> 玩家进入区域后要设置为 `value` 的旗标名称。
+    - `value: any = true` -> 旗标要被设置成的值。如果未设置，`flag` 会被设置为 **true**。
+    - `once: boolean = false` -> 如果为 **true**，事件设置旗标后会自行销毁，并且之后不会再从存档中加载。
+    <br></br>如果为 **false**，玩家可以随意踩到此事件任意次数，每次都会设置旗标。
+    - `mapflag: boolean = false` -> 如果为 **true**，`flag` 会储存在当前地图下，而不是作为全局旗标储存。
+    <br></br>如果为 **false**，旗标会作为全局旗标储存。
+
+    如果将 `mapflag` 设为 true，旗标会根据**当前地图 UID**储存在[游戏旗标](/wiki/api/Game#flags)中；
+    否则，旗标会作为**全局旗标**储存。
+
+    ### 示例 [example]
+    ---
+    要测试此事件，可以使用[调试系统](/wiki/debugging)中的旗标编辑器，查看旗标如何创建以及它们的值。
+
+    我会创建一些使用不同旗标和不同类型值的 `setflag` 对象，看看它们的工作方式。
+
+    |test_flag|test_flag_2|test_flag_3|
+    |---|---|---|
+    |![](/wiki/setflag_tutorial_1.png)|![](/wiki/setflag_tutorial_2.png)|![](/wiki/setflag_tutorial_3.png)|
+    |string|bool|int|
+
+    这个视频展示了事件的工作方式。
+
+    <video controls preload="none">
+    <source src="/wiki/setflag_tutorial_1.mp4" type="video/mp4" />
+        你的浏览器不支持此视频。抱歉！
+    </video>
+
+</Box>
+
+<Box>
+
+    ## 力场 [forcefield]
+    ---
+
+    力场是一种电能屏障，会在满足某个条件前阻止玩家前进。
+    主要用于阻止玩家前进，直到他们完成谜题或到达项目中的某个位置。
+
+    `Forcefield` 是一个 [`Event`](/wiki/api/Event)。在地图的 `objects` 图层上将对象命名为 `forcefield`，即可创建此对象。
+
+    可配置属性如下：
+    - `solid: boolean = true` -> 如果为 **true**，力场是实心的，玩家无法穿过它。
+    <br></br>如果为 **false**，玩家可以穿过力场。
+    - `visible: boolean = false` -> 如果为 **true**，玩家始终可以看到力场。
+    <br></br>如果为 **false**，玩家只有靠近对象时才能看到力场。
+    - `flag: string` -> 用于检查力场是否激活的旗标名称。如果旗标开头有 `!`，检查结果会反转。
+    - `inverted: boolean = false` -> 如果为 **true**，旗标检查会反转；当 `flag == value` 时，力场会**未激活**。
+    <br></br>如果为 **false**，当 `flag == value` 时，力场会**激活**。
+    - `value: boolean = true` -> 力场激活时 `flag` 应该具有的值。
+
+    ### 示例 [example]
+    ---
+    由于我们还没有制作谜题，可以使用[设置旗标事件](#set-flag-event)或调试旗标编辑器来测试力场功能。
+
+    首先创建力场，并添加旗标检查。比如，可以将旗标命名为 “puzzle_solved”。
+    由于我们希望逻辑是 `if flag == true`，所以需要反转旗标检查。
+
+    可以使用 `inverted` 属性，也可以在旗标名称开头添加 `!`，如下所示：
+    - `flag` -> !puzzle_solved
+
+    或者
+
+    - `inverted` -> true
+
+    不要同时使用两者，因为那会产生双重否定，效果等同于什么都不设置。
+
+    你应该创建出类似下面的对象。
+
+    <>![](/wiki/forcefield_tutorial_1.png)</>
+
+    然后创建[设置旗标事件](#set-flag-event)来测试它：
+
+    <>![](/wiki/forcefield_tutorial_2.png)</>
+
+    现在来测试一下，看看它是否正常工作！
+
+    <video controls preload="none">
+    <source src="/wiki/forcefield_tutorial_1.mp4" type="video/mp4" />
+        你的浏览器不支持此视频。抱歉！
+    </video>
+
+    一开始旗标并不存在，所以它没有显示在调试菜单中。踩过设置旗标事件后，该事件创建了旗标，我们就可以在编辑器中修改它了。
+
+</Box>
+
+<Box>
+
+    ## 魔法玻璃 [magic-glass]
+    ---
+
+    魔法玻璃是只有在角色（例如玩家或跟随者）踩上去时才会出现的玻璃瓦片。
+
+    这个 [`Event`](/wiki/api/Event) 是一个 `area`，该区域中的每个瓦片都会变成玻璃瓦片。要创建这个对象，请在 `objects` 图层上创建一个区域，并将其命名为 `magicglass`。
+
+    可配置属性如下：
+    - `new_sprite: boolean = false` -> 如果为 **true**，玻璃会使用新精灵。存放在 `assets/sprites/world/events/magical_glass_new` 中。
+    <br></br>如果为 **false**，玻璃会使用旧精灵。存放在 `assets/sprites/world/events/magical_glass` 中。
+
+    ### 示例 [example]
+    ---
+    由于 `magicglass` 通常是隐藏的，我们可以用它创建一条通往无法到达的宝箱的秘密通道。
+
+    修改第二张地图，做出类似下面的效果。
+
+    ![magicglass_tutorial_1](/wiki/magicglass_tutorial_1.png)
+
+    结果应该如下！
+
+    <video controls preload="none">
+    <source src="/wiki/magicglass_tutorial_1.mp4" type="video/mp4" />
+        你的浏览器不支持此视频。抱歉！
+    </video>
+
+    等等……这看起来不太对！为什么玻璃瓦片会显示在玩家和宝箱前面？
+
+    这是因为玩家和玻璃瓦片都绘制在同一图层上，所以位置更低的对象会先被绘制。
+
+    这个问题很容易解决。如[地图图层页面](/wiki/map-properties-and-layers#map-layers)所示，只需创建一个名为 `objects_party` 的新对象图层，队伍就会生成在该图层上。由于我们希望队伍位于玻璃上方，所以把这个图层放在玻璃使用的对象图层上方。
+
+    现在，如果玻璃又显示在宝箱上方，也不用担心。你可以创建一个新的 `objects` 图层，我把它命名为 `objects_under`，然后把 `magicglass` 改到 `objects_under` 图层上。
+
+    ![magicglass_tutorial_2](/wiki/magicglass_tutorial_2.png)
+
+
+    如果不知道对象位于哪个图层，可以在 Tiled 中使用**选择对象（S）**工具并选中对象，对象所在图层会以蓝色高亮显示。
+
+    修改后，整体效果应该如下！
+
+    <video controls preload="none">
+    <source src="/wiki/magicglass_tutorial_2.mp4" type="video/mp4" />
+        你的浏览器不支持此视频。抱歉！
+    </video>
+
+</Box>
+
+<Box>
+
+    ## 瓦片对象 [tile-object]
+    ---
+
+    瓦片对象是图块集中的瓦片与一个[事件](/wiki/api/Event)的组合，
+    这样就可以创建一个拥有[对象](/wiki/api/Object)属性的瓦片。
+
+    TileObject 不是普通事件，它没有属性。你可以在 `objects` 图层中使用 Tiled 的 **插入瓦片（T）** 功能创建它。
+    然后从图块集中选择想放置的瓦片，并将它放到地图中。
+
+    由于瓦片大小为 20x20px，而地图中的一个瓦片大小为 40x40px，因此需要使用变换控件将它缩放到想要的大小。
+
+    ## 示例 [example]
+    ---
+    在本例中，我们放置一个瓦片对象，并创建一个脚本让它执行某些操作。
+
+    如果你还不清楚如何创建瓦片对象，请按照下面的教程操作。
+
+    ![](/wiki/tileobject_tutorial_1.png)
+
+    接着创建一个脚本，让这个瓦片对象执行某些操作。我们只需修改[创建脚本教程](#making-scripts)中的脚本，使其变成下面这样。
+
+    ```lua
+    ---将要执行的函数
+    ---@param event Event 执行此脚本的事件
+    ---@param player Player 执行此脚本的玩家
+    return function(event, player)
+        -- 播放警报音效
+        Assets.playSound("alert")
+        -- 根据 ID 获取瓦片
+        ---@type Event
+        local tile = Game.world:getEvent(75) -- 替换为你的瓦片对象的 ID。
+        --- 让对象抖动并向上掉落
+        tile:shake()
+        tile.physics.gravity = -1
+    end
+    ```
+
+    由于瓦片对象是作为事件创建的，因此可以使用 Game.world:getEvent(id) 函数访问它。
+    该函数会返回地图中拥有对应 ID 的对象。如果不知道 ID，可以在对象属性中查看。
+
+    ![](/wiki/tileobject_tutorial_2.png)
+
+    要执行这个脚本，只需创建一个 [`script` 事件](#script)，并将 `script` 属性设置为 `test_script`。
+
+    ![](/wiki/tileobject_tutorial_3.png)
+
+    效果如下！
+
+    <video controls preload="none">
+    <source src="/wiki/tileobject_tutorial.mp4" type="video/mp4" />
+        你的浏览器不支持此视频。抱歉！
+    </video>
+
+</Box>
+
+<Box>
+
+    ## 传送门 [warp-door]
+    ---
+
+    传送门是允许玩家在大地图位置之间**快速旅行**的对象。
+
+    要创建这个 [`Event`](/wiki/api/Event)，请在 `objects` 图层上放置一个点，并将其命名为 `warpdoor`。
+
+    该事件的自定义属性如下：
+    - `open: boolean = true` -> 如果为 **true**，传送门处于打开状态，玩家可以与它交互并快速旅行。
+    <br></br>如果为 **false**，只会显示门框，玩家无法快速旅行。
+    - `openflag: string` -> 用于检查传送门是否打开的旗标名称。该旗标必须是布尔值。
+    <br></br>如果旗标为 **true**，传送门打开；如果旗标为 **false** 或不存在（nil），传送门关闭。
+
+    - `map: string[]` -> 玩家可以快速旅行前往的地图名称列表。
+    - `name: string[]` -> 每张可用地图在传送选择中显示的名称列表。
+    - `marker: string[]` -> 传送门将玩家传送到的标记名称列表。
+    - `flag: string[]` -> 用于判断是否可以传送到某张地图的旗标列表。例如，你可以允许玩家在项目进行到一半时快速旅行，但不允许前往之后的地点。
+
+    ### 示例 [examples]
+    ---
+
+    在两张地图中都创建一个 `warpdoor`。本例中传送门从一开始就是打开的，所以两边的属性相同。
+    还需要定义玩家将被传送到的标记。为简单起见，我把它们命名为 `door_warp`。
+
+    由于 `map`、`name` 和 `marker` 是数组，因此需要像[文本教程中的多个文本框](#multiple-textboxes)一样定义它们。
+    - `map1` -> example_map -- 你想快速旅行前往的第一张地图名称。
+    - `map2` -> example_map_2 -- 你想快速旅行前往的第二张地图名称。
+    - `name1` -> Start -- 传送门为 map1 的选择项显示的名称。
+    - `name2` -> End -- 传送门为 map2 的选择项显示的名称。
+    - `marker1` -> door_warp -- 玩家选择 map1 后，传送门将其传送到的标记。
+    - `marker2` -> door_warp -- 玩家选择 map2 后，传送门将其传送到的标记。
+
+    最多可以定义四张地图，但还需要定义 `map3`、`map4`、`name3`、`name4`、`marker3` 和 `marker4`。
+
+    效果应该如下：
+
+    |example_map|
+    |---|
+    |![](/wiki/warpdoor_tutorial_1.png)|
+
+    |example_map_2|
+    |---|
+    |![](/wiki/warpdoor_tutorial_2.png)|
+
+    这就是它的工作方式！
+    <video controls preload="none">
+    <source src="/wiki/warpdoor_tutorial_1.mp4" type="video/mp4" />
+        你的浏览器不支持此视频。抱歉！
+    </video>
+
+    现在试试更复杂的做法。传送门不再从一开始就打开，而是只有玩家到达终点后才会打开。
+
+    修改 example_map 中的传送门，在其自定义属性中添加 `openflag` -> `reached_end`。
+    将 example_map_2 中的传送门移动到终点，并添加一个[设置旗标事件](#set-flag-event)，将 **reached_end** 旗标设为 **true**。
+    |example_map|
+    |---|
+    |![](/wiki/warpdoor_tutorial_4.png)|
+
+    |example_map_2|
+    |---|
+    |![](/wiki/warpdoor_tutorial_3.png)|
+
+    这就是它的工作方式！
+    <video controls preload="none">
+    <source src="/wiki/warpdoor_tutorial_2.mp4" type="video/mp4" />
+        你的浏览器不支持此视频。抱歉！
+    </video>
+
+</Box>
+
+<Box>
+
+    ## 快速存档事件 [quick-save-event]
+    ---
+
+    这是一个进入后会触发[快速存档](/wiki/api/Game#saveQuick)的大地图对象。
+    如果想在玩家 Game Over 后保存旗标值，可以使用它。
+
+    `QuicksaveEvent` 是一个区域 [`Event`](/wiki/api/Event)。在地图的 `objects` 图层上将对象命名为 `quicksave`，即可创建此对象。
+
+    该事件的自定义参数如下：
+    - `marker: string` -> 加载快速存档后生成队伍所使用的标记名称，类似 Game Over 时的情况。
+
+    ### 示例 [example]
+    ---
+
+    在本例中，只需创建一个 `quicksave` 和一个 [`setflag`](#set-flag-event)，看看它是如何工作的。
+
+    |quicksave|
+    |---|
+    |![](/wiki/quicksave_tutorial_1.png)|
+
+    |setflag|
+    |---|
+    |![](/wiki/quicksave_tutorial_2.png)|
+
+    这个视频使用了[调试功能](/wiki/debugging)来展示该事件的作用！
+
+    <video controls preload="none">
+    <source src="/wiki/quicksave_tutorial.mp4" type="video/mp4" />
+        你的浏览器不支持此视频。抱歉！
+    </video>
+
+</Box>
+
+<Box>
+
+    ## 镜面区域 [mirror-area]
+    ---
+
+    镜面区域是大地图中的一个区域，会像镜子一样反射位于它下方的角色。
+
+    `MirrorArea` 是一个 [`Event`](/wiki/api/Event)。在地图的 `objects` 图层上将对象命名为 `mirror`，即可创建此对象。
+
+    可以在 [`Actor`](/wiki/api/Actor) 的 [`mirror_sprites`](/wiki/api/Actor#mirror_sprites) 表以及以下函数中自定义镜面反射的精灵：
+    [`getMirrorSprites`](/wiki/api/Actor#getMirrorSprites)、[`getMirrorSprite`](/wiki/api/Actor#getMirrorSprite)。
+
+    该事件的可自定义属性如下：
+    - `offset: number = 0` -> 镜面中绘制反射时使用的 y 偏移量。
+    - `opacity: number = 1` -> 镜面中绘制反射时使用的不透明度。
+
+    ### 示例 [example]
+    ---
+
+    第一个例子只创建一个镜面，展示这个事件的工作方式。
+
+    这个事件很容易使用，只需在想放置镜面的地方创建一个区域，如下图所示。
+
+    ![](/wiki/mirror_tutorial_1.png)
+
+    就是这样！你可以在下面的视频中查看它的效果。
+
+    <video controls preload="none">
+    <source src="/wiki/mirror_tutorial_1.mp4" type="video/mp4" />
+        你的浏览器不支持此视频。抱歉！
+    </video>
+
+    第二个例子中，我们修改 Kris 的角色数据，改变镜面中显示的精灵。
+
+    ```lua
+    -- 镜面中要替换成的精灵表
+    self.mirror_sprites = {
+        ["walk/down"] = "walk/down",
+        ["walk/up"] = "walk/up",
+        ["walk/left"] = "walk/right",
+        ["walk/right"] = "walk/left",
+    }
+    ```
+    现在效果如下。我把镜面稍微放大了一点，方便观察。
+
+    <video controls preload="none">
+    <source src="/wiki/mirror_tutorial_2.mp4" type="video/mp4" />
+        你的浏览器不支持此视频。抱歉！
+    </video>
+
+</Box>
+
+<Box>
+
+    ## 推动方块 [push-block]
+    ---
+    推动方块通常用于制作谜题。要创建这个 [`Event`](/wiki/api/Event)，请在 `objects` 图层上放置一个只覆盖**一个瓦片**的 `area`，并将其命名为 `pushblock`。
+
+    要定义推动方块可以和不可以移动的边界，需要创建一个新的 `blockcollision` 图层。
+    在此图层中定义可推动方块的碰撞，玩家不会受到这些碰撞的影响。
+    更多信息请查看示例。
+
+    还应该使用另一种地面，让玩家知道方块移动的边界在哪里。
+
+    该事件的可配置属性如下：
+    - `sprite: string` -> 方块可选的自定义精灵，用于替代普通精灵。<br></br>
+    如果想使用普通精灵，则不需要设置此属性。
+    - `solvedsprite: string` -> 方块进入已解状态时可选的自定义精灵。<br></br>
+    当方块位于[瓦片按钮](#tile-button)上方时会自动更新。
+    - `pushdist: number = 40` -> 方块每次被推动时移动的像素数。40 像素等于一个瓦片，但具体数值取决于地图的瓦片宽度和高度。
+    - `pushtime: number = 0.2` -> 推动方块时它移动所需的时间，单位为秒。
+    - `pushsound: string = "noise"` -> 推动方块时播放的音效名称。
+    - `pressbuttons: boolean = true` -> 此属性**未使用**。
+    - `lock: boolean = false` -> 如果为 **true**，方块进入已解状态后会锁定在原地（也就是方块位于[瓦片按钮](#tile-button)上方时）。
+    <br></br>如果为 **false**，即使方块位于[瓦片按钮](#tile-button)上方，也可以移动。根据谜题的复杂程度，你可能更喜欢这种行为。
+    - `inputlock: boolean` -> 如果为 **true**，推动方块时玩家会被锁定在原地。
+    <br></br>如果为 **false**，即使推动方块，玩家也可以移动。
+    <br></br>如果计划制作复杂谜题，请将其设置为 false，以避免不必要的停顿。
+    <br></br>默认值在项目配置文件的 `pushBlockInputLock` 属性中定义。
+
+    ### 示例 [example]
+    ---
+    本例先制作谜题的基础部分，再在[瓦片按钮](#tile-button)教程中完成它，因为制作谜题需要同时使用这两种对象。
+
+    首先在地图中创建一个 `blockcollision` 图层，并将其颜色设为<span style={{color: "#00ffff"}}>青色。 #00ffff (0, 255, 255)</span>
+
+    ![](/wiki/pushblock_tutorial_1.png)
+
+    然后添加一个 `pushblock`，并定义它可以移动的路径。为此，修改地图，放置方块可以移动的地面，并添加碰撞。
+
+    我还会为可推动方块添加 `inputlock` 属性，并将其值设置为 **false**。
+
+    这就是我创建的内容。
+
+    ![](/wiki/pushblock_tutorial_2.png)
+
+    要不要试着移动一下箱子？
+
+    <video controls preload="none">
+    <source src="/wiki/pushblock_tutorial_1.mp4" type="video/mp4" />
+        你的浏览器不支持此视频。抱歉！
+    </video>
+
+    好吧……真是丢人。现在该怎么办？
+
+    我们可以走出房间来重置谜题，但为什么不创建一个按钮来重置谜题呢？
+
+    我会创建一个自定义事件来实现这一点，但其实也可以直接使用[瓦片按钮](#tile-button)！
+    （之后我甚至会用瓦片按钮替换这个自定义事件。）
+
+    这是我创建的事件。
+
+    ```lua
+    --- 玩家踩上时重置推动方块谜题的自定义事件
+    ---@class ResetButton : Event
+    local ResetButton, super = Class(Event)
+
+    ---创建重置按钮事件
+    ---@param x number 按钮的 x 坐标
+    ---@param y number 按钮的 y 坐标
+    ---@overload fun(x : number, y: number) : ResetButton
+    function ResetButton:init(x, y)
+
+        super.init(self, x, y, 40, 40)
+
+        self.idle_sprite = "world/events/glowtile/idle"
+        self.pressed_sprite = "world/events/glowtile/pressed"
+
+        self:setSprite(self.idle_sprite, 1/8)
+    end
+
+    ---玩家进入此事件时调用
+    ---@param player Player 进入事件的角色
+    function ResetButton:onEnter(player)
+        --- 确保事件只对玩家（Kris）作出反应
+        if player.is_player then
+            self:setSprite(self.pressed_sprite)
+            Assets.playSound("noise")
+            Assets.playSound("him_quick")
+
+            -- 获取当前场景中的所有 PushBlock 并重置它们
+            for _, pushblock in ipairs(Game.stage:getObjects(PushBlock)) do
+                pushblock:reset()
+            end
+            -- 在方块重置时阻止玩家移动，
+            -- 否则玩家可能会走到方块应该到达的位置，
+            -- 并卡在碰撞中。
+            Game.lock_movement = true
+            Game.world.timer:after(.4, function ()
+                Game.lock_movement = false
+            end)
+
+        end
+    end
+
+    ---玩家离开此事件时调用
+    ---@param player Player 离开事件的角色
+    function ResetButton:onExit(player)
+        --- 确保事件只对玩家（Kris）作出反应
+        if player.is_player then
+            self:setSprite(self.idle_sprite, 1/8)
+        end
+    end
+    ```
+
+    现在只需要把它添加到地图中，测试它是否正常工作！
+
+    ![](/wiki/pushblock_tutorial_3.png)
+
+    <video controls preload="none">
+    <source src="/wiki/pushblock_tutorial_2.mp4" type="video/mp4" />
+        你的浏览器不支持此视频。抱歉！
+    </video>
+
+    现在我们已经有了重置谜题的方法，继续阅读[瓦片按钮](#tile-button)教程来完成谜题。
+
+</Box>
+
+<Box>
+
+    ## 瓦片按钮 [tile-button]
+    ---
+    一种可以被角色或[推动方块](#push-block)压下的按钮。
+
+    要创建这个 [`Event`](/wiki/api/Event)，请在 `objects` 图层上放置一个单瓦片大小的 `area`，并将其命名为 `tilebutton`。
+
+    该事件的可配置属性如下：
+    - `sprite: string` -> 可选的自定义精灵，用于替代普通的**未按下**精灵。
+    - `pressedsprite: string` -> 按钮**按下**时使用的可选自定义精灵，用于替代普通精灵。
+    - `onsound: string` -> 有东西踩到按钮时使用的音效。
+    - `offsound: string` -> 按钮不再被按下时使用的音效。
+    - `blocks: boolean = false` -> 如果为 **true**，此瓦片按钮**只能由**[推动方块](#push-block)激活。
+    <br></br>如果为 **false**，此瓦片按钮**只能由**[NPC](#npc)、[玩家](/wiki/api/Player)和[跟随者](/wiki/api/Follower)激活。
+    - `group: string|number` -> 用于将同一房间中的多个按钮分组。只有当同组按钮都被**同时按下**时，它们才会被设置为**完成/已解**状态。
+    <br></br>它类似于 ID，因此同一组中的每个按钮都需要拥有相同的 group 值。
+    - `flag: string` -> 当按钮组解开时设置为 **true**，谜题不再处于解开状态时设置为 **false** 的旗标名称。
+    此旗标会作为**全局旗标**保存。
+    - `once: boolean = false` -> 如果为 **true**，每个存档文件中只能完成一次这个按钮的谜题。这意味着谜题解开后，游戏不再检查它是否完成，`flag` 也不会被设置为 **false**。大多数情况下你会更喜欢这种行为。
+    <br></br>如果为 **false**，当谜题**不再处于**已解状态时，`flag` 会被设置为 **false**。
+    - `keepdown: boolean = false` -> 如果为 **true**，即使按住按钮的对象移开，按钮仍会保持按下状态。
+    <br></br>如果为 **false**，按住按钮的对象移开后，按钮会恢复为未按下状态。
+    - `cutscene: string` -> 按钮谜题解开时应播放的过场动画名称。
+    - `script: string` -> 按钮谜题解开时应执行的脚本文件名称。
+
+    ### 示例 [examples]
+    ---
+
+    属性确实很多，所以接下来通过一些示例和视频来帮助你理解这个事件的工作方式。
+
+    你应该先完成[推动方块](#push-block)教程中的谜题，因为我们会在本例中完成它。
+
+    现在我们已经创建了测试谜题，接下来要用瓦片按钮替换重置按钮。为此，我会添加一个瓦片按钮，并为它设置一个新脚本，因为我不希望玩家在重置谜题时移动。
+
+    首先创建 `script`。在 `scripts/world/scripts` 中创建一个新的 .lua 文件，我把它命名为 `reset_puzzle.lua`。
+
+    这是我创建的脚本。
+
+    ```lua
+    ---重置房间中的所有推动方块谜题
+    ---@param event TileButton 执行此脚本的事件
+    return function(event)
+        -- 由于我们是从瓦片按钮调用此脚本的，所以只会得到 event
+
+        -- 这样可以让跟随者无法激活瓦片按钮，只有玩家可以激活
+        -- 不能通过属性配置这一点，因为 `blocks` 属性只表示按钮是否可以由
+        -- 玩家和跟随者激活，而不是二选一。
+        event.npc_activated = false
+        Assets.playSound("noise")
+        Assets.playSound("him_quick")
+        -- 获取当前场景中的每个 PushBlock，并将其重置为默认状态
+        for _, pushblock in ipairs(Game.stage:getObjects(PushBlock)) do
+            pushblock:reset()
+        end
+
+        -- 在方块重置时阻止玩家移动；否则玩家可能会走到方块应该到达的位置，
+        -- 并卡在碰撞中。
+        Game.lock_movement = true
+        Game.world.timer:after(.4, function ()
+            Game.lock_movement = false
+        end)
+    end
+    ```
+
+    现在只需像下图一样创建对象，并测试它是否正常工作。
+
+    ![](/wiki/tilebutton_tutorial_1.png)
+
+    <video controls preload="none">
+    <source src="/wiki/tilebutton_tutorial_1.mp4" type="video/mp4" />
+        你的浏览器不支持此视频。抱歉！
+    </video>
+
+    现在来创建谜题！首先需要创建一个屏障，阻止玩家继续前进，直到解开谜题。
+
+    可以使用[力场](#forcefield)来实现这一点，并为它设置以下属性：
+    - `flag: string` = **!example_room:puzzle_solved**。
+    由于我们检查的是 `flag` 为 true 的情况，所以不需要为它提供 value。
+    - `visible: bool` = **true**
+
+    ![](/wiki/tilebutton_tutorial_2.png)
+
+    接着创建可以解开谜题的按钮。由于我们有两个箱子，所以添加两个 `tilebutton`，并设置以下属性：
+    - `blocks: bool` = **true**。我们只希望按钮由可推动箱子激活。
+    - `once: bool` = **true**。谜题解开后就不能再恢复为未解状态。
+    - `flag: string` = **example_room:puzzle_solved**。与力场使用相同的旗标。
+    - `group: int` = **1**。按钮的组 ID；这样，只有两个按钮都被按下时，力场才会解除。
+
+    ![](/wiki/tilebutton_tutorial_3.png)
+
+    来测试一下谜题，看看它是否正常工作！
+
+    <video controls preload="none">
+    <source src="/wiki/tilebutton_tutorial_2.mp4" type="video/mp4" />
+        你的浏览器不支持此视频。抱歉！
+    </video>
+
+    成功了！不过，为什么不让事情更有趣一点呢？再添加一个谜题吧，这次让 Kris、Susie 和 Ralsei 踩下三个按钮时激活。
+    制作过程很简单：添加另一个[力场](#forcefield)，让它使用 `flag` **example_room:puzzle_2_solved**，再添加几个脚踏按钮。
+
+    我会一步一步说明。
+
+    首先创建另一个 `forcefield`，设置以下属性：
+    - `flag: string` = **!example_room:puzzle_2_solved**
+    - `visible: bool` = **true**
+
+    ![](/wiki/tilebutton_tutorial_4.png)
+
+    然后创建新的 `tilebutton`，设置以下属性：
+    - `once: bool` = **true**。谜题解开后就不能再恢复为未解状态。
+    - `flag: string` = **example_room:puzzle_2_solved**。与第二个力场使用相同的旗标。
+    - `group: int` = **2**。按钮的组 ID；这样，所有按钮都被按下时谜题才会解开。
+    这个 ID 必须与第一个谜题中的 ID 不同，因为我们要创建相互独立的谜题。
+    - `onsound: string` = **noise**
+
+    ![](/wiki/tilebutton_tutorial_5.png)
+
+    现在来试试看！
+
+    <video controls preload="none">
+    <source src="/wiki/tilebutton_tutorial_3.mp4" type="video/mp4" />
+        你的浏览器不支持此视频。抱歉！
+    </video>
+
+</Box>
+
+<Box>
+
+    ## 制作暗泉 [making-dark-fountains]
+    ---
+    在 Kristal 中创建暗泉非常简单，只需要三个部分。
+
+    ### 暗泉 [dark-fountain]
+    ---
+    首先是**暗泉**本身。它是一个事件。要创建它，请在 `objects` 图层上放置一个 `point`，并将其命名为 `darkfountain`。
+
+    该事件拥有以下可配置属性：
+    - `narrow: boolean = false` -> 如果想创建窄版暗泉（例如第 4 章第一个圣所中的暗泉），而不是普通暗泉，就使用此属性。
+    <br></br>如果为 **true**，会创建窄版暗泉。<br></br>如果为 **false**，则会创建普通暗泉。
+
+    #### 示例 [example]
+    ---
+    我创建了一张新地图来放置暗泉，但你也可以把它放在已经创建的地图中。
+
+    目前效果如下。
+
+    ![](/wiki/darkfountain_tutorial_1.png)
+
+    你可能会想：“为什么它没有地面？”要回答这个问题，需要进入创建暗泉的下一步。
+
+    ### 暗泉地面 [fountain-floor]
+    ---
+    这是会随时间改变颜色、并跟随暗泉颜色变化的地面。房间中不一定要有暗泉才能使用此对象，但如果定义了暗泉，地面的颜色会与暗泉颜色同步。
+
+    要创建此事件，请在 `objects` 图层上你希望绘制地面的地方放置一个 `area`，并将其命名为 `fountainfloor`。
+
+    此事件没有自定义属性。
+
+    #### 示例 [example]
+    ---
+    我稍微修改了房间，放置这个新事件。由于 `fountainfloor` 是一个对象，请确保将它创建在**玩家绘制所在图层下方**的 `objects` 图层上，否则地面可能会绘制在玩家上方。
+
+    如果不知道我在说什么，请查看[魔法玻璃](#magic-glass)教程。
+
+    ![](/wiki/darkfountain_tutorial_2.png)
+
+    <video controls preload="none">
+    <source src="/wiki/darkfountain_tutorial_1.mp4" type="video/mp4" />
+        你的浏览器不支持此视频。抱歉！
+    </video>
+
+    看起来不错，但暗泉房间还缺少一个重要部分：角色的阴影效果。
+
+    ### 暗泉阴影控制器 [fountain-shadow-controller]
+    ---
+    创建它非常简单：在 `controllers` 图层上插入一个 `point`，并将其命名为 `fountainshadow`。
+
+    这样会为地图中的每个角色添加阴影效果。
+
+    #### 示例 [example]
+    ---
+    我在地图中添加了一个 `controllers` 图层。要创建它，请创建一个新的对象图层，并将其命名为 `controllers`。
+    颜色可以按你的喜好选择，但我会使用<span style={{color: "#ffc800"}}>金色。</span>#ffc800 (255, 200, 0)  ![](/wiki/controllers_layer_color.png)
+
+    ![](/wiki/darkfountain_tutorial_3.png)
+
+    <video controls preload="none">
+    <source src="/wiki/darkfountain_tutorial_2.mp4" type="video/mp4" />
+        你的浏览器不支持此视频。抱歉！
+    </video>
+
+</Box>
+
+<Box>
+
+    ## 切换控制器 [toggle-controller]
+    ---
+    这个 [`Event`](/wiki/api/Event) 是一种**控制器**，用于切换大地图中其他事件的存在状态。
+
+    此控制器会在其旗标**发生变化时立即**切换其他事件的存在状态，因此不需要重新加载房间就能激活或停用其他事件。
+
+    此事件创建在 `controllers` 图层中。本例会使用<span style={{color: "#ffc800"}}>金色。#ffc800 (255, 200, 0)</span>来表示该图层。
+
+    ![](/wiki/toggle_controller_tutorial_1.png)
+
+    要创建此事件，请在 `controllers` 图层上放置一个 `point`，并将其命名为 `toggle`。
+
+    这是此控制器的自定义属性：
+    - `flag: string` -> 用于检查目标是否应处于激活状态的旗标名称。如果旗标开头有 `!`，检查结果会反转。
+    控制器会先尝试将此旗标作为**全局旗标**获取，如果找不到，再尝试将其作为**地图旗标**获取。
+    - `inverted: boolean = false` -> 如果为 **true**，旗标检查会反转；当 `flag == value` 时，目标会处于**未激活**状态。
+    <br></br>如果为 **false**，当 `flag == value` 时，目标会处于**激活**状态。
+    - `value: boolean = true` -> 目标激活时 `flag` 应该拥有的值。如果未提供，控制器会检查 `if flag == true`。
+    - `target: (Character|Event|Collider)[]` -> 此控制器所**附着**并负责开关的**对象**列表。
+
+    等等……`(Character|Event|Collider)[]` 是什么意思？简单来说，target 是控制器可以切换的对象数组，这些对象可以是事件（包括 NPC 等其他角色），也可以是地图中的碰撞体。
+
+    那么在 Tiled 中要如何创建这个属性？我们需要使用一种之前还没用过的 **Tiled 类型**：`object` 类型。
+
+    ![](/wiki/toggle_controller_tutorial_2.png)
+
+    由于 target 是一个 `array`，我们可以像[多个文本框教程](/wiki/using-events#multiple-textboxes)中定义 text 属性那样定义它。
+
+    按照下面的方式创建目标：`target1`、`target2`、`target3`、`target4`、`target5`、……、`targetN`。**targetN** 表示目标数量不限。
+
+    下图展示了如何将地图中的对象链接到该属性。
+
+    ![](/wiki/toggle_controller_tutorial_3.png)
+
+    我知道，我的 Photoshop 技能很棒。
+
+    现在来看看一些示例。
+
+    ### 示例 [examples]
+    ---
+    我已经展示了如何将对象链接到切换控制器，接下来通过一个例子看看它是如何工作的。
+
+    我创建了一个链接到两个宝箱和一个阻挡道路的碰撞体的切换控制器，并让它检查 `chest_active` 旗标。
+
+    ![](/wiki/toggle_controller_tutorial_4.png)
+
+    我还创建了一个[设置旗标事件](/wiki/using-events#set-flag-event)来**创建 chest_active 旗标**。
+
+    ![](/wiki/toggle_controller_tutorial_5.png)
+
+    这个视频展示了切换控制器的工作方式。
+
+    <video controls preload="none">
+    <source src="/wiki/toggle_controller_tutorial_1.mp4" type="video/mp4" />
+        你的浏览器不支持此视频。抱歉！
+    </video>
+
+    现在再看一个例子，这次使用反转的旗标。可以通过 `inverted` 属性实现，也可以在旗标开头添加 `!`。
+
+    <video controls preload="none">
+    <source src="/wiki/toggle_controller_tutorial_2.mp4" type="video/mp4" />
+        你的浏览器不支持此视频。抱歉！
+    </video>
+
+</Box>
+
+<Box>
+
+    ## NPC [npc]
+    ---
+    NPC 是 [Character](/wiki/api/Character) 的扩展，可以像事件一样放置在地图上。
+
+    在地图的 `objects` 图层上将对象命名为 `npc`，即可创建 NPC。
+
+    该事件的可配置属性如下：
+    - `actor: string` -> 此 NPC 使用的 actor ID。
+    - `sprite: string` -> NPC 待机时应使用的精灵名称。
+    - `animation: string` -> NPC 待机时应使用的动画名称。
+
+    必须定义 actor。NPC 会使用 actor 属性中定义的待机精灵或待机动画。
+    待机精灵是 `self.default_sprite`，待机动画是 `default_anim`，也可以使用 `self.default`。
+    如果希望 NPC 使用不同于 actor 数据中定义的精灵或动画作为默认值，可以定义 `sprite` 或 `animation`。
+
+    - `facing: string = "down"` -> NPC 默认面朝的方向。可以是 `up`、`down`、`right` 或 `left`。
+    - `turn: boolean = false` -> 如果为 **true**，与 NPC 交互时 NPC 会转向玩家。
+    <br></br>如果为 **false**，NPC 始终面朝 `facing` 中定义的方向。
+
+    如果启用 turn，请确保 NPC 使用的精灵是**面向精灵**。我会使用[追逐敌人](#chaser-enemy)中的相同教程，解释什么是面向精灵。
+
+    先停下来说明一下，所谓面向精灵是什么意思？我们以 Kris 的精灵为例。前往 Kristal 中的 `assets/sprites/party/kris/dark` 文件夹。
+    <br></br>查看 `walk` 文件夹，可以看到四个方向 `left`、`right`、`up` 和 `down` 都有对应的精灵。
+    <br></br>因此，如果创建一个 **actor 为 kris 的 NPC**，就可以设置 `facing`，游戏会根据它的值使用这四个精灵中的一个。
+    但不需要为此创建单独的文件夹。游戏检查精灵是否为面向精灵时，会使用两种分隔符 **\_** 和 **\/**。
+    所以，你可以将精灵定义为 **animation`_`direction**，例如 **walk_down**、**walk_up**、**walk_left** 和 **walk_right**；
+    也可以创建一个以**精灵名称**命名的文件夹，将精灵放入其中，并将它们命名为 **left**、**right**、**up** 和 **down**。
+
+    - `talk: boolean = true` -> 如果为 **true**，NPC 被交互并开始输入对话时会播放说话动画。
+    <br></br>如果为 **false**，NPC 不会播放此动画。示例中会对此进行说明。
+    - `talksprite: string` -> NPC 说话时使用的说话精灵名称。
+    将其设置为希望说话时使用的精灵名称，就能替代默认精灵。
+    - `solid: boolean = true` -> 如果为 **true**，NPC 是实心对象，玩家无法穿过它。
+    <br></br>如果为 **false**，玩家可以穿过 NPC。
+    - `cutscene: string` -> 与 NPC 交互时要启动的过场动画名称。
+    记得使用 **group.cutscene** 的格式。
+    - `script: string` -> 与 NPC 交互时要运行的脚本文件名称。
+    - `text: string[]` -> 与 NPC 交互时显示的文本。工作方式与[文本教程](#text-tutorial)中的相同。
+
+    不要在同一个 NPC 中同时使用 `script`、`cutscene` 和 `text`，只能使用其中一个。
+
+    - `setflag: string` -> 玩家交互时要设置为 `setvalue` 的旗标名称。
+    使用此属性时可以定义 `setvalue`。
+    - `setvalue: any = true` -> 要将 `set_flag` 指定的旗标设置成的值。
+    - `path: string` -> NPC 要沿着移动的路径形状名称。参考[路径系统教程](#path-system-tutorial)。
+    - `speed: number = 6` -> 如果定义了 `path`，NPC 沿指定路径移动的速度。可以是浮点数。
+    - `progress: number = 0` -> 如果定义了 `path`，NPC 沿路径移动的初始进度，以 0 到 1 之间的小数表示。
+    0 表示路径起点，1 表示路径终点。可以是浮点数。
+
+    ### 示例 [examples]
+    ---
+    首先，需要创建一个新的 actor 供 NPC 使用，或者使用已经定义好的 actor。
+    新 NPC 的 actor 可以在 `scripts/data/actors` 中创建，资源存放在 `assets/sprites/npcs` 中。
+
+    由于新项目已经自带 `starwalker` 这个 NPC，所以本例可以直接使用它。
+
+    要创建这个简单的 NPC，请在 `objects` 图层上创建一个名为 `npc` 的新**点**或**单瓦片区域**，并定义以下属性：
+    - `actor`：starwalker
+    - `text1`：* 这个例子……[wait:10] \n    真是让我[color:yellow]火大[color:reset]。
+    - `text2`：* 我可是原创的[wait:10]\n    [color:yellow]STARWALKER[color:reset]。
+
+    我们添加了一些文本来创建与 NPC 的交互（别忘了添加空格），并定义它使用的 actor 为 `starwalker`。
+
+    ![](/wiki/npc_tutorial_1.png)
+
+    <video controls preload="none">
+    <source src="/wiki/npc_example_1.mp4" type="video/mp4" />
+        你的浏览器不支持此视频。抱歉！
+    </video>
+
+    如你所见，这创建了一个带有交互文本的 `starwalker` NPC。但如果我们希望从侧面与 Starwalker 对话时，它能转向玩家呢？
+
+    这很容易做到，但需要先整理 NPC。为此，在 `assets/sprites/npcs` 中创建一个新文件夹，并将其命名为 `starwalker`。
+    然后在文件夹中添加 Starwalker 的定向对话新精灵。
+
+    下面是我制作的精灵。只需将它们复制到刚才创建的文件夹中，并使用表头中的名称命名。
+
+    |idle_down|idle_up|idle_left|idle_right|
+    |---|---|---|---|
+    |![](/wiki/starwalker_idle_down.png)|![](/wiki/starwalker_idle_up.png)|![](/wiki/starwalker_idle_left.png)|![](/wiki/starwalker_idle_right.png)|
+
+
+    在 `assets/sprites/npcs/starwalker` 文件夹中，应该有类似这样的内容。
+
+    ![](/wiki/npc_tutorial_2.png)
+
+    现在需要修改 Starwalker 的 actor 数据，将这些待机精灵设为它使用的默认精灵。
+
+    ```lua
+    -- 在文件 "scripts/data/actors/starwalker" 中
+    local actor, super = Class(Actor, "starwalker")
+    function actor:init()
+    ...
+        -- 此 actor 的精灵路径
+        self.path = "npcs/starwalker"
+        -- 此 actor 的默认精灵或动画，相对于 path 的路径。
+        self.default = "idle" -- 只需修改这一项
+    ...
+    end
+    return actor
+    ```
+
+    需要为 NPC 添加自定义属性 `turn`，这样它才知道要使用定向精灵。
+
+    ![](/wiki/npc_tutorial_3.png)
+
+    效果如下！
+
+    <video controls preload="none">
+    <source src="/wiki/npc_tutorial_2.mp4" type="video/mp4" />
+        你的浏览器不支持此视频。抱歉！
+    </video>
+
+    现在来为 Starwalker 添加说话精灵。过程很简单，只需添加几帧额外的动画，并按照特定方式命名，Kristal 会处理剩下的事情。
+
+    |idle_down1|idle_down2|idle_up1|idle_up2|
+    |---|---|---|---|
+    |![](/wiki/starwalker_idle_down.png)|![](/wiki/starwalker_idle_down2.png)|![](/wiki/starwalker_idle_up.png)|![](/wiki/starwalker_idle_up2.png)|
+
+    |idle_left1|idle_left2|idle_right1|idle_right2|
+    |---|---|---|---|
+    |![](/wiki/starwalker_idle_left.png)|![](/wiki/starwalker_idle_left2.png)|![](/wiki/starwalker_idle_right.png)|![](/wiki/starwalker_idle_right2.png)|
+
+    你的 NPC 文件夹应该如下所示。
+
+    ![](/wiki/npc_tutorial_4.png)
+
+    由于 `talk` 属性默认设置为 true，我们只需要修改 actor 数据，让引擎知道说话动画的播放速度。
+
+    ```lua
+    -- 在文件 "scripts/data/actors/starwalker" 中
+    local actor, super = Class(Actor, "starwalker")
+    function actor:init()
+    ...
+    -- 说话精灵及其说话速度的表（默认值为 0.25）
+    self.talk_sprites = {
+        ["idle_down"] = .25,
+        ["idle_left"] = .25,
+        ["idle_right"] = .25,
+        ["idle_up"] = .25,
+    }
+    ...
+    end
+    return actor
+    ```
+
+    你的 NPC 应该如下所示。
+
+    <video controls preload="none">
+    <source src="/wiki/npc_tutorial_3.mp4" type="video/mp4" />
+        你的浏览器不支持此视频。抱歉！
+    </video>
+
+    如果希望 NPC 在说话动画中使用其他精灵，而不是默认精灵，也可以随时定义 `talksprite`。
+
+    本教程应该能很好地示范如何在地图中创建 NPC，希望它对你有所帮助！
+
+</Box>
+
+<Box>
+
+    ## 追逐敌人 [chaser-enemy]
+    ---
+    追逐敌人是你在大地图中遇到、碰撞后会开始一场遭遇战的敌人。
+    这是一个复杂的事件，希望本教程能帮助你在项目中实现敌人。
+
+    追逐敌人不是 [`Event`](/wiki/api/Event) 的扩展，而是 [`Character`](/wiki/api/Character) 的扩展，但创建方式和事件一样。
+    要创建敌人，请在 `objects layer` 上放置一个 `point` 或 `one tile area`，并将其命名为 `enemy`。
+
+    该对象的可配置属性如下：
+    - `actor: string` -> 此敌人的 actor ID，用于在地图中显示敌人。如果不想项目崩溃，请定义此属性。
+    - `sprite: string` -> 此敌人使用的精灵，替代 actor 数据中定义的默认精灵。
+    - `animation: string` -> 此敌人使用的动画，替代 actor 数据中定义的默认动画。
+    - `facing: string` -> 如果拥有面向精灵，此敌人的面朝方向。可以是 `left`、`right`、`up` 或 `down`。
+
+    先停下来说明一下，所谓面向精灵是什么意思？我们以 Kris 的精灵为例。前往 Kristal 中的 `assets/sprites/party/kris/dark` 文件夹。
+    <br></br>查看 `walk` 文件夹，可以看到四个方向 `left`、`right`、`up` 和 `down` 都有对应的精灵。
+    <br></br>因此，如果创建一个 **actor 为 kris 的敌人**，就可以设置 `facing`，游戏会根据它的值使用这四个精灵中的一个。
+    但不需要为此创建单独的文件夹。游戏检查精灵是否为面向精灵时，会使用两种分隔符 **\_** 和 **\/**。
+    所以，你可以将精灵定义为 **animation`_`direction**，例如 **walk_down**、**walk_up**、**walk_left** 和 **walk_right**；
+    也可以创建一个以**精灵名称**命名的文件夹，将精灵放入其中，并将它们命名为 **left**、**right**、**up** 和 **down**。
+
+    - `encounter: string` -> 玩家与敌人碰撞时会触发的遭遇战 ID。存放在 `scripts/battle/encounters` 中。
+    - `enemy: string` -> 此敌人要使用的敌人 ID。存放在 `scripts/data/actors` 中。
+    <br></br>等等……既然已经定义了 `actor`，为什么还需要定义 `enemy`？我也不太清楚，但可以告诉你它们分别做什么。
+    **actor** 用于大地图中的精灵，以及切换到战斗时使用；而 **enemy** 会与 actor 一起添加到切换进入战斗的敌人列表中。
+    - `group: string` -> 可以分配给多个敌人的任意 ID，用来将它们编为一组。因此玩家完成这场遭遇战后，该组中的所有敌人都会从地图中卸载。
+    - `path: string` -> 敌人要沿着移动的路径形状名称。参考[路径系统教程](#path-system-tutorial)。
+    - `speed: number = 6` -> 如果定义了 `path`，敌人沿指定路径移动的速度。可以是浮点数。
+    - `progress: number = 0` -> 如果定义了 `path`，敌人沿路径移动的初始进度，以 0 到 1 之间的小数表示。
+    0 表示路径起点，1 表示路径终点。可以是浮点数。
+    - `chase: boolean = false` -> 如果为 **true**，敌人发现玩家时会追逐玩家。
+    <br></br>如果为 **false**，敌人在任何情况下都不会追逐玩家。
+    - `chasing: boolean = false` -> 如果为 **true**，敌人在玩家进入房间时就会立即开始追逐。
+    <br></br>如果为 **false**，敌人会按照其他属性中的配置移动。
+    - `chasedist: number = 200` -> 敌人可以看到玩家的距离，单位为像素。
+    因此，当玩家与敌人之间的距离小于 `chasedist` 时，如果 `chase` 为 true，敌人就会开始追逐玩家。
+    - `chasetype: string = linear` -> 敌人追逐玩家的方式。该属性有以下可选值：
+        - `linear` -> 敌人以恒定速度追逐玩家，除非设置了 `chaseaccel`。在这种情况下，速度会在每帧乘以加速度。
+        - `multiplier` -> 敌人的速度会随追逐玩家的时间呈指数增长。
+        - `flee` -> 敌人会以与 linear 相同的速度**逃离**玩家。
+
+    如果还不明白 `linear` 和 `multiplier` 的区别，不用担心。你只需要知道，使用 `multiplier` 追逐类型时，敌人的追逐速度会快得多地增加。
+
+    - `chasespeed: number = 9` -> 敌人追逐玩家时的速度，单位是 30FPS 下每帧的像素数。
+    - `chaseaccel: number` -> 敌人追逐玩家时的加速度。在 `linear` 模式下，速度每帧乘以加速度；
+    而在 `multiplier` 模式下，速度每帧乘方于加速度。
+    - `chasemax: number` -> 敌人追逐玩家时的最大速度，只有同时设置了 `chaseaccel` 时才会生效。
+
+    如你所见，追逐机制有点复杂，因此我会通过一些示例让它们更容易理解。这套机制使用了 `enemycollision` 图层，
+    具体内容会在示例中介绍。
+
+    - `once: boolean = false` -> 如果为 **true**，敌人的遭遇战**完成后**就不会再生成。
+    <br></br>如果为 **false**，房间加载时仍会生成敌人，即使你已经完成过它的遭遇战。
+    - `aura: boolean` -> 如果为 **true**，敌人周围会有光环，就像第 2 章中的敌人一样。
+    <br></br>如果为 **false**，敌人周围不会有光环。
+    <br></br>默认值在项目的**配置文件**中的 **enemyAuras** 属性里设置。
+
+    - `pacetype: string` -> 敌人不追逐玩家时所使用的巡游方式。该属性有以下可选值：
+        - `wander` -> 按固定顺序在敌人生成点与多个标记之间巡游。
+        - `randomwander` -> 随机在敌人生成点与多个标记之间巡游。
+        - `verticalswing` -> 沿 y 轴的正弦波移动，也就是上下移动。
+        - `horizontalswing` -> 沿 x 轴的正弦波移动，也就是左右移动。
+
+    根据想使用的 pacetype，会有一些专门定义其行为的属性。
+
+    如果使用 **wander** 或 **randomwander**：
+    - `marker: string[]` -> 敌人要在其间移动的标记列表。使用 `wander` 时按顺序移动，使用 `randomwander` 时随机移动。
+    <br></br>由于此属性是字符串数组，必须使用 `marker1`、`marker2`、`marker3`、……、`markerN` 定义它。每个 marker 的值就是对应标记的名称。
+    - `paceinterval: number = 24` -> 敌人在每个标记处停留、然后前往下一个标记前等待的帧数。
+    - `pacereturn: boolean = true` -> 如果为 **true**，敌人每次到达标记后都会返回生成点。
+    <br></br>如果为 **false**，敌人会继续前往下一个标记，而不是返回生成点。
+    - `pacespeed: number = 2` -> 敌人巡游时的移动速度。
+
+    如果使用 **verticalswing** 或 **horizontalswing**：
+    - `swingdiv: number = 24` -> 敌人摆动速度的除数（数值越大，速度越慢）。
+    - `swinglength: number = 400` -> 敌人摆动覆盖的总长度，单位为像素。敌人的起始位置是这条线的中心。
+
+    好了，信息很多。现在通过一些示例来理解这个对象的工作方式。
+
+    ### 示例 [examples]
+    ---
+
+    首先创建一个可以用来测试的基础敌人。
+
+    由于起始项目已经自带一个 `dummy` 遭遇战，我们会使用它。
+
+    在想要的位置创建敌人，并为它设置以下基础属性：
+    - `actor`：dummy
+    - `encounter`：dummy
+
+    ![](/wiki/chaserenemy_tutorial_1.png)
+
+    <video controls preload="none">
+    <source src="/wiki/chaserenemy_tutorial_1.mp4" type="video/mp4" />
+        你的浏览器不支持此视频。抱歉！
+    </video>
+
+    这样就创建了一个可以与之交互并开始遭遇战的基础敌人。
+
+    #### 追逐玩家 [chasing-down-the-player]
+    ---
+
+    现在让敌人追逐玩家。只需启用 `chase`，我们就可以测试每一种追逐类型。
+
+    **线性追逐**
+    我们先用以下属性测试不带加速度的情况。
+    - `chase` = true
+    - `chasetype` = linear。不必设置，因为 linear 是默认值。
+
+    ![](/wiki/chaserenemy_tutorial_2.png)
+
+    <video controls preload="none">
+    <source src="/wiki/chaserenemy_tutorial_2.mp4" type="video/mp4" />
+        你的浏览器不支持此视频。抱歉！
+    </video>
+
+    现在加入加速度。
+    - `chaseaccel` = 1
+
+    ![](/wiki/chaserenemy_tutorial_3.png)
+
+    <video controls preload="none">
+    <source src="/wiki/chaserenemy_tutorial_3.mp4" type="video/mp4" />
+        你的浏览器不支持此视频。抱歉！
+    </video>
+
+    现在试着让玩家能够躲开敌人。
+    - `chasespeed` = 2
+    - `chaseaccel` = 0.3
+    - `chasemax` = 12
+
+    ![](/wiki/chaserenemy_tutorial_4.png)
+
+
+    <video controls preload="none">
+    <source src="/wiki/chaserenemy_tutorial_4.mp4" type="video/mp4" />
+        你的浏览器不支持此视频。抱歉！
+    </video>
+
+    好吧……这其实并不能躲开，对吧？一开始我们比敌人快，但最后敌人还是会追上我们。
+
+    不过别担心，有一种方法可以创建只影响敌人的边界。敌人会受到碰撞体影响，
+    但不能用普通碰撞体限制敌人，因为那也会影响玩家。我们可以使用一种只影响敌人的特殊碰撞。
+
+    要创建这种碰撞，请在 Tiled 中创建一个新的**对象图层**，名称以 `enemycollision` 开头。
+    然后可以像普通碰撞图层一样使用它，但在该图层中定义的碰撞只会影响敌人。
+
+    我会创建这个图层，并将它设为<span style={{color: "#00ffff"}}>青色。#00ffff (0, 255, 255)</span>
+
+    ![](/wiki/enemycollision_layer_color.png)
+
+    ![](/wiki/chaserenemy_tutorial_5.png)
+
+    现在来添加边界！
+
+    ![](/wiki/chaserenemy_tutorial_6.png)
+
+    现在看看能不能躲开敌人。
+
+    <video controls preload="none">
+    <source src="/wiki/chaserenemy_tutorial_5.mp4" type="video/mp4" />
+        你的浏览器不支持此视频。抱歉！
+    </video>
+
+    现在测试 **multiplier 追逐类型**。需要把加速度改成大于 1 的值，
+    我还会移除速度上限，看看 **multiplier 追逐类型**的工作方式。
+    速度计算如下：
+    ```lua
+    self.chase_speed = self.chase_init_speed * math.pow(self.chase_accel, self.chase_timer)
+    ```
+    由于加速度会以敌人追逐时间为指数，值小于等于 1 时会得到 1 或极小的数，导致速度为 0 或保持普通速度。
+
+    ![](/wiki/chaserenemy_tutorial_7.png)
+
+    <video controls preload="none">
+    <source src="/wiki/chaserenemy_tutorial_6.mp4" type="video/mp4" />
+        你的浏览器不支持此视频。抱歉！
+    </video>
+
+    另一个视频使用的是 **linear 追逐类型**，其他设置都相同。
+
+    <video controls preload="none">
+    <source src="/wiki/chaserenemy_tutorial_7.mp4" type="video/mp4" />
+        你的浏览器不支持此视频。抱歉！
+    </video>
+
+    如你所见，最后使用 **multiplier 追逐类型**时，敌人看起来移动得快得多。
+
+    #### 移动敌人 [moving-the-enemy]
+    ---
+
+    有多种方法可以让敌人在大地图中移动。
+
+    我们先测试**路径系统**，同时了解组的工作方式。
+
+    创建想要的路径形状，下面是我创建的路径。
+
+    ![](/wiki/chaserenemy_tutorial_8.png)
+
+    然后创建另一个敌人，并修改属性来创建想要的敌人。
+    由于要测试 group 属性，请确保两个敌人拥有**相同的 group**。
+    <br></br>还需要**修改 dummy 遭遇战**，再添加另一个 dummy。
+
+    ![](/wiki/chaserenemy_tutorial_9.png)
+
+    修改第二个敌人的进度，使它们不要重叠，游戏中的效果如下！
+
+    <video controls preload="none">
+    <source src="/wiki/chaserenemy_tutorial_8.mp4" type="video/mp4" />
+        你的浏览器不支持此视频。抱歉！
+    </video>
+
+    如你所见，由于两个敌人在同一组中，完成遭遇战后，两个敌人都会从地图中消失。
+
+    现在测试 **wander 和 randomwander 巡游类型**。由于两者都需要一系列敌人要前往的点，所以先**创建这些标记**。
+
+    `marker` 属性是字符串数组，因此使用 `marker1`、`marker2`、`marker3`、……、`markerN` 定义它。
+
+    下图展示了我创建的点，以及如何将这些标记分配给敌人。
+
+    ![](/wiki/chaserenemy_tutorial_10.png)
+
+    完成后就可以测试 **wander 巡游类型**了。由于没有定义 `pacereturn`，它会被设置为 true。
+
+    <video controls preload="none">
+    <source src="/wiki/chaserenemy_tutorial_9.mp4" type="video/mp4" />
+        你的浏览器不支持此视频。抱歉！
+    </video>
+
+    我加快了游戏速度，让效果更容易观察。
+
+    现在测试将 `pacereturn` 设置为 false 后会发生什么。
+
+    <video controls preload="none">
+    <source src="/wiki/chaserenemy_tutorial_10.mp4" type="video/mp4" />
+        你的浏览器不支持此视频。抱歉！
+    </video>
+
+    如你所见，敌人现在会前往每一个标记，并在到达最后一个标记时返回起点。
+
+    现在测试 **randomwander 巡游类型**，只需将 `pacetype` 属性设置为 `randomwander`。我还会将 `pacereturn` 设置为 true。
+
+    <video controls preload="none">
+    <source src="/wiki/chaserenemy_tutorial_11.mp4" type="video/mp4" />
+        你的浏览器不支持此视频。抱歉！
+    </video>
+
+    最后要测试的是 **verticalswing 和 horizontalswing 巡游类型**。两者使用相同的参数，
+    只是移动方式不同：使用 **verticalswing** 时，敌人会上下移动；使用 **horizontalswing** 时，敌人会左右移动。
+
+    首先测试 **verticalswing**。将 `pacetype` 设置为 `verticalswing`，并将 `swinglength` 改为 200。
+
+    <video controls preload="none">
+    <source src="/wiki/chaserenemy_tutorial_12.mp4" type="video/mp4" />
+        你的浏览器不支持此视频。抱歉！
+    </video>
+
+    接着测试 **horizontalswing**，将 `pacetype` 设置为 `horizontalswing`。
+    这次我会将 `swinglength` 设置为 300，将 `swingdiv` 设置为 12，这会让敌人移动更远，速度加倍。
+
+    <video controls preload="none">
+    <source src="/wiki/chaserenemy_tutorial_13.mp4" type="video/mp4" />
+        你的浏览器不支持此视频。抱歉！
+    </video>
+
+    这个对象的内容就到这里，希望本教程对你有所帮助。
+
+</Box>
