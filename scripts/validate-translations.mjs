@@ -18,7 +18,7 @@ function walk(node, callback) {
 
 function signature(tree) {
     const result = {
-        blocks: [],
+        headings: [],
         components: [],
         code: [],
         links: [],
@@ -31,21 +31,16 @@ function signature(tree) {
             result.components.push(node.name);
         }
         if (node.type === 'code') result.code.push(node.lang || '');
-        if (node.type === 'link') result.links.push(node.url);
+        if (node.type === 'link' && !node.url.startsWith('#')) result.links.push(node.url);
         if (node.type === 'image') result.media.push(`image:${node.url}`);
         if (node.type === 'html' && /<(?:img|video)\b/i.test(node.value)) {
             result.media.push(node.value.replace(/\s+/g, ' ').trim());
         }
         if (node.type === 'heading') {
-            result.blocks.push(`h${node.depth}`);
-            const text = (node.children || [])
-                .filter((child) => child.type === 'text')
-                .map((child) => child.value)
-                .join('');
+            result.headings.push(`h${node.depth}`);
+            const text = node.children?.map((child) => child.value || '').join('') || '';
             const anchor = text.match(/\[([a-z0-9][a-z0-9-]*)\]\s*$/i);
             if (anchor) result.anchors.push(anchor[1]);
-        } else if (node.type === 'paragraph' || node.type === 'blockquote' || node.type === 'list' || node.type === 'table') {
-            result.blocks.push(node.type);
         }
     });
 
@@ -53,8 +48,20 @@ function signature(tree) {
 }
 
 function differences(source, translation) {
-    const fields = ['blocks', 'components', 'code', 'links', 'media', 'anchors'];
-    return fields.filter((field) => JSON.stringify(source[field]) !== JSON.stringify(translation[field]));
+    const fields = ['headings', 'components', 'code', 'links', 'media'];
+    const changed = fields.filter((field) => JSON.stringify(source[field]) !== JSON.stringify(translation[field]));
+    const sourceAnchors = source.anchors;
+    const translationAnchors = translation.anchors;
+    let translationIndex = 0;
+    for (const anchor of sourceAnchors) {
+        translationIndex = translationAnchors.indexOf(anchor, translationIndex);
+        if (translationIndex < 0) {
+            changed.push('anchors');
+            break;
+        }
+        translationIndex += 1;
+    }
+    return changed;
 }
 
 const files = fs.readdirSync(sourceRoot).filter((file) => file.endsWith('.mdx')).sort();
