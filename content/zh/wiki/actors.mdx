@@ -1,0 +1,225 @@
+export const metadata = {
+    title: 'Actor',
+    description: 'Actor 系统及其使用方法。',
+}
+
+# Actor [actors]
+
+<Box>
+
+Actor 是对角色的表示形式，无论这个角色是 NPC、跟随者还是队伍成员！Actor 负责为角色提供视觉表现，并定义它们的精灵图、精灵图的原点以及各种其他内容。
+
+那么，我们就从制作……再次制作 Kris 开始吧！
+
+</Box>
+
+<Box>
+## Actor 入门 [getting-started-with-actors]
+
+```lua
+local actor, super = Class(Actor, "kris")
+
+function actor:init()
+    super.init(self)
+end
+
+return actor
+```
+
+我们还是从一贯的模板代码开始。现在来设置一些变量：
+
+```lua
+    -- 显示名称（可选）
+    self.name = "Kris"
+
+    -- 此 Actor 的宽度和高度，用于确定其中心点
+    self.width = 19
+    self.height = 37
+
+    -- 此 Actor 在大地图中的碰撞箱（可选，默认使用宽度和高度）
+    self.hitbox = {0, 25, 19, 14}
+
+    -- 定义 Soul 在此 Actor 上应放置位置的表（当它是玩家时）。
+    -- 第一个值是 x，第二个值是 y。
+    self.soul_offset = {10, 24}
+
+    -- 此 Actor 在轮廓区域中使用的颜色（可选，默认为红色）
+    self.color = {0, 1, 1}
+
+    -- 此 Actor 的精灵图路径（默认为 ""）
+    self.path = "party/kris/dark"
+    -- 此 Actor 的默认精灵图或动画，相对于路径（默认为 ""）
+    self.default = "walk"
+
+    -- 此 Actor 说话时播放的声音（可选）
+    self.voice = nil
+    -- 此 Actor 对话肖像的路径（可选）
+    self.portrait_path = nil
+    -- 此 Actor 肖像的偏移位置（可选）
+    self.portrait_offset = nil
+
+    -- 此 Actor 作为跟随者接近玩家时是否会脸红
+    self.can_blush = false
+```
+
+哇，等等，这可真不少。Soul 是怎么回事？脸红？肖像？声音？这都是什么？
+
+我们来逐项看看。
+
+### Soul 偏移 [soul-offset]
+
+在战斗中，Soul 就是你控制的那颗小心心。~~它是你存在的最终体现~~。Soul 生成后会出现在玩家上方，然后移动到战斗区域中央。这个偏移量用于正确放置 Soul。
+
+### 肖像 [portraits]
+
+如果你的角色要说话，就应该为它提供一张肖像。这是一张角色说话时显示在文本框旁边的精灵图。肖像偏移量用于正确放置肖像。
+
+### 声音 [voices]
+
+当然，如果角色要说话，它也需要声音！
+
+### 脸红 [blushing]
+
+如果你靠 Ralsei 足够近，它就会脸红。使用 `can_blush`，你也可以让自己的 Actor 做同样的事！
+
+</Box>
+
+<Box>
+## 动画 [animations]
+---
+
+Actor 设置好后，我们来给它添加一些动画吧！
+
+在 init 函数中，添加一个动画表：
+
+```lua
+    -- 精灵图动画表
+    self.animations = {
+        ["slide"] = {"slide", 4/30, true},
+    }
+```
+
+这个表列出了此 Actor 可以播放的动画。键是动画名称，值是一个表，其中包含动画名称、动画速度以及动画是否应循环播放。
+</Box>
+
+<Box>
+## 偏移 [offsets]
+---
+
+某个动画对不齐？这就是偏移量发挥作用的地方。
+
+```lua
+    -- 精灵图偏移表（按精灵图名称索引）
+    self.offsets = {
+        ["battle/idle"] = {-5, -1},
+    }
+```
+
+这个表列出了每张精灵图的偏移量。键是精灵图名称，值是一个包含精灵图 x 和 y 偏移量的表。
+
+</Box>
+
+<Box>
+## 战斗准备 [battle-preparation]
+
+如果你的角色是队伍成员，就需要考虑它的战斗精灵图。我们来添加一些！看看 Kris 的设置：
+
+```lua
+        -- 战斗动画
+        ["battle/idle"]         = {"battle/idle", 0.2, true},
+
+        ["battle/attack"]       = {"battle/attack", 1/15, false},
+        ["battle/act"]          = {"battle/act", 1/15, false},
+        ["battle/spell"]        = {"battle/act", 1/15, false},
+        ["battle/item"]         = {"battle/item", 1/12, false, next="battle/idle"},
+        ["battle/spare"]        = {"battle/act", 1/15, false, next="battle/idle"},
+
+        ["battle/attack_ready"] = {"battle/attackready", 0.2, true},
+        ["battle/act_ready"]    = {"battle/actready", 0.2, true},
+        ["battle/spell_ready"]  = {"battle/actready", 0.2, true},
+        ["battle/item_ready"]   = {"battle/itemready", 0.2, true},
+        ["battle/defend_ready"] = {"battle/defend", 1/15, false},
+
+        ["battle/act_end"]      = {"battle/actend", 1/15, false, next="battle/idle"},
+
+        ["battle/hurt"]         = {"battle/hurt", 1/15, false, temp=true, duration=0.5},
+        ["battle/defeat"]       = {"battle/defeat", 1/15, false},
+        ["battle/swooned"]      = {"battle/defeat", 1/15, false},
+
+        ["battle/transition"]   = {"sword_jump_down", 0.2, true},
+        ["battle/intro"]        = {"battle/attack", 1/15, true},
+        ["battle/victory"]      = {"battle/victory", 1/10, false},
+```
+
+当然，这些内容要放在 `self.animations` 中。我们再添加一些偏移量：
+
+```lua
+        -- 战斗偏移
+        ["battle/idle"] = {-5, -1},
+
+        ["battle/attack"] = {-8, -6},
+        ["battle/attackready"] = {-8, -6},
+        ["battle/act"] = {-6, -6},
+        ["battle/actend"] = {-6, -6},
+        ["battle/actready"] = {-6, -6},
+        ["battle/item"] = {-6, -6},
+        ["battle/itemready"] = {-6, -6},
+        ["battle/defend"] = {-5, -3},
+
+        ["battle/defeat"] = {-8, -5},
+        ["battle/hurt"] = {-5, -6},
+
+        ["battle/intro"] = {-8, -9},
+        ["battle/victory"] = {-3, 0},
+```
+
+完美！现在已经做好战斗准备了！
+</Box>
+
+<Box>
+
+## ActorSprites [actorsprites]
+
+Actor 有时会被误解为*对象*，但它们并不是。它们更像是角色的数据模板，然后由对象使用这些模板，让自己显示为对应的角色。
+
+这也意味着 Actor 没有位置、实例、子对象，实际上也没有真正属于自己的实体形态。那么，如果我们想让 Actor 做一些依赖这些内容的事情，该怎么办？
+
+答案是：我们还需要创建或修改一个叫作 [ActorSprite](/wiki/api/ActorSprite) 的东西。它的名字基本已经说明了它是什么：一个与 `Actor` 关联的 `Sprite` 实例。
+
+每当另一个对象使用某个 Actor 时，该对象都会在 Actor 上调用 `createSprite()`，以获得一个 `ActorSprite` 的**新实例**。它一开始看起来是这样的：
+
+```lua
+function actor:createSprite()
+    return ActorSprite(self)
+end
+```
+
+你可以创建一个**自定义** ActorSprite 来使用：在 `scripts/objects` 中创建一个继承自 ActorSprite 的自定义对象：
+
+```lua
+local MyNewActorSprite, super = Class(ActorSprite, "MyNewActorSprite")
+
+-- 在这里覆盖 ActorSprite 的函数，以改变精灵图的功能
+
+return MyNewActorSprite
+```
+
+然后，为了让 Actor 使用它，你需要在 `createSprite()` 中创建并返回该对象的实例，而不是标准的 `ActorSprite`：
+
+```lua
+function actor:createSprite()
+    return MyNewActorSprite(self)
+end
+```
+
+你可以查阅 [ActorSprite API 参考](/wiki/api/ActorSprite)，了解 `ActorSprite` 的完整函数列表。
+
+---
+如果创建新的 ActorSprite 不符合你的风格，`Actor` 自身还提供了一些实用函数，让我们可以操作对象使用 Actor 时创建的基础 `ActorSprite` 实例。
+
+这些函数可以通过 **on** 和 **pre** 前缀，以及它们接收的 `sprite` 参数来区分（战斗和大地图上下文函数则分别接收 `battler` 和 `chara`）。
+
+我们不再编写操作 `self` 的代码，而是使用 `sprite`，因为它才是一个 **ActorSprite 实例**！
+
+我们本可以在这里逐一介绍它们，但 [Actor API 参考](/wiki/api/Actor) 已经方便地列出了这些内容。
+</Box>

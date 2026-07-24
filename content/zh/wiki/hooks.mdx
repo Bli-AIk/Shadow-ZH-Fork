@@ -1,0 +1,349 @@
+export const metadata = {
+    title: 'Hook',
+    description: '实现完全模组自由的关键！',
+}
+
+# Hook [hooks]
+
+<Box>
+
+Hook 是一种强大的模组制作工具，你可以用它自定义 Kristal 中几乎所有内容。
+
+让我们了解它们是什么，以及如何使用它们！
+
+</Box>
+
+<Box>
+## 什么是 Hook？ [what-is-a-hook]
+
+Hook 是我们对这样一段代码的称呼：它将自己附加到一个已有的类上，实质上就是“钩住”这个类。
+
+严格来说，Hook 实际上会**替换**代码——但我们仍然可以（也经常会）同时运行原始代码和自己的 Hook。
+
+Hook 可以应用于 Kristal 中**几乎任何内容**，让你能够与引擎的**几乎所有部分交互或进行修改**！
+
+Hook 能让你达到修改和添加引擎源代码的相同效果，**同时不会改动项目之外的任何内容**。
+
+而且，与直接修改源代码不同，**Hook 不会妨碍你之后升级到新的 Kristal 版本**。这是双赢的方案！
+</Box>
+
+<Box>
+## 创建 Hook [making-a-hook]
+
+使用 Hook 的重要前提是**拥有一份可用的源代码副本**。
+
+如果你还没有，强烈建议使用 Kristal 的源代码。你可以按照[这里](/wiki/downloading#source-code)的步骤获取并使用它。
+
+或者，你也可以[从 GitHub 查看源代码](https://github.com/KristalTeam/Kristal/tree/main)。（但我们真的更推荐下载它！）
+
+准备工作完成后，让我们来制作一些 Hook 吧！
+
+---
+
+在 Kristal 中，所有 Hook 文件都应放在 `scripts/hooks/` 中。
+
+*（大部分情况下是这样。如果你想 Hook 引擎 `data/` 文件夹中的内容，步骤会稍有不同。这会在[后面](#registry-hooks)解释。）*
+
+每个 Hook 都会通过 `HookSystem.hookScript(target)` 函数，一次只针对一个类。要创建新的 Hook，我们首先要在 hooks 文件夹中创建一个以目标命名的文件。
+
+假设你想 Hook `EnemyBattler` 类。你需要在 `scripts/hooks/` 中创建 `EnemyBattler.lua`，然后插入以下内容：
+
+```lua
+local EnemyBattler, super = HookSystem.hookScript(EnemyBattler)
+
+return EnemyBattler
+```
+
+这两行非常重要，**必须分别位于文件的顶部和底部**。所有代码都要写在它们之间。
+
+然后……我们就成功设置好一个 Hook 了！
+
+……但它现在有什么作用？嗯……什么也没有……
+
+让我们改变这一点！
+
+使用 `hookScript` 时，只要我们在 `EnemyBattler` 上定义一个函数，它就会覆盖原来的函数。
+
+我们可以使用平常编写函数时的语法来写 Hook。接下来的所有内容都可以像是在 `EnemyBattler` 类本身内部一样工作。
+
+如果我们想 Hook `EnemyBattler:init` 函数，只需添加以下内容：
+
+```lua
+function EnemyBattler:init(...)
+    -- 新的 init() 代码写在这里
+end
+```
+
+我们写在这里的任何代码，都会在每次调用 `EnemyBattler:init` 时运行。
+
+还有一件事需要考虑。
+
+当你 Hook 任意函数时，原始函数会被**替换**。这意味着它之前执行的内容**不再会发生**。
+
+不过，你仍然可以访问 `super`（原始）类，因此可以通过它运行函数的原始版本：
+
+```lua
+function EnemyBattler:init(...)
+    super.init(self, ...) -- 调用原始的 EnemyBattler:init 函数。
+end
+```
+
+如果你希望**原始代码**运行，**就必须**在 Hook 内使用 super 类调用它。
+
+（如果你不知道自己是否应该调用 `super` 函数，那通常就应该调用。）
+</Box>
+
+<Box>
+## 创建 Hook（续） [making-a-hook-continued]
+
+让我们试着 Hook EnemyBattler 上的另一个函数。这次要看的是 `EnemyBattler:hurt`。
+
+你可以像之前一样 Hook 这个函数：
+
+```lua
+function EnemyBattler:hurt(...)
+    super.hurt(self, ...)
+end
+```
+
+不过……这里把函数参数写成 `...` 并不理想。它们可以正常传入原始函数，但我们无法像这样在自己的 Hook 中使用它们。
+
+### 浏览源代码 [navigating-the-source-code]
+
+这就是拥有**源代码**很重要的原因。我们有一个很容易找到这些参数的地方——在源代码中查找 `EnemyBattler:hurt`！
+
+搜索每个文件会非常费力，所以我们需要恰当地使用搜索功能。
+
+首先，你需要知道它位于哪个文件中——这通常很容易。如果对象是 `EnemyBattler`，那么文件就会叫作 `enemybattler.lua`（也就是对象名称的小写形式）。然后，我们需要找到这个文件本身。
+
+在 VSCode 中，打开**源代码文件夹**，然后在顶部搜索栏中搜索 `enemybattler`，就能找到它。同样，GitHub 也有 `go to file` 搜索框。（其他编辑器可能也有类似的搜索功能。）
+
+接下来，我们需要找到函数。使用 `Ctrl+F` 搜索 `EnemyBattler:hurt`，你应该会直接跳到这个函数！
+
+我们要做的是将 `...` 换成那里列出的参数。
+
+如果你操作正确，Hook 现在应该看起来是这样：
+
+```lua
+function EnemyBattler:hurt(amount, battler, on_defeat, color, show_status, attacked)
+    super.hurt(self, amount, battler, on_defeat, color, show_status, attacked)
+end
+```
+
+现在我们可以访问每次调用 `EnemyBattler:hurt` 时传入的参数，并随心所欲地使用它们。
+
+为了介绍 Hook，我们会保持简单，只把一些值记录到控制台中——但你完全可以按照自己的需要随意修改它们！
+
+像这样设置 Hook 后，我们就能在原始函数每次调用时，分别运行原始函数**之前**和**之后**的代码。此外，如果需要，我们还可以修改传给 `super.hurt` 函数的参数。
+
+---
+
+#### 注意：修改原始函数 [note-original-function-modifications]
+
+你会注意到，我们在这里说明了这样的 Hook 设置如何让我们在原始函数前后运行代码。如果你需要改变原始函数的工作方式，就需要使用稍有不同的设置。
+
+Hook 无法局部修改已有函数的代码，但我们可以利用它们会**替换**原始函数这一点来实现目标。
+
+**你可以不调用原始函数**，而是将目标函数的**源代码复制**到 Hook 中。
+
+注意原始函数中使用 `super` 类的所有地方。在原始类的上下文中，`super` 与其 Hook 上下文中的 `super.super` 是同一个东西，所以要相应地修改它们。
+
+之后，你可以随意修改 Hook 中的代码，它会代替原始函数运行。
+
+不过，我们的 Hook 示例不需要这样做——让我们回到示例中吧。
+
+</Box>
+
+<Box>
+## 创建 Hook - 运行代码 [making-a-hook---running-code]
+
+现在该让我们的 Hook 做点事情了！它不会特别有趣，但我们主要想证明这个 Hook 确实有效。
+
+使用 `Kristal.Console:log(text)`，我们可以向 Kristal 控制台写入任意内容（控制台可以通过 `` ` `` 键打开）。
+
+先来记录 Enemy 受伤前后的生命值：
+
+```lua
+function EnemyBattler:hurt(amount, battler, on_defeat, color, show_status, attacked)
+    -- 原始函数上方的代码会在它之前运行：
+    Kristal.Console:log("Enemy " .. self.name .. " has " .. self.health .. " HP.")
+
+    super.hurt(self, amount, battler, on_defeat, color, show_status, attacked)
+
+    -- 原始函数下方的代码会在它之后运行：
+    Kristal.Console:log("Enemy " .. self.name .. " has " .. self.health .. " HP.")
+
+    Kristal.Console:log("-------------") -- 在末尾绘制一条大横线，这样我们就能轻松看出每次 Hurt 的结束位置
+end
+```
+
+在这里，我们可以通过 `self` 访问每次 `hurt` 调用所作用的 `EnemyBattler` 实例及其属性。
+
+---
+
+我们再来展示如何与函数参数交互。
+
+试着写出你会如何记录对敌人造成的伤害量（存储在 `amount` 参数中）。
+
+记录伤害的代码应该类似这样：
+
+```lua
+Kristal.Console:log("Hurting enemy for " .. amount .. " damage")
+```
+
+既然我们能读取它们，也就能**修改**它们——让我们看看这同样如何实现。
+
+我们的目标是 `color` 参数。它控制敌人身上出现的伤害数字的颜色。
+
+通常，这个颜色取决于造成伤害的队伍成员，但我们要把它改成一种非常病态、恶心的黄色。
+
+最快的方法是在调用 `super.hurt` 之前重新赋值给 `color`。也就是说，只需要在函数的前半部分添加这一行：
+
+```lua
+color = {176/255, 176/255, 20/255} -- 一种非常恶心的黄色
+```
+
+修改就到此为止了！
+
+---
+
+在进行测试之前，让我们看看完整的 Hook：
+
+```lua
+local EnemyBattler, super = HookSystem.hookScript(EnemyBattler)
+
+function EnemyBattler:hurt(amount, battler, on_defeat, color, show_status, attacked)
+    -- 原始函数上方的代码会在它之前运行：
+    Kristal.Console:log("Enemy " .. self.name .. " has " .. self.health .. " HP.") -- 记录敌人的生命值（受伤前）
+    
+    color = {176/255, 176/255, 20/255} -- 修改伤害颜色
+
+    Kristal.Console:log("Hurting enemy for " .. amount .. " damage") -- 记录造成的伤害
+    super.hurt(self, amount, battler, on_defeat, color, show_status, attacked) -- 调用原始的 hurt 函数
+
+    -- 原始函数下方的代码会在它之后运行：
+    Kristal.Console:log("Enemy " .. self.name .. " has " .. self.health .. " HP.") 00 Log the enemy HP (after Hurt)
+
+    Kristal.Console:log("-------------")
+end
+
+return EnemyBattler
+```
+
+打开控制台后，每次我们击中敌人，都应该能看到三条日志消息，并且伤害文字现在会显示为恶心的黄色。
+
+来试试看！加载任意战斗并攻击敌人。
+
+<video controls preload="preview">
+    <source src="/wiki/enemybattler_hook.mp4" type="video/mp4" />
+    你的浏览器不支持此视频。
+</video>
+
+这正是我们想看到的！我们的 Hook 起作用了！
+
+</Box>
+
+<Box>
+## 新函数 [new-functions]
+
+Hook 不仅限于已有函数——我们也可以定义新函数。
+
+例如，下面的代码会为每个 `EnemyBattler` 添加 `coolNewFunction`。
+
+```lua
+function EnemyBattler:coolNewFunction()
+    Kristal.Console:log("Cool New Function is running!")
+    for i=1, 3 do
+        local e = Explosion(love.math.random(0, 40), love.math.random(0, 40))
+        self:addChild(e)
+    end
+end
+```
+
+当然，只有其他代码实际**调用**这个函数时，它才会做任何事情。
+
+试着在某个地方对 `EnemyBattler` 运行 `coolNewFunction()`，看看会发生什么！
+
+如果你需要一个例子，可以让它在执行 ACT 时运行。选择任意敌人和其中的任意 ACT，然后在其中调用 `coolNewFunction`：
+
+```lua
+function MyEnemy:onAct(battler, name)
+    if name == "MyAct" then
+        -- 假设这里有一些 ACT 代码……
+
+        self:coolNewFunction()
+
+        return { "* What" }
+    end
+end
+```
+</Box>
+
+<Box>
+## Registry Hook [registry-hooks]
+
+还记得我们之前说所有 Hook 都放进 `scripts/hooks/` 吗？其实那是一个**谎言**。
+
+正如章节标题很可能已经暗示的那样，Registry 管理的内容必须使用不同的方式进行 Hook。这包括引擎源代码 `data/` 文件夹中的任何文件，例如 Actor、队伍成员和物品。
+
+Registry 的 Hook 文件必须放进 `scripts/data/` 内对应的 data 子文件夹，而不是 hooks 文件夹。
+
+让我们以 Hook Dark（或 Darker）Candy 物品为例，完整走一遍流程。
+
+---
+Dark Candy 是一个物品，所以你应该进入的文件夹是 `scripts/data/items`。在其中创建一个与原始文件**同名**的新文件——在本例中就是 `dark_candy.lua`。
+
+这个文件的内容与其他 Hook 基本相同。下面是一个将 Dark Candy 改为恢复 400 HP 的基础示例：
+
+```lua
+local item, super = HookSystem.hookScript("dark_candy")
+
+function item:init()
+    super.init(self)
+
+    self.heal_amount = 400
+end
+
+return item
+```
+
+唯一的区别是，我们现在在 `HookSystem.hookScript()` 中使用了包含目标 ID 的字符串。（点击[这里](/wiki/creating-a-mod#script-ids)查看引擎如何确定 Script ID。）
+
+这样，我们的 Registry Hook 就设置完成，可以正常使用了！
+</Box>
+
+<Box>
+## Hook 注解 [hook-annotations]
+
+使用 Hook，你可以修改函数参数，或向类中添加新函数。
+
+如果你使用[我们推荐的 VSCode 扩展](/wiki/creating-a-mod#installing-visual-studio-code)，那么你应该已经熟悉注解，或者至少见过编码时显示的文档。
+
+不过，你很快就会遇到一个与注解和 Hook 有关的问题：语言服务器无法理解你已经进行了 Hook……！
+
+我们不希望出现这种情况！我们需要为 Hook 中的任何修改添加注解，消除语言服务器的困惑。
+
+---
+
+你始终可以做的主要事情，是在 Hook 文件的最顶部，甚至在 hookScript 调用之前，添加下面这行注解：
+
+```lua
+---@class ClassName
+```
+
+将 `ClassName` 改为你正在 Hook 的类名。
+
+你还应该为自己对已有函数所做的任何修改添加注解/文档，不过新添加的内容大致会由自动注解自动识别。
+
+如果你想了解如何为 Hook 添加注解，可以阅读 lua 扩展的注解系统[文档](https://luals.github.io/wiki/annotations/)。
+
+即使你自己不使用 VSCode，如果你正在制作**库**，也可能希望这样做，因为库的用户可以从你提供的注解中受益。
+</Box>
+
+<Box>
+在 Kristal 中，也可以使用 `HookSystem.hook()` 函数 Hook 函数。
+
+不过不推荐这样做，因为它不支持语言服务器，而且总体上不如脚本 Hook 与引擎保持一致。
+
+但如果你确实需要了解它，相关文档位于[这个页面](/wiki/func-hooks)。
+</Box>

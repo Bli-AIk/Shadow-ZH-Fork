@@ -1,0 +1,120 @@
+export const metadata = {
+    title: '旧式 Hook（不推荐）',
+    description: '使用 HookSystem.hook() 函数进行 Hook。',
+}
+
+<Box>
+# 声明 [disclaimer]
+
+本页介绍的内容**不建议**在项目中使用。
+
+这种 Hook 方法已经被 [Script Hook](/wiki/hooks) 取代。强烈建议改用 Script Hook。
+</Box>
+
+<Box>
+### 函数 Hook（使用 `HookSystem.hook()`）
+
+函数 Hook 使用 `HookSystem.hook()` 函数，一次只修改一个函数。
+
+使用 `HookSystem.hook()` 时，我们应始终位于 `Mod:init()` 中，而它位于 `mod.lua` 文件内。
+
+这个函数的完整签名是 `HookSystem.hook(target, name, hook)`。`target` 是目标类的名称，`name` 是我们想要替换的函数，`hook` 则是我们的新函数。
+
+`hook` 是一个接收 `orig`（**原始函数**）、`self`，以及被 Hook 函数的全部参数的函数。
+
+我们把它写成一段可以阅读的模板代码。假设我们要把 Hook 插入一个原本为空的 `mod.lua`，它看起来会是这样：
+
+```lua
+function Mod:init()
+    print("Loaded "..self.info.name.."!")
+
+    -- 这会 Hook "MyClass:myFunction(...)"，用我们的代码替换它原本的代码。
+    HookSystem.hook(MyClass, "myFunction", function (orig, self, ...)
+        orig(self, ...) -- 调用原始的 "MyClass:myFunction(...)"
+    end)
+end
+```
+*（这段代码仅用于展示 Hook 的结构；`MyClass` 并不存在，尝试使用它会导致崩溃。）*
+
+Hook 一个函数就这么简单！不过，我们的 Hook 还不太有趣，因为它所做的只是调用原始函数……
+
+</Box>
+
+<Box>
+
+那么……让我们试着 Hook 一个真正的 Kristal 函数！
+
+这个例子中的目标是 `EnemyBattler:hurt()` 函数。
+
+把上面模板中的名称替换为对应内容，来 Hook EnemyBattler：
+
+```lua
+HookSystem.hook(EnemyBattler, "hurt", function (orig, self, ...)
+    orig(self, ...)
+end)
+```
+
+这里把函数参数写成 `...` 不太理想。它们可以正常传给原始函数，但我们自己基本无法使用它们。
+
+这正是**源代码**发挥作用的地方。让我们在 `enemybattler.lua` 中查找 `EnemyBattler:hurt`！
+
+在 VSCode 中打开**源代码文件夹**，然后在顶部搜索栏中搜索 `enemybattler`，就能找到这个文件。GitHub 也有 `go to file` 搜索框。（其他编辑器可能也有类似的搜索功能。）
+
+接下来，使用 `Ctrl+F` 搜索 `EnemyBattler:hurt`。你应该会直接跳到这个函数！
+
+我们要做的是把 `...` 换成那里列出的参数。
+
+如果操作正确，Hook 现在应该是这样的：
+
+```lua
+HookSystem.hook(EnemyBattler, "hurt", function (orig, self, amount, battler, on_defeat, color, show_status, attacked)
+    orig(self, amount, battler, on_defeat, color, show_status, attacked)
+end)
+```
+
+现在我们可以做一些修改：在 EnemyBattler 受伤前后，向 Kristal 控制台记录一些信息。
+
+```lua
+HookSystem.hook(EnemyBattler, "hurt", function (orig, self, amount, battler, on_defeat, color, show_status, attacked)
+    -- 原始函数上方的代码会在它之前运行：
+    Kristal.Console:log("Enemy " .. self.name .. " has " .. self.health .. " HP.")
+
+    Kristal.Console:log("Hurting enemy for " .. amount .. " damage")
+    -- 原始的 EnemyBattler:hurt 运行
+    orig(self, amount, battler, on_defeat, color, show_status, attacked) 
+
+    -- 原始函数下方的代码会在它之后运行：
+    Kristal.Console:log("Enemy " .. self.name .. " has " .. self.health .. " HP.")
+
+    Kristal.Console:log("-------------")
+end)
+```
+
+除了前面提到的区别之外，你可以看到，我们编写的所有内容都相当于位于 `EnemyBattler:hurt` 函数内部！
+
+如果我们在游戏中攻击敌人几次进行测试，就应该能看到每次运行 `EnemyBattler:hurt` 时，这段代码都会向控制台输出：
+
+<>![图片](/wiki/hook_console_output.png)</>
+
+（你可以按下 ` 来打开 Kristal 控制台。）
+
+这样一来，我们就能让任意代码在任意 EnemyBattler 受伤前或受伤后运行，包括修改传入函数的内容（例如增加伤害量）。
+
+尽管放手试试这个 Hook，感受一下它能做什么吧！
+
+---
+
+如果你想修改 `EnemyBattler:hurt` **内部**发生的事情，情况就有些不同了。
+
+Hook 无法局部修改现有函数的代码，因此唯一的办法是**移除原始函数调用**，并将 `EnemyBattler:hurt` 的源代码复制到你的 Hook 中。
+
+之后，你就可以放心地按自己的需要修改它。
+</Box>
+
+<Box>
+## Hook 注解 [hook-annotations]
+
+即使使用注解，Lua 语言服务器也无法正确理解通过 `HookSystem.hook()` 对函数所做的修改。
+
+若要获得 Hook 注解和语言服务器支持，必须使用推荐的 [`HookSystem.hookScript()`](/wiki/hooks) Hook 方法。
+</Box>
