@@ -1,0 +1,246 @@
+export const metadata = {
+    title: '编写文本',
+    description: '文本有一些需要遵循的规则。',
+}
+
+# 编写文本
+
+<Box>
+
+（注意：本页面仍在编写中。公开它只是为了至少提供一些文本编写方面的文档。）
+
+你可能会觉得编写文本就是写文本，但在 Kristal（以及 DELTARUNE）中，有一些事情需要注意。
+
+</Box>
+
+<Box>
+## Kristal 的文本系统 [text-system]
+
+Kristal 的文本系统相当简单。你只需要写下文本，系统就会尽力让它看起来美观。
+
+```lua
+local text = "* This is text!"
+```
+
+---
+
+### 换行 [line-breaks]
+
+如果想换行，可以让引擎自动换行，也可以使用 `\n` 强制换行。
+
+```lua
+local text = "* This is a really long line of text that will probably wrap around on its own."
+```
+
+```lua
+local text = "* This one is long too,\nbut we wrapped it manually!"
+```
+
+为了配合 DELTARUNE 的前缀系统，换行会“缩进”。这意味着上面的代码会显示为：
+
+```none
+* This one is long too,
+  but we wrapped it manually!
+```
+
+如果你希望下一行也使用星号前缀，这可能不是你想要的结果。
+
+不过，Kristal 的文本系统支持这种写法：如果一行以此前缀开头，系统就会取消该行的缩进：
+
+```lua
+local text = "* This is one line...\n* And this is another,\nwhich is cool."
+```
+
+```none
+* This is one line...
+* And this is another,
+  which is cool.
+```
+
+</Box>
+
+<Box>
+## 文本修饰符 [text-modifiers]
+
+文本修饰符是一些会改变文本显示方式的文本片段，它们本身并不属于文本内容。
+
+也就是说，下面的文本会把单词 “yellow” 变成黄色文本：
+
+```lua
+local text = "* This is [color:yellow]yellow[color:reset] text!"
+```
+
+请注意，并不是所有修饰符在所有上下文中都可用。例如，在支持修饰符的“即时”文本中，`wait` 就不可用。
+
+---
+
+### 可用的修饰符 [available-modifiers]
+
+以下是 Kristal 中所有可用文本修饰符的列表。
+
+#### 基础修饰符（任何地方可用） [base-modifiers]
+
+- <Anchor link="color-modifier">`[color:<color>]`</Anchor>：改变文本颜色。可用颜色如下：
+    - `red`：<span style={{color: "#FF0000"}}>红色</span>
+    - `blue`：<span style={{color: "#0000FF"}}>蓝色</span>
+    - `yellow`：<span style={{color: "#FFFF00"}}>黄色</span>
+    - `green`：<span style={{color: "#00FF00"}}>绿色</span>
+    - `white`：<span style={{color: "#FFFFFF"}}>白色</span>
+    - `black`：<span style={{color: "#FFFFFF"}}>黑色</span>（为了便于阅读，预览中显示为白色）
+    - `purple`：<span style={{color: "#7F007F"}}>紫色</span>
+    - `maroon`：<span style={{color: "#7F0000"}}>栗色</span>
+    - `pink`：<span style={{color: "#FF7FFF"}}>粉色</span>
+    - `lime`：<span style={{color: "#7FFF7F"}}>青柠色</span>
+    - `<hex code>`：任意十六进制颜色代码，例如 `#FF5733`。
+    - `reset`：将颜色重置为默认文本颜色。
+
+    请注意，这份颜色列表基于 DELTARUNE 的作者所使用的颜色，因此它与全局 `COLORS` 表是分开的。
+- <Anchor link="font-modifier">`[font:<font>,<size>]`</Anchor>：改变文本字体。可以使用任何已加载的字体。`reset` 会恢复默认字体。`size` 为可选参数。
+- <Anchor link="style-modifier">`[style:<style>]`</Anchor>：改变文本样式。默认样式如下：
+    - `none`：普通文本，不带任何效果。
+    - `dark`：黑暗世界的文本样式，使用带投影的渐变效果，彩色文本也会变成渐变色。
+    - `dark_menu`：普通文本，带灰色投影。
+    - `GONER`：DELTARUNE 第一章开场、部分游戏结束画面以及第三、四章结尾使用的“发光”文本。
+    - `reset`：将文本样式重置为默认样式。
+- <Anchor link="shake-modifier">`[shake:<intensity>]`</Anchor>：让文本抖动。`intensity` 为可选参数，默认值为 1。数值越大，抖动的“距离”越大。使用 `[shake:0]` 可禁用抖动。
+- <Anchor link="wave-modifier">`[wave:<distance>,<offset>,<speed>]`</Anchor>：让每个字符以波浪形式移动，效果类似 Undertale。所有参数均为可选。使用 `[wave:0]` 可禁用波浪效果。
+- <Anchor link="image-modifier">`[image:<image>,<x_offset>,<y_offset>,<x_scale>,<y_scale>,<anim_speed>]`</Anchor>：在文本中插入图像。除第一个参数外，其他参数均为可选。
+
+    注意：在 DialogueText 中，这会播放语音声音。
+- <Anchor link="bind-modifier">`[bind:<action>]`</Anchor>：为给定的按键绑定插入一个“绑定提示”。使用手柄时会显示按钮图标；使用键盘时会在方括号中显示主按键。
+
+    示例：`"Press [bind:confirm]!"` 会根据输入方式显示为 "Press [Z]!" 或 "Press <img src="/wiki/switch_btn_a.png" alt="A" style={{verticalAlign: "middle"}}/>!"。
+- <Anchor link="button-modifier">`[button:<button>]`</Anchor>：在文本中插入手柄按钮图标。大多数情况下你不需要直接使用它。`[bind]` 内部使用的就是它，而通常你应该使用 `[bind]`。
+
+    注意：在 DialogueText 中，这会播放语音声音。
+- <Anchor link="offset-modifier">`[offset:<x>,<y>]`</Anchor>：按指定像素值偏移文本。要撤销偏移，请输入所用数值的负值，因为偏移是累加的。
+- <Anchor link="indent-modifier">`[indent:<string>]`</Anchor>：将“缩进字符串”改为指定字符串。
+- <Anchor link="spacing-modifier">`[spacing:<number>]`</Anchor>：改变字符之间的间距。默认值为 0。
+
+#### 对话修饰符（DialogueText 可用） [dialogue-modifiers]
+
+- <Anchor link="wait-modifier">`[wait:<frames>]`</Anchor>：继续显示前等待指定帧数。30 帧为 1 秒。
+
+    通常，所有标点后面都会等待 5 帧，所以请在适当的位置加入这些等待。更多信息请参见[标点](#punctuation)。
+
+    如果想以秒为单位等待，可以在数字后加上 `s`，例如 `[wait:1s]` 表示等待 1 秒。
+- <Anchor link="voice-modifier">`[voice:<voice>]`</Anchor>：设置当前文本的文本声音（“语音”），路径相对于 `voice` 文件夹。
+
+    `reset` 会恢复默认声音，`none` 会禁用声音。
+- <Anchor link="noskip-modifier">`[noskip:<bool>]`</Anchor>：`bool` 为可选参数，大多数时候只需要写 `[noskip]`。
+
+    如果 `bool` 为假，文本就可以像平常一样跳过；这对于重新启用跳过功能很有用。
+- <Anchor link="func-modifier">`[func:<name>,<arg1>,<arg2>,...]`</Anchor>：调用为这段文本定义的函数。
+
+    不应该使用它来修改状态，因为它不会在自动换行计算或宽度/高度计算期间运行。
+
+    调用参数名为 `name` 的函数时，其余参数会以字符串形式传入。
+- <Anchor link="talk-modifier">`[talk:<bool>]`</Anchor>：使用此修饰符可以禁用当前 NPC（如果适用）的“说话”动画。
+- <Anchor link="sound-modifier">`[sound:<sound>]`</Anchor>：播放音效。
+- <Anchor link="next-modifier">`[next]`</Anchor>：立即将文本标记为可推进状态（无需等待输入），即使文本尚未显示完毕。
+- <Anchor link="instant-modifier">`[instant]`</Anchor>：让文本立即显示，而不是逐字“打出”。
+- <Anchor link="stopinstant-modifier">`[stopinstant]`</Anchor>：停止即时文本效果，恢复普通文本显示。
+- <Anchor link="speed-modifier">`[speed:<speed>]`</Anchor>：使用倍率改变文本速度。默认值为 `1`，`0.5` 为半速，`0` 表示永远不会推进，`2` 为双倍速，依此类推。
+
+#### 文本框修饰符（文本框可用） [overworld-modifiers]
+
+文本框只会出现在大地图和战斗中，通常会与角色头像一起显示。
+
+- <Anchor link="face-modifier">`[face:<face>,<offset_x>,<offset_y>]`</Anchor>：将当前头像改为指定头像。`offset_x` 和 `offset_y` 为可选参数。
+
+    使用当前说话者的头像。
+- <Anchor link="facec-modifier">`[facec:<face>,<offset_x>,<offset_y>]`</Anchor>：一种“自定义”变体，用于将头像改为任意头像，而不局限于说话者的头像。
+
+    这在少数场景中很有用，但你通常不需要经常使用它。
+- <Anchor link="react-modifier">`[react:<reaction>]` 或 `[react:<text>,<x>,<y>,<face>,<actor>]`</Anchor>：显示一个“反应”，也就是滑入显示的较小文本。
+
+    第一种写法使用反应表中的索引，反应表应包含所有必要信息。
+
+    第二种写法将所有信息直接写在修饰符中。
+- <Anchor link="miniface-modifier">`[miniface:<face>,<offset_x>,<offset_y>,<x_scale>,<y_scale>,<anim_speed>]`</Anchor>：显示一个小头像，用于替代星号。
+
+#### 对话气泡修饰符（对话气泡可用） [speech-bubble-modifiers]
+
+对话气泡就是战斗者说话时使用的气泡。
+
+- <Anchor link="noautoskip-modifier">`[noautoskip]`</Anchor>：阻止气泡在 3 秒后自动推进。
+
+#### 商店修饰符（商店可用） [shop-modifiers]
+
+- <Anchor link="emote-modifier">`[emote:<emotion>]`</Anchor>：调用 `Shop:onEmote(emotion)`，可用于改变店主的表情。
+
+</Box>
+
+<Box>
+## 遵循规范 [following-standards]
+
+DELTARUNE 的文本有一些需要遵循的规范。虽然你不一定非要遵守，但不遵守可能会让文本显得格格不入或不自然。
+
+---
+
+### 标点 [punctuation]
+
+通常，任何标点后面都应该加上 `[wait:5]`，因为标点会在说话时产生停顿。
+当然也可以等待更长时间，但 DELTARUNE 很少这样做。
+
+示例：
+```lua
+local text = {
+    "* Hi...[wait:5] Kris,[wait:5] was it?",
+    "* You...[wait:5] don't remember me?",
+    "* I understand...[wait:5] I wouldn't remember me,[wait:5] either."
+}
+```
+
+我在省略号上似乎有点用力过猛了，但你应该明白意思。任何自然会造成说话停顿的地方，都应该在文本中加入停顿。
+
+---
+
+### 停顿 [pauses]
+
+正如“标点”一节所说，停顿很重要，它能让文本读起来更自然。
+这通常意味着在标点后使用 `[wait:5]`。
+
+不过，我经常在同人作品中看到有人把停顿放在标点之外，这样最终会显得尴尬而不自然。
+
+例如下面这样：
+
+```lua
+local text = "* I thought that you might've[wait:10] gotten hurt."
+```
+
+没有紧接着出现标点，会让玩家感到不舒服，仿佛这段文本没有正确结束。
+此外，停顿只在文本输入过程中可见，文本完全显示后就失去了效果。
+
+加上标点就能很容易地修正这一点，和其他写作一样：
+
+```lua
+local text = "* I thought that you might've...[wait:5] gotten hurt."
+```
+
+当然，再说一次，文本具体要怎么写由你决定，并不存在“硬性规则”。
+例如，DELTARUNE 本身也会为了制造效果而使用一些“不自然的停顿”。
+
+```lua
+local text = "* (One[wait:15] had a pine tree beside it.)"
+```
+
+---
+
+### 强调 [emphasis]
+
+强调使用大写字母。就连《Undertale》中的 Sans 也会使用大写字母来强调某些内容。
+
+<>![Sans 使用大写字母说“它总是很有趣”。](/wiki/sans_capital_letters.png)</>
+
+有时，重要内容会被**高亮为黄色**，就像我们的网站所做的那样。但不要过度使用！
+
+<>![一个带有黄色“uhhh”文本的文本框。](/wiki/bad_highlight.png "我知道这个例子本身来自 DELTARUNE，但这个场景比较特殊……")</>
+
+大多数时候使用黄色，
+但如果出于剧情设定、强烈警告，或需要使用特定颜色解释机制等原因而需要其他颜色，
+你可以（也应该）使用其他颜色。
+
+<>![一个带有红色文本的角色。](/wiki/red_highlight.png "希望这里的每个人都玩过第四章……")</>
+
+</Box>
