@@ -4,6 +4,7 @@ import styles from './page.module.css';
 import { Link } from 'src/i18n/navigation';
 import SwapVisibilityButton from 'components/SwapVisibilityButton'
 import { Fragment } from 'react';
+import { getTranslations } from 'next-intl/server';
 
 export const metadata = {
     title: 'API Reference',
@@ -84,7 +85,9 @@ const ListTreeItem = ({ item }) => {
     )
 }
 
-export default async function Api() {
+export default async function Api({ params }) {
+    const { locale } = await params;
+    const t = await getTranslations({ locale, namespace: 'Api' });
 
     // read the json file from data/doc.json
     // and parse it into a javascript object
@@ -96,7 +99,7 @@ export default async function Api() {
     const tree = sortTree(types)
     return (
         <>
-        <h1 style={{textAlign: "center"}}>API Reference</h1>
+        <h1 style={{textAlign: "center"}}>{t('title')}</h1>
         <SwapVisibilityButton componentA="tree" componentB = "alphabetical">schmesting</SwapVisibilityButton>
         <Docbox id = "tree" className={styles.wikiNoShadow} style={{display: "none"}}>
             <ul className={styles.tree}>

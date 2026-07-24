@@ -5,6 +5,8 @@ import Docbox from 'components/Docbox';
 import styles from './page.module.css';
 import { Fragment } from 'react';
 import { Link } from 'src/i18n/navigation';
+import { getTranslations } from 'next-intl/server';
+import { getApiDescription, getApiText } from 'src/api-translations.mjs';
 
 export async function generateStaticParams() {
     const types = TYPES
@@ -18,7 +20,7 @@ export async function generateStaticParams() {
 
 export async function generateMetadata({ params }){
 
-    const { path } = await params;
+    const { locale, path } = await params;
 
     let desc = TYPES.find((current) => current.name == path[0])?.defines?.[0]?.rawdesc
 
@@ -53,6 +55,8 @@ export async function generateMetadata({ params }){
         }
     }
 
+    desc = getApiDescription(locale, path[0], desc).text;
+
     return {
         title: String(path) + " | Kristal API",
         description: desc ?? "Kristal API Reference"
@@ -78,12 +82,17 @@ function resolveLuaLinks(str, full_path = false) {
     });
 }
 
-async function parse(input) {
+async function parse(input, locale, kind, key) {
     if (!input) return null;
 
-    input = resolveLuaLinks(input);
+    const translated = getApiText(locale, kind, key, input);
+    input = resolveLuaLinks(translated.text);
+    const result = await parseMarkdown(input);
 
-    return await parseMarkdown(input);
+    return <>
+        {result}
+        {translated.missing && <span className={styles.pending}> [{locale === 'zh' ? '翻译待补充' : 'Translation pending'}]</span>}
+    </>;
 }
 
 function getClassHeirarchy(type, arr) {
@@ -159,10 +168,11 @@ function getArgName(arg) {
     return arg.type === "..." ? "..." : arg.name;
 }
 
-function getArgText(arg) {
-    return arg.type === "..."
+function getArgText(arg, locale, key) {
+    const fallback = arg.type === "..."
         ? "vararg, accepts any amount of arguments of this type"
         : (arg.rawdesc ?? arg.desc) ?? "";
+    return getApiText(locale, 'arguments', key, fallback).text;
 }
 
 function getRenderableArgs(args) {
@@ -173,11 +183,11 @@ function hasVisibleArgs(args) {
     return args.length > 0 && !(args[0].name == "self" && args.length == 1);
 }
 
-function renderArgsInline(args) {
+function renderArgsInline(args, locale, ownerKey) {
     const renderableArgs = getRenderableArgs(args);
     return renderableArgs.map((arg, index) => {
         const name = getArgName(arg);
-        const text = getArgText(arg);
+        const text = getArgText(arg, locale, `${ownerKey}.args.${name}`);
         return <span key={`${name}_${index}`} style={{color: "lightgray"}}>
             <span className={styles.syntaxSymbol} title={text}>{name}</span>
             <span className={styles.syntax}>: </span>
@@ -189,11 +199,12 @@ function renderArgsInline(args) {
     });
 }
 
-async function renderArgumentRows(ownerName, args) {
+async function renderArgumentRows(ownerName, args, locale, ownerKey) {
     return Promise.all(getRenderableArgs(args).map(async (arg) => {
-        const desc = await parse(arg.rawdesc ?? arg.desc);
         const name = getArgName(arg);
-        const text = getArgText(arg);
+        const key = `${ownerKey}.args.${name}`;
+        const desc = await parse(arg.rawdesc ?? arg.desc, locale, 'arguments', key);
+        const text = getArgText(arg, locale, key);
         return <tr key={ownerName + name}>
             <td>
                 <span className={styles.syntaxSymbol} title={text}>{name}</span>
@@ -209,9 +220,10 @@ async function renderArgumentRows(ownerName, args) {
     }));
 }
 
-async function renderReturnRows(ownerName, returnsList) {
+async function renderReturnRows(ownerName, returnsList, locale, ownerKey) {
     return Promise.all(returnsList.map(async (ret, index) => {
-        const desc = await parse(ret.rawdesc ?? ret.desc);
+        const key = `${ownerKey}.returns.${ret.name ?? index}`;
+        const desc = await parse(ret.rawdesc ?? ret.desc, locale, 'returns', key);
         return <tr key={ownerName + index}>
             <td>
                 <span className={styles.syntaxSymbol}>{ret.name ?? index + 1}</span>
@@ -227,7 +239,8 @@ async function renderReturnRows(ownerName, returnsList) {
     }));
 }
 
-async function Api_type(type, { params }) {
+async function Api_type(type, { locale }) {
+    const t = await getTranslations({ locale, namespace: 'Api' });
     const classHeirarchy = getClassHeirarchy(type, [])
     const methods = []
     const fields = []
@@ -252,7 +265,7 @@ async function Api_type(type, { params }) {
     const initIndex = methods.findIndex((method) => method.name == "init")
     const initializer = initIndex > -1 ? methods.splice(initIndex, 1)[0] : null
 
-    const desc = await parse(type?.defines?.[0].rawdesc ?? type?.defines?.[0].desc);
+    const desc = await parse(type?.defines?.[0].rawdesc ?? type?.defines?.[0].desc, locale, 'types', type.name);
 
     return <div>
         <Docbox className={styles.wikiNoShadow}>
@@ -279,7 +292,7 @@ async function Api_type(type, { params }) {
         initializer ?
         <>
         <details id="Constructor" open>
-            <summary className={styles.detailHeader}><h2 className={styles.syntaxObject}>Constructor</h2></summary>
+            <summary className={styles.detailHeader}><h2 className={styles.syntaxObject}>{t('constructor')}</h2></summary>
                 <hr/>
                 <div id={initializer.name} key={initializer.name}>
                     <h3>
@@ -287,17 +300,17 @@ async function Api_type(type, { params }) {
                         <span>{type.name}</span>
                     </a>
                     <span className={styles.syntax}>(</span>
-                    {renderArgsInline(initializer.extends.args)}
+                    {renderArgsInline(initializer.extends.args, locale, `${type.name}.${initializer.name}`)}
                     <span className={styles.syntax}>)</span>
                     </h3>
-                    <div style={{color: "lightgray"}}>{await parse(initializer.rawdesc ?? initializer.desc)}</div>
+                    <div style={{color: "lightgray"}}>{await parse(initializer.rawdesc ?? initializer.desc, locale, 'fields', `${type.name}.${initializer.name}`)}</div>
                     { hasVisibleArgs(initializer.extends.args) &&
                         <>
-                            <p>Arguments:</p>
+                            <p>{t('arguments')}</p>
                             <table>
                                 <tbody>
                                 {
-                                    await renderArgumentRows(initializer.name, initializer.extends.args)
+                                    await renderArgumentRows(initializer.name, initializer.extends.args, locale, `${type.name}.${initializer.name}`)
                                 }
                                 </tbody>
                             </table>
@@ -315,10 +328,11 @@ async function Api_type(type, { params }) {
         {
             methods.length > 0 && <>
                 <details id="Methods" open>
-                <summary className={styles.detailHeader}><h2 className={styles.syntaxMethod}>Methods</h2></summary>
+                <summary className={styles.detailHeader}><h2 className={styles.syntaxMethod}>{t('methods')}</h2></summary>
                 {
                     methods.map(async (method) => {
-                        const desc = await parse(method.rawdesc ?? method.desc);
+                        const fieldKey = `${type.name}.${method.name}`;
+                        const desc = await parse(method.rawdesc ?? method.desc, locale, 'fields', fieldKey);
                         return <Fragment key={method.name}>
                         <hr/>
                         <div id={method.name}>
@@ -329,17 +343,17 @@ async function Api_type(type, { params }) {
                                 <span className={styles.syntaxMethod}>{method.name}</span>
                             </a>
                             <span className={styles.syntax}>(</span>
-                            {renderArgsInline(method.extends.args)}
+                            {renderArgsInline(method.extends.args, locale, fieldKey)}
                             <span className={styles.syntax}>)</span>
                             </h3>
                             <div style={{color: "lightgray"}}>{desc}</div>
                             { hasVisibleArgs(method.extends.args) &&
                                 <>
-                                    <p>Arguments:</p>
+                                    <p>{t('arguments')}</p>
                                     <table>
                                         <tbody>
                                         {
-                                            await renderArgumentRows(method.name, method.extends.args)
+                                            await renderArgumentRows(method.name, method.extends.args, locale, fieldKey)
                                         }
                                         </tbody>
                                     </table>
@@ -347,11 +361,11 @@ async function Api_type(type, { params }) {
                             }
                             {
                                 method.extends.returns && method.extends.returns.length > 0 && <>
-                                    <p>Returns: </p>
+                                    <p>{t('returns')} </p>
                                     <table>
                                         <tbody>
                                         {
-                                            await renderReturnRows(method.name, method.extends.returns)
+                                            await renderReturnRows(method.name, method.extends.returns, locale, fieldKey)
                                         }
                                         </tbody>
                                     </table>
@@ -370,10 +384,11 @@ async function Api_type(type, { params }) {
         {
             fields.length > 0 && <>
                 <details id="Fields" open>
-                    <summary className={styles.detailHeader}><h2 className={styles.syntaxField}>Fields</h2></summary>
+                    <summary className={styles.detailHeader}><h2 className={styles.syntaxField}>{t('fields')}</h2></summary>
                     {
                         fields.map(async (field) => {
-                            const desc = await parse(field.rawdesc ?? field.desc);
+                            const fieldKey = `${type.name}.${field.name}`;
+                            const desc = await parse(field.rawdesc ?? field.desc, locale, 'fields', fieldKey);
                             return <Fragment key={field.name}>
                             <hr/>
                             <div id={field.name}>
@@ -402,10 +417,11 @@ async function Api_type(type, { params }) {
             undocumented.length > 0 &&
             <>
                 <details id="Undocumented" open>
-                    <summary className={styles.detailHeader}><h2 className={styles.syntaxUndocumented}>Undocumented</h2></summary>
+                    <summary className={styles.detailHeader}><h2 className={styles.syntaxUndocumented}>{t('undocumented')}</h2></summary>
                     {
                         undocumented.map(async (field) => {
-                            const desc = await parse(field.rawdesc ?? field.desc);
+                            const fieldKey = `${type.name}.${field.name}`;
+                            const desc = await parse(field.rawdesc ?? field.desc, locale, 'fields', fieldKey);
                             return <Fragment key={field.name}>
                             <hr/>
                             <br/>
@@ -434,14 +450,15 @@ async function Api_type(type, { params }) {
     </div>
 }
 
-function Api_variable(type, { params }) {
+async function Api_variable(type, { locale }) {
+    const desc = await parse(type.rawdesc ?? type.desc, locale, 'variables', type.name);
     return <div>
         <Docbox className={styles.wikiNoShadow}>
         <div id={type.name}>
             <h1>
                 <a href={"#" + type.name}>{type.name}</a>
             </h1>
-            {type.rawdesc ?? type.desc}
+            {desc}
         </div>
 
         </Docbox>
@@ -449,7 +466,7 @@ function Api_variable(type, { params }) {
 }
 
 export default async function Api({ params }) {
-    const { path } = await params;
+    const { locale, path } = await params;
 
     // read the types from TYPES 
 
@@ -459,8 +476,8 @@ export default async function Api({ params }) {
         return notFound();
     }
     if(type.type === "type"){
-        return Api_type(type, { params })
+        return Api_type(type, { locale })
     }else if (type.type === "variable"){
-        return Api_variable(type, { params })
+        return Api_variable(type, { locale })
     }
 }

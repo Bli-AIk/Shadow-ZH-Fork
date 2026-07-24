@@ -107,7 +107,13 @@
   },
   "Api": {
     "title": "API 参考",
-    "translationPending": "翻译待补充"
+    "translationPending": "翻译待补充",
+    "constructor": "构造函数",
+    "methods": "方法",
+    "fields": "字段",
+    "undocumented": "未记录",
+    "arguments": "参数：",
+    "returns": "返回值："
   },
   "ArticleMetadata": {
     "actors": {"title": "Actor", "description": "Actor 系统及其使用方法。"},

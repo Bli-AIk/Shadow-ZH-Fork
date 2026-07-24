@@ -43,3 +43,8 @@
     color: lightgreen;
     cursor: help;
 }
+
+.pending {
+    color: #ffcc00;
+    font-size: 0.85em;
+}

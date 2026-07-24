@@ -107,7 +107,13 @@
   },
   "Api": {
     "title": "API Reference",
-    "translationPending": "Translation pending"
+    "translationPending": "Translation pending",
+    "constructor": "Constructor",
+    "methods": "Methods",
+    "fields": "Fields",
+    "undocumented": "Undocumented",
+    "arguments": "Arguments:",
+    "returns": "Returns:"
   },
   "ArticleMetadata": {
     "actors": {"title": "Actors", "description": "The actor system, and how to use it."},
