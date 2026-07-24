@@ -31,7 +31,7 @@
     align-items: center;
     justify-content: center;
     font-weight: normal;
-    font-family: "8bitOperatorPlus-Bold", monospace;
+    font-family: var(--font-bold);
     font-size: 24px;
     color: white;
     text-decoration: none;
@@ -39,7 +39,7 @@
 }
 
 html[lang="zh"] .item {
-    font-family: "KristalZhMain", "KristalZhFallback", "8bitOperatorPlus-Bold", monospace;
+    font-family: var(--font-bold);
     letter-spacing: 2px;
 }
 

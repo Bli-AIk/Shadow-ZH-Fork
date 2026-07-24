@@ -27,7 +27,7 @@
     background-color: lightgray;
     color: lightgray;
 
-    font-family: "8bitOperatorPlus-Bold", monospace;
+    font-family: var(--font-bold);
     font-weight: normal;
   }
   

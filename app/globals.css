@@ -15,6 +15,11 @@ html {
   height: 100%;
 }
 
+:root {
+  --font-regular: "8bitOperatorPlus-Regular", "KristalZhFallback", monospace;
+  --font-bold: "8bitOperatorPlus-Bold", "KristalZhFallback", monospace;
+}
+
 body {
   margin: auto;
 
@@ -25,7 +30,7 @@ body {
   background-attachment: fixed;
 
   image-rendering: pixelated;
-  font-family: "8bitOperatorPlus-Regular", monospace;
+  font-family: var(--font-regular);
 
   text-shadow: 2px 2px #000000;
 
@@ -41,15 +46,15 @@ body {
 }
 
 html[lang="zh"]:not([data-display-mode="both"]) body {
-  font-family: "KristalZhMain", "KristalZhFallback", "8bitOperatorPlus-Regular", monospace;
+  font-family: var(--font-regular);
 }
 
 html[data-display-mode="both"] [data-language="zh"] {
-  font-family: "KristalZhMain", "KristalZhFallback", "8bitOperatorPlus-Regular", monospace;
+  font-family: var(--font-regular);
 }
 
 html[data-display-mode="both"] [data-language="en"] {
-  font-family: "8bitOperatorPlus-Regular", monospace;
+  font-family: var(--font-regular);
   letter-spacing: normal;
 }
 
@@ -69,7 +74,7 @@ html[data-display-mode="both"] [data-language="zh"] h5,
 html[data-display-mode="both"] [data-language="zh"] h6,
 html[data-display-mode="both"] [data-language="zh"] strong,
 html[data-display-mode="both"] [data-language="zh"] b {
-  font-family: "KristalZhMain", "KristalZhFallback", "8bitOperatorPlus-Bold", monospace;
+  font-family: var(--font-bold);
 }
 
 small {
@@ -80,13 +85,13 @@ small {
 
 strong, b {
   font-weight: normal;
-  font-family: "8bitOperatorPlus-Bold", monospace;
+  font-family: var(--font-bold);
   color: yellow;
 }
 
 h1, h2, h3, h4, h5, h6 {
   font-weight: normal;
-  font-family: "8bitOperatorPlus-Bold", monospace;
+  font-family: var(--font-bold);
 }
 
 h1.markdown[level="1"] {
@@ -191,7 +196,7 @@ code {
 
 thead {
   font-weight: normal;
-  font-family: "8bitOperatorPlus-Bold", monospace;
+  font-family: var(--font-bold);
 }
 
 pre {

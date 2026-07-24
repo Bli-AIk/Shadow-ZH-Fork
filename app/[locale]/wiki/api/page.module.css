@@ -17,11 +17,11 @@
 
 .type {
   font-weight: normal;
-  font-family: "8bitOperatorPlus-Bold", monospace;
+  font-family: var(--font-bold);
 }
 
 .variable {
-  font-family: "8bitOperatorPlus-Regular", monospace;
+  font-family: var(--font-regular);
   font-style: italic;
   color: white
 }

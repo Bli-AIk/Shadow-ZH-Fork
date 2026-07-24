@@ -12,7 +12,7 @@
     border-radius: 0;
     background: #000;
     color: white;
-    font: 16px/1 "8bitOperatorPlus-Regular", monospace;
+    font: 16px/1 var(--font-regular);
     cursor: pointer;
     text-shadow: 2px 2px #000;
 }
@@ -42,7 +42,7 @@
     padding: 0.55rem 0.75rem;
     background: #000;
     color: white;
-    font: 16px/1.2 "8bitOperatorPlus-Regular", monospace;
+    font: 16px/1.2 var(--font-regular);
     text-align: left;
     cursor: pointer;
 }
