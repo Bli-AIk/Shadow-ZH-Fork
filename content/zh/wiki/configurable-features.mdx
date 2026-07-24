@@ -1,0 +1,48 @@
+import styles from '../../wiki-styles/configurable-features.module.css'
+
+export const metadata = {
+    title: '可配置功能',
+    description: 'Kristal 中所有可配置功能的列表。',
+}
+
+# 可配置的功能
+
+<Box className={styles.table}>
+
+<>![](/wiki/feature_config.png)</>
+
+每个配置选项默认为当前章节中的值。
+例如，DELTARUNE 第 1 章默认禁用存储，第 2 章默认启用存储。
+
+您可以通过功能配置菜单单独更改每个功能。
+
+| 关键|描述 |章。 1 |章。 2 |
+| ------------------------ | ---------------------------------------------------------------------------------- | -------------- | -------------- |
+| `enableStorage` |额外 48 格物品存储 |假 |真实|
+| `smallSaveMenu` |没有存储/招募选项的单文件保存菜单 |真实|假 |
+| `partyActions` | X-Actions 是否默认出现在拼写菜单中 |假 |真实|
+| `growStronger` |用暴力击败敌人后统计值增加 |假 |真实|
+| `growStrongerChara` |角色在队伍中会变得更强 |取消设置 | “诺艾尔”|
+| `susieStyle` | Susie 应该使用什么精灵集 | 1 | 2 |
+| `ralseiStyle` | Ralsei 应该使用什么精灵集 | 1 | 2 |
+| `oldTensionBar` |张力杆是否使用块状角 |真实|假 |
+| `oldUIPositions` |是否使用第一章UI元素的位置 |真实|假 |
+| `oldGameOver` |是否使用第一章游戏结束 |真实|假 |
+| `targetSystem` |战斗是否应该使用瞄准系统 |真实|假 |
+| `speechBubble` |敌人对话气泡的默认样式 | “圆形”| “网络”|
+| `enemyAuras` |敌人周围的红色光环 |假 |真实|
+| `mercyMessages` |当敌人的怜悯度上升时，看到+X% |假 |真实|
+| `mercyBar` |是否应该出现怜悯条 |假 |真实|
+| `enemyBarPercentages` | HP 和 Mercy 条是否应显示百分比 |假 |真实|
+| `prioritySpareableText` |敌人的空闲文本是否应该优先于疲劳/低健康文本|真实|假 |
+| `pushBlockInputLock` |推动方块是否会冻结玩家 |真实|真实|
+| `keepTensionAfterBattle` |战后是否应该保留TP而不是重置|假 |假 |
+| `overworldSpells` |法术是否应该在主世界中使用 |真实|假 |
+| `damageUnderflowFix` |如果禁用，负敌人伤害会治愈敌人 |真实|真实|
+| `darkCurrency` |黑暗世界的货币全名| “黑钱”| “黑钱”|
+| `darkCurrencyShort` |黑暗世界的货币简称| “D$”| “D$”|
+| `lightCurrency` | The full currency name for the Light World                                         | 「钱」| 「钱」|
+| `lightCurrencyShort` |光世界的简称| “$” | “$” |
+| `tpName` |战斗中的紧张点名称| “TP”| “TP”|
+
+</Box>
