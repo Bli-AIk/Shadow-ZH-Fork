@@ -1,0 +1,251 @@
+export const metadata = {
+    title: '过场动画',
+    description: '关于过场动画，你需要了解的一切。',
+}
+
+# 过场动画
+
+<Box>
+本教程假设你已经阅读过前面的教程。如果还没有，请先阅读后再继续。
+
+让我们制作一个简单的过场动画，内容如下：
+
+- 玩家走到房间中央
+- 屏幕淡出为黑色
+- 文本框出现
+- 播放冲击音效
+- 屏幕重新淡入
+
+这不就是一组按顺序排列的指令吗？没错，这基本上就是代码中过场动画的样子！
+
+首先标记房间中央。还记得标记点吗？
+
+<>![](/wiki/room_center.png)</>
+
+我们还要放置一个 `script` 对象。当玩家碰到它时，就会触发我们的过场动画。
+
+<>![](/wiki/placed_script.png)</>
+
+如你所见，我们给它设置了过场动画 ID `examples.center`。这意味着它会播放 `examples` 组中的 `center` 过场动画！
+
+现在来创建 `examples` 组。方法是在 `scripts/world/cutscenes` 文件夹中创建 `examples.lua` 文件。
+
+先放入一个表：
+
+```lua
+return {
+
+}
+```
+
+现在可以开始制作过场动画了！还记得我们把它命名为 `center`，所以这样写：
+
+```lua
+return {
+    center = function(cutscene, event)
+
+    end
+}
+```
+
+等等，我们刚才做了什么？
+
+我们在 `examples` 组中创建了 `center`。它是一个接收两个参数的函数：`cutscene` 和 `event`。`cutscene` 是过场动画对象，`event` 是事件对象，也就是触发过场动画的对象。
+
+现在来编写过场动画！
+
+```lua
+return {
+    center = function(cutscene, event)
+        -- make kris walk to the "room_center" marker, taking 1 second, and wait until they're done
+        cutscene:wait(cutscene:walkTo("kris", "room_center", 1))
+
+        -- fade the screen to black
+        cutscene:wait(cutscene:fadeOut(1))
+
+        -- show a textbox
+        cutscene:text("* ...")
+
+        -- play the impact sound
+        Assets.playSound("impact")
+
+        -- wait 1 second
+        cutscene:wait(1)
+
+        -- fade the screen back in
+        cutscene:wait(cutscene:fadeIn(1))
+    end
+}
+```
+
+看起来很简单，对吧？过场动画系统的功能远不止这些，不过这是一个很好的起点。
+
+</Box>
+
+<Box>
+## 结束过场动画 [ending-cutscenes]
+
+过场动画其实就是一行行代码，只是可以使用一种叫作**协程**的特殊系统暂停。我们不需要深入了解协程，但重要的是：过场动画就是代码。
+
+也就是说，如果想提前离开过场动画，只需要输入 `return`！
+
+```lua
+    cutscene:text("* This is an example.")
+
+    if some_condition then
+        cutscene:text("* Condition met![wait:5]\n* The cutscene will now end!")
+        return -- Exit the cutscene early, so nothing below this runs!
+    end
+
+    cutscene:text("* Ooh,[wait:5] you haven't met the condition![wait:5]\n* That's too bad...")
+```
+
+**注意**：不要调用 `cutscene:endCutscene()` 来结束过场动画。它是内部函数，调用它会导致问题。
+
+</Box>
+
+<Box>
+## 选择
+
+选择通过我们称为[“选择器”或“选择框”](/wiki/api/Choicebox)的东西实现，它们与文本框类似。
+
+在之前的例子中，我们一直是在“世界”中操作，而不是在战斗中操作。
+这意味着我们使用的是 [**WorldCutscene**](/wiki/api/WorldCutscene)，需要使用的是 [WorldCutscene:choicer()](/wiki/api/WorldCutscene#choicer)。
+
+在 WorldCutscene 中，可以使用下面的代码显示选择框：
+
+```lua
+    cutscene:text("* I'm about to ask you something...[wait:5] is that okay?") -- Show a textbox, which automatically waits for player input
+    cutscene:choicer({"Yes", "No"}) -- Ask a question, automatically wait for player input
+    cutscene:text("* Thanks for your answer!") -- Show another textbox
+```
+
+我们刚刚创建了一个选择框！但它似乎没什么用，因为我们完全没有处理玩家的选择！
+
+好在，我们可以从**返回值**中取得玩家的选择。也就是说，选择器会把选择结果交给我们！
+
+```lua
+    local option = cutscene:choicer({"Yes", "No"}) -- Ask a question, automatically wait for player input
+```
+
+很好。玩家现在已经选择了一个选项，结果存储在 `option` 变量中。它是一个从 1 开始的数字，代表玩家选择了第几个选项。
+
+在这个例子中，如果玩家选择“Yes”，`option` 就是 1；如果选择“No”，`option` 就是 2。
+
+接着可以根据选择执行不同的操作：
+
+```lua
+    local option = cutscene:choicer({"Yes", "No"}) -- Ask a question, automatically wait for player input
+
+    if option == 1 then
+        -- We picked "Yes", option 1!
+        cutscene:text("* Awesome,[wait:5] I'll do that now.")
+    else
+        -- We picked literally anything else.
+        cutscene:text("* Ah...[wait:5] that's okay.[wait:5]\n* Maybe next time...")
+    end
+```
+
+当然，不要被这个例子限制住；选择可以复杂得多，比如提供三个甚至四个选项：
+
+```lua
+    local option = cutscene:choicer({"Yes", "No", "Maybe", "We'll See"}) -- Ask a question, automatically wait for player input
+
+    if option == 1 then
+        -- We picked "Yes", option 1!
+        cutscene:text("* Awesome,[wait:5] I'll do that now.")
+    elseif option == 2 then
+        -- We picked "No", option 2!
+        cutscene:text("* Ah...[wait:5] that's okay.[wait:5]\n* Maybe next time...")
+    elseif option == 3 then
+        -- We picked "Maybe", option 3!
+        cutscene:text("* Maybe...?[wait:5]\n* I'm not sure how to take that.")
+    else
+        -- We picked "We'll See", option 4! Again, this is "any other option", but there's only one other option, which is this one.
+        cutscene:text("* Um...[wait:5] sorry,[wait:5] could you be more clear?")
+    end
+```
+
+无论是分支对话，还是让故事彻底走向不同的路线，选择都可以完成很多事情。由你决定！
+
+最后一个例子有点复杂，但请仔细看看并试着理解它。
+
+```lua
+    cutscene:text("* I'm about to ask you something...[wait:5] is that okay?") -- Show a textbox, which automatically waits for player input
+    local option = cutscene:choicer({"Yes", "No", "Go Away"}) -- Ask a question, automatically wait for player input
+
+    if option == 1 then
+        -- We picked "Yes", option 1!
+        cutscene:text("* Are you okay with what's happening?")
+        local option_new = cutscene:choicer({"Yes", "No"}) -- Ask a question, automatically wait for player input
+        if option_new == 1 then
+            cutscene:text("* I'm glad.[wait:5]\n* Tutorials are scary,[wait:5] but you can do it!")
+        else
+            cutscene:text("* Yeah,[wait:5] I understand.")
+            cutscene:text("* Do your best!")
+        end
+    elseif option == 2 then
+        -- We picked "No", option 2!
+        cutscene:text("* Ah...[wait:5] that's okay.[wait:5]\n* Maybe next time...")
+    else -- We picked the only remaining option, "Go Away", option 3!
+        cutscene:text("* I...[wait:5] see.")
+        cutscene:text("* Sorry for bothering you then.")
+        return -- Exit the cutscene early, so nothing below this runs!
+    end
+
+    -- Both choices "yes" and "no" lead to the same thing.
+
+    cutscene:text("* In any case,[wait:5] I'm just...[wait:5] glad to see you again.")
+```
+
+</Box>
+
+<Box>
+## 过场动画不应该做什么 [cutscene-abuse]
+
+过场动画是一个强大的工具，可以实现很多事情。
+但是，如果开始用它来做本不该由它负责的事情，就会让**代码难以维护**；当你遇到问题时，其他人也会更难帮助你。
+
+一些常见例子：
+
+- 使用过场动画系统实现新机制、小游戏或某种谜题。
+- 使用过场动画系统实现实际上并不是过场动画的内容。
+- 只是为了获得 `wait` 函数而使用过场动画系统。
+
+通常来说，如果过场动画除了推进流程之外还需要玩家输入或选择，那么你很可能让过场动画系统承担了过多工作。
+
+Kristal 是一个灵活的引擎，但长期来看，错误地使用系统可能会损害你的项目。
+
+### 那应该怎么做？ [cutscene-abuse-solutions]
+
+如果你发现自己正在做上面提到的事情，可以考虑以下替代方案：
+
+<CollapseBox title="新机制" id="new-mechanic">
+    这取决于具体的机制，但通常来说，你会需要一个“控制器对象”。
+    它负责处理这套机制，就像战斗由 [Battle](/wiki/api/Battle) 处理、文本框由 [Textbox](/wiki/api/Textbox) 处理一样。
+
+    如果你想添加类似攀爬（就像第四章那样）的功能，那么应该把它作为 Player 的一部分来处理。
+</CollapseBox>
+
+<CollapseBox title="不是过场动画" id="not-cutscene">
+    如果它不是过场动画，那它可能就不应该放在过场动画系统中。
+    如果你只是想用过场动画作为一种非常方便的方式，在可交互对象或脚本中运行代码，那么可以改用“脚本”。
+
+    [事件页面的脚本教程](/wiki/using-events/#making-scripts)中有相关说明。
+</CollapseBox>
+
+<CollapseBox title="等待函数" id="wait-function">
+    通常来说，编程语言并没有“等待”函数。抱歉，但 Scratch 和 Roblox 骗了你。
+
+    这背后有很多技术原因，但长话短说：如果你发现自己需要一个 `wait` 函数，那么你很可能找错了实现方向。
+
+    不过，如果你需要让某件事延迟一段时间发生，请查看[计时器](/wiki/api/Timer)。
+</CollapseBox>
+
+</Box>
+
+<Box>
+## 延伸阅读
+
+如需更多信息，请查看 [过场动画](/wiki/api/Cutscene)、[世界过场动画](/wiki/api/WorldCutscene)和[战斗过场动画](/wiki/api/BattleCutscene)的 API 参考页面。
+</Box>
