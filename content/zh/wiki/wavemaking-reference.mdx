@@ -1,0 +1,1718 @@
+export const metadata = {
+    title: '制作弹幕的技巧与参考',
+    description: '帮助你处理波次的一组资源！',
+}
+
+# 制作弹幕的技巧与参考 [tips-and-references]
+
+<Box>
+
+本页面专注于介绍波形中常见的实用技巧，并为一些有用的函数提供快速参考。
+
+</Box>
+
+<Box>
+## 目录
+
+- [战斗对象](#battle-objects)
+- [竞技场函数](#arena-functions)
+- [物理表](#physics-table)
+- [图形表](#graphics-table)
+- [选择波形](#selecting-waves)
+- [基于移动的（蓝色/橙色）子弹](#blue-orange-bullets)
+- [绿色子弹](#green-bullets)
+- [圆形](#circles)
+- [残影](#afterimages)
+- [攻击预告](#attack-telegraphing)
+- [将子弹限制在竞技场内](#bullet-masking)
+- [自定义灵魂模式](#custom-souls)
+
+</Box>
+
+<Box>
+## 战斗对象
+
+有许多与战斗有关的对象都和波形相关！下面列出了所有与波形有关的对象！
+
+点击其中任意一个对象即可前往对应的 API 参考页面，了解更多信息。
+
+---
+### 波形中使用的对象
+下面的对象都会直接用于波形。
+
+- [Arena](/wiki/api/Arena)
+- [Bullet](/wiki/api/Bullet)
+- [Solid](/wiki/api/Solid)
+- [Soul](/wiki/api/Soul)
+- [Timer](/wiki/api/Timer)
+- [Wave](/wiki/api/Wave)
+
+---
+### 碰撞体
+以下都是 Kristal 中的 [Collider](/wiki/api/Collider) 类型。它们可能会对自定义子弹碰撞有所帮助！
+
+- [CircleCollider](/wiki/api/CircleCollider)
+- [ColliderGroup](/wiki/api/ColliderGroup)
+- [Hitbox](/wiki/api/Hitbox)
+- [LineCollider](/wiki/api/LineCollider)
+- [PointCollider](/wiki/api/PointCollider)
+- [PolygonCollider](/wiki/api/PolygonCollider)
+
+---
+### 相关对象
+这些对象并不总是直接参与波形，但可能包含重要的函数或相关函数。
+
+- [AfterImage](/wiki/api/AfterImage)
+- [Battle](/wiki/api/Battle)
+- [Encounter](/wiki/api/Encounter)
+- [EnemyBattler](/wiki/api/EnemyBattler)
+- [PartyBattler](/wiki/api/PartyBattler)
+</Box>
+
+<Box>
+## 竞技场函数 [arena-functions]
+
+除了作为一个 [`Object`](/wiki/api/Object) 之外，[`Arena`](/wiki/api/Arena) 还拥有自己的函数。
+
+`Wave` 中还有一些额外的函数，可以在 `Wave:init()` 中使用，以修改竞技场的初始状态。这些修改也会应用到竞技场过渡中。
+
+### `Arena:setSize(width, height)`
+设置矩形竞技场的大小。
+竞技场的默认大小为 142x142。
+
+### `Wave:setArenaSize(width, height)`
+设置矩形竞技场的初始大小。
+竞技场的默认大小为 142x142。
+
+### `Arena:setShape(...)`
+将竞技场形状设置为由传入该函数的顶点定义的多边形。
+每个顶点都应当是一个包含两个值的独立表，用来表示 (x, y) 坐标。坐标是相对于竞技场位置的。
+
+### `Wave:setArenaShape(...)`
+设置竞技场的初始形状。用法见上文。
+
+### `Wave:setArenaRotation(angle)`
+设置竞技场的初始旋转角度。
+
+### `Wave:setArenaPosition(x, y)`
+设置竞技场相对于屏幕左上角的初始位置。
+
+### `Wave:setArenaOffset(x, y)`
+设置竞技场相对于其标准生成位置的初始位置。
+
+### `Arena:setBackgroundColor(r, g, b, a)`
+设置竞技场背景所使用的颜色。
+
+### `Arena:getBackgroundColor()`
+返回竞技场当前的颜色，一个 `{r, g, b, a}` 表。
+</Box>
+
+<Box>
+## physics 表 [physics-table]
+
+波形中的所有对象，包括 `Bullet` 和 `Arena`，都是 [`Object`](/wiki/api/Object)，这意味着它们会继承 `physics` 表。
+
+`physics` 表通过表中的各个键，自动处理对象的基础移动。
+
+`physics` 中存在的键及其效果如下：
+- `speed` - 对象在 30fps 下沿 `direction` 每帧移动的像素数。
+- `speed_x` 和 `speed_y` - 对象在 30fps 下沿各个轴每帧移动的像素数。
+- `direction` - 对象移动的方向。默认为 `0`，表示向右移动。`math.pi / 2` = 向下，`math.pi` = 向左，`3*math.pi / 2` = 向上。
+- `spin` - 对象的 `direction` 在 30fps 下每帧增加的量。
+- `match_rotation` - 是否应当在每帧将 `direction` 的值更新为与对象的 `rotation` 相同。
+- `friction` - `speed` 或 `speed_x`、`speed_y` 在 30fps 下每帧减少的量。
+- `gravity` - 对象在 30fps 下每帧沿 `gravity_direction` 受到的加速度。默认为 0。
+- `gravity_direction` - 重力方向。默认为 `math.pi / 2`，即正下方。
+- `move_target` - 在对象调用 `slideTo()` 或 `slideToSpeed()` 时存储相关信息。**不要尝试手动修改它**，但可以将它设置为 `nil`，以取消前述移动函数。
+- `move_path` - 在对象调用 `slidePath()` 时存储相关信息。**不要尝试手动修改它**，但可以将它设置为 `nil`，以取消前述函数。
+</Box>
+
+<Box>
+## graphics 表 [graphics-table]
+
+波形中的所有对象，包括 `Bullet` 和 `Arena`，都是 [`Object`](/wiki/api/Object)，这意味着它们会继承 `graphics` 表。
+
+通过设置表中的各个键，`graphics` 表会自动处理简单的图形效果。
+
+其中存在的键及其效果如下：
+- `spin` - 对象的 `rotation` 在 30fps 下每帧改变的量。
+- `grow` - 对象的缩放在 30fps 下每帧增加的量。
+- `grow_x` 和 `grow_y` - 对象 x、y 缩放在 30fps 下每帧增加的量。
+- `remove_shrunk` - 当对象的缩放达到或低于零时，是否移除对象。
+- `fade` - 对象的 `alpha` 值每帧改变的量，其变化会逐渐接近 `fade_to` 设置的值。
+- `fade_to` - 对象的 `alpha` 所接近的值。
+- `fade_callback` - 对象达到由 `fade_to` 设置的目标 `alpha` 时运行的回调函数。
+</Box>
+
+<Box>
+## 选择波形 [selecting-waves]
+
+Kristal 提供了许多选项，用来控制每个 DEFENDING 回合选择哪些波形。
+
+如果想了解如何修改每回合选中的波形，了解 Kristal 为此采取的步骤会很有帮助。
+
+下面来看看具体流程。
+
+### 波形选择流程
+准备 DEFENDING 状态时，Battle 首先通过 [`Encounter:getNextWaves()`](/wiki/api/Encounter#getNextWaves) 向遭遇战请求波形。
+
+接着，[`Encounter:getNextWaves()`](/wiki/api/Encounter#getNextWaves) 会使用 [`EnemyBattler:selectWave()`](/wiki/api/EnemyBattler#selectWave) 向每个敌人请求一个波形。
+
+[`EnemyBattler:selectWave()`](/wiki/api/EnemyBattler#selectWave) 会从 [`EnemyBattler:getNextWaves()`](/wiki/api/EnemyBattler#getNextWaves) 获取该敌人的可用波形，然后随机选择一个使用。
+
+[`EnemyBattler:getNextWaves()`](/wiki/api/EnemyBattler#getNextWaves) 会返回 [`EnemyBattler.waves`](/wiki/api/EnemyBattler#waves) 表；如果设置了 [`EnemyBattler.wave_override`](/wiki/api/EnemyBattler#wave_override)，则返回后者。
+
+每个敌人选中的波形随后会沿着这条链路返回，最终交给战斗。
+
+好的，一次接收这么多信息确实有点多——我们把它拆成更容易理解的部分。
+
+### waves 变量
+
+最直接，也可以说是“标准”的波形选择方法，是在 `EnemyBattler` 中定义 `waves` 表。你可能已经对此很熟悉了。
+
+例如，项目模板中的 dummy 文件会设置好这一点，从而选择项目模板中同样包含的三个波形：
+
+```lua
+-- 位于 scripts/battle/enemies/dummy.lua
+
+function Dummy:init(...)
+    super.init(self, ...)
+
+    -- init() 中的其他代码...
+
+    self.waves = {
+        "aiming",
+        "movingarena",
+        "basic",
+    }
+
+    -- init() 中的更多代码...
+end
+```
+
+每个回合，该敌人都会从这里随机选择一个波形使用！
+
+### wave_override 变量
+
+我们可以使用的第二种方法是 `EnemyBattler` 的 `wave_override` 变量，它最适合与 `waves` 表配合使用。
+
+当我们在敌人上设置 `wave_override` 时，它会**强制该敌人在这一回合选择这个波形**。
+
+例如，我们可以让敌人在对其使用 ACT 时选择特定波形：
+
+```lua
+-- 位于 scripts/battle/enemies 文件中
+function MyEnemy:onAct(battler, name)
+    if name == "Hug" then
+        self.wave_override = "green_bullets"
+
+        return "Some ACT text"
+    end
+
+    return super.onAct(self, battler, name)
+end
+```
+
+这样，每当我们对该敌人使用 Hug ACT 时，它就会在每个回合使用 `green_bullets` 波形。
+
+---
+除了变量之外，我们还可以使用一些函数！
+
+函数让我们能够为波形选择编写新的逻辑，因此它们自然更适合复杂的设置。
+
+### EnemyBattler:getNextWaves()
+`EnemyBattler:getNextWaves()` 会在选择波形时获取 `waves` 表，或获取 `wave_override`（如果已设置）。
+
+因此，与其他波形选择方法相比，这个函数对自定义波形选择行为的用处较小；但如果你主要想依赖默认系统、只做少量调整，它就会很有用。
+
+先看看原始函数的作用：
+
+```lua
+--- *(Override)* 获取该敌人每回合可以使用的波形列表。
+--- *默认情况下返回 [`waves`](lua://EnemyBattler.waves) 表，除非设置了 [`wave_override`](lua://EnemyBattler.wave_override)。
+---@return string[]
+function EnemyBattler:getNextWaves()
+    if self.wave_override then
+        local wave = self.wave_override
+        self.wave_override = nil
+        return {wave}
+    end
+    return self.waves
+end
+```
+
+你应该已经能看出这个函数如上所述是如何工作的——现在来做一些修改。
+
+我们要让敌人能够选择的波形在达到特定 HP 阈值时发生变化。
+
+```lua
+-- 位于 scripts/battle/enemies 文件中
+function MyEnemy:getNextWaves()
+    -- 保留此代码块，这样我们仍然可以在需要时使用 wave_override
+    if self.wave_override then
+        local wave = self.wave_override
+        self.wave_override = nil
+        return {wave}
+    end
+
+    local waves = TableUtils.copy(self.waves) -- 创建原始 waves 表的副本
+
+    -- 根据 HP 添加或移除波形。
+    if self.health <= self.max_health * 2/3 then -- 剩余 HP 为三分之二或更少
+        TableUtils.removeValue(waves, "high_health_wave")
+    end
+    if self.health <= self.max_health * 1/3 then -- 剩余 HP 为三分之一或更少
+        table.insert(waves, "low_health_wave")
+    end
+
+    return waves -- 返回新表
+end
+```
+
+此外，这个函数**始终必须返回一个表**！所以即使你想通过此方法强制使用一个波形，该波形也**必须**包装在表中。
+
+你可以参考 `wave_override` 系统的处理方式——将波形名称包在 `{}` 中，这会创建一个只包含单个项目的表。例如，如果想强制选择 `special_wave`，应使用 `return {"special_wave"}`，而不是 `return "special_wave"`。
+
+### EnemyBattler:selectWave()
+
+这个函数最适合对特定敌人的波形选择进行细粒度控制。
+
+再看看这个函数的默认实现，了解它的作用：
+
+```lua
+--- *(Override)* 选择该敌人每回合使用的波形。
+--- *默认情况下，从 [`EnemyBattler:getNextWaves()`](lua://EnemyBattler.getNextWaves) 提供的可用选项中选择。*
+---@return string? wave_id
+function EnemyBattler:selectWave()
+    local waves = self:getNextWaves()
+    if waves and #waves > 0 then
+        local wave = TableUtils.pick(waves)
+        self.selected_wave = wave
+        return wave
+    end
+end
+```
+
+这个函数返回一个波形 id，或者什么也不返回。
+
+此外，这个函数还**必须**将 `selected_wave` 设置为所选波形的名称。
+
+默认行为会处理随机波形选择，包括使用 `getNextWaves()`；因此，如果你覆盖了这个函数，那么除非在新代码中重新使用那个方法，否则覆盖 `getNextWaves()` 将不会产生任何效果。
+
+作为一个覆盖示例，我们来制作一个类似 Boss 的波形选择器，根据当前回合选择特定波形：
+
+```lua
+-- 位于 scripts/battle/enemies 文件中
+function MyBossEnemy:selectWave()
+    local turn = Game.battle.turn_count -- 战斗会自动记录当前回合
+
+    -- 根据回合选择特定波形
+    if turn == 1 then
+        self.selected_wave = "scripted_wave_1"
+        return self.selected_wave
+    elseif turn == 2 then
+        self.selected_wave = "scripted_wave_2"
+        return self.selected_wave
+    elseif turn == 3 then
+        self.selected_wave = "scripted_wave_3"
+        return self.selected_wave
+    elseif turn == 4 then
+        self.selected_wave = "scripted_wave_4"
+        return self.selected_wave
+    elseif turn == 5 then
+        self.selected_wave = "ultimate_attack"
+        return self.selected_wave
+    end
+
+    -- 脚本用完时使用随机波形选择（假设已设置 self.waves）
+    return super.selectWave(self)
+end
+```
+
+这里，我们根据战斗当前回合设置并返回敌人选中的波形。
+
+更复杂的系统可以实现自己的进度计数器，并使用更具体的战斗推进条件，例如仁慈值或生命值阈值。
+
+如上面的函数所示，我们也可以始终通过调用超类函数 `super.selectWave(self)`，把标准波形选择器作为后备选项。
+
+### Encounter:getNextWaves()
+
+遭遇战是我们可以控制波形选择的最后一个位置。
+
+与其他方法不同，它位于**遭遇战**层级，因此会独立于敌人运行。
+
+默认情况下，这个函数用于将敌人选中的波形传递给战斗：
+```lua
+--- *(Override)* 获取下一次防御阶段要使用的波形。 \
+--- *默认情况下遍历所有活动敌人，并使用 [`EnemyBattler:selectWave()`](lua://EnemyBattler.selectWave) 为每个敌人选择一个波形。*
+---@return Wave[]
+function Encounter:getNextWaves()
+    local waves = {}
+    for _,enemy in ipairs(Game.battle:getActiveEnemies()) do
+        local wave = enemy:selectWave()
+        if wave then
+            table.insert(waves, wave)
+        end
+    end
+    return waves
+end
+```
+
+这个函数有一项独特能力：与敌人不同，它可以选择**不限数量的波形**来使用。
+
+不过，这也带来了一些与所用波形有关的重要注意事项，和我们在上文 `selectWave()` 中讨论的内容有关。
+
+通常，每个敌人会选择一个波形，然后相应地设置自己的 `selected_wave` 变量。这使得每个波形都能**知道是哪些 EnemyBattler 正在使用它**。
+
+而当波形由遭遇战选择时，它不会有攻击者。（除非我们手动设置攻击者，但那样就失去了使用这种方法而不是 `selectWave()` 的意义。）
+
+没有攻击者的波形并非不能工作，但如果我们这样选择波形，就必须确保波形被设计为**独立于攻击者**。
+
+设计独立于攻击者的波形需要做到以下**两点**：
+- 永远不要依赖波形拥有攻击者。如果某个敌人**可能**会使用这个波形，仍然可以使用 `Wave:getAttackers()`，但要预期它可能返回空表。
+- 确保波形生成的所有子弹都设置了 `damage` 变量，或者其 `getDamage()` 函数会返回一个值。
+
+来看看这个函数的覆盖示例：
+
+```lua
+-- 位于 scripts/battle/encounters 文件中
+function SnowstormEncounter:getNextWaves()
+    local waves = super.getNextWaves(self) -- 调用原始函数，获取敌人选中的波形
+
+    table.insert(waves, "snowstorm_hazard") -- 添加一个我们自己的波形
+
+    return waves -- 返回最终的波形列表
+end
+```
+
+这里，我们通过 `super.getNextWaves(self)` 使用原本的敌人波形选择，然后将 `snowstorm_hazard` 插入表中，作为额外波形添加进去。
+
+因此，在这场遭遇战的每个回合中，`snowstorm_hazard` 波形都会和敌人选中的波形一起处于激活状态。
+
+`snowstorm_hazard` 必须是一个符合上述条件、独立于攻击者的波形。
+</Box>
+
+<Box>
+## 子弹示例：基于移动的子弹 [blue-orange-bullets]
+
+你可能想复现的一对常见子弹行为，是 UNDERTALE 中蓝色/橙色子弹的移动机制。
+
+下面来看看如何让自定义子弹拥有这种行为。
+
+首先，打开你想赋予这种行为的自定义子弹文件；如果还没有这样的文件，就在 `scripts/battle/bullets` 中创建一个新文件，并插入以下模板：
+```lua
+local BlueOrangeBullet, super = Class(Bullet)
+
+function BlueOrangeBullet:init(x, y)
+    super.init(self, x, y, "bullets/smallbullet")
+end
+
+function BlueOrangeBullet:onDamage(soul)
+
+end
+
+return BlueOrangeBullet
+```
+
+在编写效果代码之前，我们应该先把子弹变成想要的颜色！
+
+UNDERTALE 中蓝色/橙色所使用的颜色代码分别是 `#14a9ff` 和 `#ffa040`。
+
+你可以直接修改子弹精灵图，将它变成想要的颜色；或者，如果子弹精灵图是白色的，也可以通过代码完成。
+
+我们可以使用 `ColorUtils.hexToRGB()` 和 `setColor()`，在 `Bullet:init()` 中这样为子弹设置颜色：
+```lua
+function BlueOrangeBullet:init(x, y)
+    super.init(self, x, y, "bullets/smallbullet")
+
+    self:setColor(ColorUtils.hexToRGB("#14a9ff")) -- 蓝色使用这个
+    self:setColor(ColorUtils.hexToRGB("#ffa040")) -- 橙色使用这个
+end
+```
+
+既然我们正在查看 init 函数，也应该考虑禁用子弹的 `destroy_on_hit`，否则任何碰撞都会让子弹消失，即使我们之后已经添加了自定义代码。
+
+只需将下面这行添加到 `init()` 函数中：
+```lua
+self.destroy_on_hit = false
+```
+
+现在来编写这些子弹行为的实际代码。从这里开始，我们所做的一切都在 `Bullet:onDamage(soul)` 函数中。
+
+`Bullet:onDamage(soul)` 负责伤害逻辑，也就是说，如果我们挂接或覆盖它，就可以改变正常伤害发生的条件——但具体要怎么做呢？
+
+当我们第一次覆盖一个函数时，它的效果类似于*重写*该函数——原函数中的所有内容都会被我们的代码完全替代。
+
+不过，`super` 变量保存了基类函数的副本，因此，如果我们挂接 `Bullet:onDamage(soul)`，并在其中调用 `super.onDamage(self, soul)`，就仍然可以使用子弹原本的伤害逻辑。
+
+我们可以利用这一点，让伤害逻辑只在特定条件下发生——只需使用 `Soul:isMoving()` 检查灵魂的移动状态，然后相应地运行 `super.onDamage(self, soul)`。
+
+`Bullet:onDamage(soul)` 还会返回一个 `table` 值。我们不必过多关注这一点，但应当**返回超类调用的值**，并在函数末尾添加 `return {}`。
+
+实际编写 `onDamage` 挂接时，要根据正在创建的子弹类型使用下面两个函数中的一个：
+```lua
+-- 蓝色子弹（灵魂正在移动时造成伤害）
+function BlueOrangeBullet:onDamage(soul)
+    if soul:isMoving() then -- 如果灵魂正在移动……
+        return super.onDamage(self, soul) -- 那么运行正常的伤害逻辑
+    end
+
+    -- 取消伤害时返回空表
+    return {}
+end
+```
+
+```lua
+-- 橙色子弹（灵魂没有移动时造成伤害）
+function BlueOrangeBullet:onDamage(soul)
+    if not soul:isMoving() then -- 如果灵魂没有移动……
+        return super.onDamage(self, soul) -- 那么运行正常的伤害逻辑
+    end
+
+    -- 取消伤害时返回空表
+    return {}
+end
+```
+</Box>
+
+<Box>
+## 子弹示例：绿色（治疗）子弹 [green-bullets]
+
+并不是所有子弹都是邪恶的！有时你会想让子弹在击中玩家时为其治疗。下面来看看如何实现。
+
+首先打开你想变成绿色的子弹文件；如果还没有这样的文件，也可以在 `scrips/bullets` 中创建一个新文件，并插入以下模板：
+```lua
+local GreenBullet, super = Class(Bullet)
+
+function GreenBullet:init(x, y)
+    super.init(self, x, y, "bullets/smallbullet")
+end
+
+function GreenBullet:onCollide(soul)
+
+end
+
+return GreenBullet
+```
+
+首先，让我们把子弹变成绿色！你可以直接把子弹精灵图制作成绿色（绿色子弹通常使用 `#00ff00`），但如果子弹是全白的，也可以通过代码实现。
+
+要通过代码把子弹精灵图变成绿色，请前往 `init()` 函数并添加以下内容：
+```lua
+self:setColor(COLORS.lime) -- lime 是 #00ff00，通常用于绿色子弹的颜色。
+```
+
+接下来，我们需要让子弹治疗而不是造成伤害。这里要使用 `Bullet:onCollide(soul)` 函数。
+
+`Bullet:onCollide(soul)` 会在灵魂与子弹发生碰撞时立即执行；如果玩家不处于无敌状态，它会激活伤害逻辑。
+
+我们不需要这些逻辑，所以要将其移除！如果还没有为子弹添加 `onCollide(soul)` 覆盖，就现在添加：
+```lua
+function GreenBullet:onCollide(soul)
+
+end
+```
+因为我们没有在这里调用 `super.onCollide(self, soul)`，所以已经完全覆盖了原函数，这意味着我们的子弹将不再尝试造成伤害。
+
+现在需要添加治疗队伍的代码。
+
+我们可以治疗一名或全部队伍成员——下面分别看看两种做法。
+
+如果想治疗每一名队伍成员，可以使用循环遍历队伍中的每个 [`PartyBattler`](/wiki/api/PartyBattler)，并调用 `PartyBattler:heal(amount)`。它们都存储在 `Game.battle.party` 表中。
+
+之后调用子弹的 `remove()`，让它消失。
+```lua
+function GreenBullet:onCollide(soul)
+    for _, party in ipairs(Game.battle.party) do
+        party:heal(10) - Change this number to change how much HP the bullet heals
+    end
+    self:remove()
+end
+```
+
+如果只想治疗一名队伍成员，可以使用 [`TableUtils.pick(tbl)`](/wiki/api/TableUtils#pick) 从 `Game.battle.party` 中随机选择一名队伍成员，然后对其调用 `PartyBattler:heal(amount)`。
+
+之后调用子弹的 `remove()`，让它消失。
+```lua
+function GreenBullet:onCollide(soul)
+    local target = TableUtils.pick(Game.battle.party)
+    target:heal(10) -- 修改这个数字来改变子弹治疗的 HP 数量
+
+    self:remove()
+end
+```
+</Box>
+
+<Box>
+## 子弹示例：圆形 [circles]
+
+圆形及圆形的一部分经常会与子弹模式有关。
+
+下面来看看如何在波形中设置并使用它们！
+
+---
+
+首先，我们需要为任意圆形准备一些基础但重要的值，以及一个可以用来计算圆上位置的公式：
+
+```lua
+local radius = 50
+local center_x = 320
+local center_y = 240
+
+local angle = math.rad(0)
+
+local x = center_x + radius * math.cos(angle)
+local y = center_y + radius * math.sin(angle)
+```
+
+下面稍微拆解一下这段代码。
+
+首先，`radius`、`center_x` 和 `center_y` 这三个变量定义了圆本身。在这个例子中，我们选择了半径为 50 像素的圆，并将圆心放在屏幕中央。
+
+其次是 `angle` 变量——它实际上控制着我们最终计算出的圆上位置。角度为零时，对应圆最右侧的点；随着数值增加，我们寻找的点会沿顺时针方向绕圆移动。
+
+最后是 `x` 和 `y` 的公式。在大多数情况下不需要修改它们；正如后文所示，修改圆的定义对波形来说更有意义。
+
+### 在圆上生成子弹
+
+既然已经确定了要在圆形教程中使用的属性和计算方式，现在开始应用它们。
+
+先从最简单的设置开始——看看如何沿圆生成子弹。
+
+在一个新波形中，将上面的值添加到 `onStart` 函数内：
+
+```lua
+function CircleWave:onStart()
+    local radius = 50
+    local center_x = 320
+    local center_y = 240
+
+    local start_angle = math.rad(0)
+end
+```
+
+这里把 `angle` 改成了 `start_angle`，因为我们要生成不止一颗子弹，而且每颗子弹都会有不同的角度值。
+
+正如你可能猜到的，`start_angle` 是第一颗生成子弹的角度。因此它最终会影响所有子弹的位置。
+
+现在开始生成子弹！
+
+我们应当设置一个循环，让它针对每一颗想要生成的子弹运行一次：
+
+```lua
+function CircleWave:onStart()
+    local radius = 50
+    local center_x = 320
+    local center_y = 240
+
+    local start_angle = math.rad(0)
+
+    local angle = start_angle
+    local bullet_count = 8
+    for i=1, bullet_count do
+        local angle_increment = (i-1) * 2*math.pi / bullet_count
+        local x = center_x + radius * math.cos(angle + angle_increment)
+        local y = center_y + radius * math.sin(angle + angle_increment)
+        self:spawnBullet("smallbullet", x, y)
+    end
+end
+```
+
+
+
+---
+
+#### “等等！x 和 y 的计算是怎么回事？”
+
+没错！因为我们想生成*多颗*子弹，所以使用的角度需要在它们之间发生变化——这就是计算式中额外部分的作用。
+
+在这个例子中，`(i-1) * 2*math.pi / bullet_count` 会增加角度，使每颗子弹能够沿圆均匀分布。
+
+它的工作方式是：将一整圈的角度值 `2*math.pi` 拆分成与生成子弹数量 `bullet_count` 相同的份数。
+
+然后，对于第一颗之后生成的每颗子弹，我们将其中一份角度值加到 `(i-1)` 上。
+
+我们可以让波形使用两个不同的子弹数量运行两次，观察波形如何适应，从而看到它的实际效果。
+
+不过，在此之前，我们稍微修改一下波形，让它延迟生成每颗子弹，这样就能看到逐颗生成的过程。
+
+为此，可以使用计时器脚本，让循环每次迭代后等待一段时间：
+
+```lua
+function CircleWave:onStart()
+    local radius = 50
+    local center_x = 320
+    local center_y = 240
+
+    local start_angle = math.rad(0)
+
+    local angle = start_angle
+    local bullet_count = 8
+    self.timer:script(function (wait)
+        for i=1, bullet_count do
+            local angle_increment = (i-1) * 2*math.pi / bullet_count
+            local x = center_x + radius * math.cos(angle + angle_increment)
+            local y = center_y + radius * math.sin(angle + angle_increment)
+            self:spawnBullet("smallbullet", x, y)
+
+            wait(1/3)
+        end
+    end)
+end
+```
+
+现在来看看实际效果！
+
+<video controls preload="none">
+    <source src="/wiki/circle_bullets_1.mp4" type="video/mp4" />
+    您的浏览器不支持此视频。抱歉！
+</video>
+
+现在把子弹数量设置为 `12`，再试一次：
+
+<video controls preload="none">
+    <source src="/wiki/circle_bullets_2.mp4" type="video/mp4" />
+    您的浏览器不支持此视频。抱歉！
+</video>
+
+很好！除了能看到这里的递增方式之外，我们还可以看到，子弹会从圆最右侧的点开始，并随着角度增加沿顺时针方向移动。
+
+还有一点值得注意：从子弹指向圆心的方向，与生成子弹时使用的角度相反。
+
+这意味着，在上面的例子中，如果把子弹的方向设置为 `math.pi + angle + angle_increment`，它就会朝圆心移动。
+
+另一种做法是将方向设置为与角度*相同*，然后使用负的速度值——两种方式的效果相同。
+
+现在可以移除之前添加的计时器，让所有子弹同时生成，这样更容易看清圆形。
+
+看看实际效果！
+
+<video controls preload="none">
+    <source src="/wiki/circle_bullets_3.mp4" type="video/mp4" />
+    您的浏览器不支持此视频。抱歉！
+</video>
+
+
+### 移动圆形（CircleController）
+
+在圆上生成子弹很不错，但我们还可以更进一步！
+
+现在来看看如何让子弹沿圆移动，以及如何移动圆本身。
+
+这个阶段需要更复杂的设置——我们要创建并使用一个 `CircleController` 对象来表示圆，并替我们移动子弹。
+
+这样做还意味着之后可以将想要的任何对象附加到圆上，不论是子弹还是其他对象，而不必制作自定义子弹。
+
+我们可以在 `scripts/objects` 中创建这个新的 `CircleController`。新建一个名为 `CircleController.lua` 的文件，并加入下面的模板代码：
+
+```lua
+local CircleController, super = Class(Object)
+
+function CircleController:init(x, y)
+    super.init(self, x, y)
+
+end
+
+function CircleController:update()
+    super.update(self)
+end
+
+return CircleController
+```
+
+现在开始设置控制器！
+
+再次设置 `init()` 函数，加入计算所需的最基本变量。
+
+我们需要半径和角度——圆心现在就是这个控制器对象的位置。
+
+由于我们通常会希望每次都设置这两个值，所以也要将它们作为对象 `init()` 的参数：
+
+```lua
+function CircleController:init(x, y, radius, angle)
+    super.init(self, x, y)
+
+    -- 圆的半径，单位为像素
+    self.radius = radius or 25
+
+    -- 圆的旋转角度，单位为弧度
+    self.angle = angle or 0
+end
+```
+
+有了这些值，就可以设置 `update()` 函数了。这个函数与之前的代码非常相似，不过循环的是对象的子对象。
+
+```lua
+function CircleController:update()
+    super.update(self)
+
+    local spacing_angle = 2*math.pi / #self.children
+
+    for i, child in ipairs(self.children) do
+        child.x = self.radius * math.cos(self.angle + spacing_angle * i)
+        child.y = self.radius * math.sin(self.angle + spacing_angle * i)
+    end
+end
+```
+
+这里不需要添加中心的 x/y 值，因为圆上的所有子弹都会以这个对象为父对象，因此它的位置会自动作为圆心。
+
+现在来看看如何在波形中使用它！
+
+进入一个新的波形文件，设置一些基础内容来展示这个用法：
+
+```lua
+local Circle, super = Class(Wave)
+
+function Circle:onStart()
+    self.timer:everyInstant(5/4, function()
+        local x = Game.battle.soul.x
+        local y = Game.battle.soul.y
+
+        local radius = 50
+        local angle = 2*math.pi
+
+        local circle = CircleController(x, y, radius, angle)
+        self:addChild(circle)
+
+        for i=1, 9 do
+            local bullet = self:spawnBulletTo(circle, "bullets/smallbullet", 640, 640)
+            bullet.remove_offscreen = false
+        end
+    end)
+end
+
+function Circle:update()
+    super.update(self)
+end
+
+return Circle
+```
+
+如上面的代码所示，我们首先要创建一个 `CircleController` 实例，并将它设为另一个对象的子对象：
+```lua
+local circle = CircleController(x, y, radius, angle)
+self:addChild(circle)
+```
+
+然后，在 `for` 循环中使用 `spawnBulletTo()`，直接将子弹生成到圆上。这里使用的是带有 smallbullet 精灵图的基础子弹：
+```lua
+local bullet = self:spawnBulletTo(circle, "bullets/smallbullet", 640, 640)
+```
+这里将它们的位置设置为 `640, 640`，这样在控制器将其移动到正确位置之前，它们就不会有机会生成在灵魂上并造成伤害。
+
+这些圆应该都会以玩家灵魂为中心生成。来看看实际效果！
+
+<video controls preload="none">
+    <source src="/wiki/circle_controller_1.mp4" type="video/mp4" />
+    您的浏览器不支持此视频。抱歉！
+</video>
+
+咦？我们的子弹不应该那样啊！
+
+问题在于，子弹被击中后会被销毁，随后从 `children` 表中消失，导致间距出现问题。
+
+回到 `CircleController`，我们可以为圆的子对象创建一个“记忆”表。
+
+在 `CircleController:init()` 内定义这个新表：
+
+```lua
+self.children_memory = {}
+```
+
+接下来，需要追踪添加到这个圆上的子对象。我们通过挂接 `addChild` 和 `removeChild` 方法来完成：
+
+```lua
+function CircleController:addChild(child)
+    super.addChild(self, child)
+
+    table.insert(self.children_memory, child)
+end
+
+function CircleController:removeChild(child)
+    super.removeChild(self, child)
+
+    local i = TableUtils.getIndex(self.children_memory, child)
+
+    self.children_memory[i] = false
+end
+```
+
+现在，`children_memory` 表会作为圆形子对象的第二个引用。
+
+我们不再完全移除子对象条目，而是将其设置为 `false`，这样既移除了对象引用，又保留了这里曾经有过对象的记录，因此表中其他对象的位置不会发生变化。
+
+最后，需要稍微修改 update 函数，使其使用新表：
+
+```lua
+function CircleController:update()
+    super.update(self)
+
+    local spacing_angle = 2*math.pi / #self.children_memory
+
+    for i, child in ipairs(self.children_memory) do
+        if child then
+            child.x = self.radius * math.cos(self.angle + spacing_angle * i)
+            child.y = self.radius * math.sin(self.angle + spacing_angle * i)
+        end
+    end
+end
+```
+
+这个函数现在使用 `children_memory` 表，并加入了 `if child then` 检查——它会跳过 `false` 值，而不是把它们当成对象使用（否则会导致崩溃）。
+
+如果再次测试，你会看到子弹被移除时不再发生位置偏移。
+
+---
+### 将子弹从圆上分离
+
+解决子对象移除问题后，我们也可以顺利地分离子弹（而不是销毁它们）！下面来看看如何实现。
+
+首先需要保存想要修改的子弹引用；然后使用 `setParent(parent)` 将它改为另一个对象的子对象（理想情况下是当前波形）。
+
+由于这会改变子弹的原点坐标，需要添加一些额外代码来保持子弹当前的位置：
+
+```lua
+-- 最初生成子弹时保存子弹引用
+local bullet = self:spawnBulletTo(circle, ...)
+
+-- 在波形文件的其他位置……现在要分离子弹
+local x, y = bullet:getScreenPos() -- 记住子弹当前在屏幕上的位置。
+bullet:setParent(self) -- 我们在波形文件中，所以将它设为当前波形的子对象，并解除它与圆的父子关系。
+bullet:setScreenPos(x, y) -- 将子弹设置回重新设定父对象之前在屏幕上的位置。
+```
+
+---
+### 实际移动圆形
+
+这一切都很棒，但我们还没有展示制作这个对象的真正目的！毕竟，本节讲的就是*移动*圆形！
+
+首先，圆本身很容易移动——它完全取决于 `CircleController` 本身的位置，因此我们有几种选择。
+
+一种简单的方法是使用 `physics` 表让圆移动。下面这个波形（由前面的波形修改而来）就是这样做的：
+
+```lua
+local Circle, super = Class(Wave)
+
+function Circle:onStart()
+    self.timer:everyInstant(5/4, function()
+        local x = SCREEN_WIDTH + 80
+        local y = MathUtils.random(Game.battle.arena:getTop(), Game.battle.arena:getBottom())
+
+        local radius = 50
+        local angle = 2*math.pi
+
+        local circle = CircleController(x, y, radius, angle)
+        circle.physics.speed_x = -8
+        self:addChild(circle)
+
+        for i=1, 9 do
+            local bullet = self:spawnBulletTo(circle, "bullets/smallbullet", 640, 640)
+            bullet.remove_offscreen = false
+        end
+    end)
+end
+
+function Circle:update()
+    super.update(self)
+end
+
+return Circle
+```
+
+也来看看它的实际效果：
+
+<video controls preload="none">
+    <source src="/wiki/circle_controller_moving_physics.mp4" type="video/mp4" />
+    您的浏览器不支持此视频。抱歉！
+</video>
+
+另一种选择是使用父子关系，让圆的移动绑定到其父对象的移动上。
+
+如果想让圆以其他对象为中心，或让某个对象处于圆心，这种方法就很有用。
+
+假设你有一个波形，想让每个攻击者作为一个圆的中心，可以这样做：
+
+```lua
+for _, battler in ipairs(self:getAttackers()) do
+    local circle = CircleController(battler.width / 2, battler.height / 2, 50, 0) -- 以战斗者为圆心，半径为 50
+    battler:addChild(circle)
+end
+```
+
+这还允许我们对圆形进行更有创意的组合：实际上，可以将一个 `CircleController` 设为另一个 `CircleController` 的子对象，从而创建由圆组成的圆：
+
+```lua
+local circle = CircleController(SCREEN_WIDTH, SCREEN_HEIGHT / 2, 50, 0) -- 以屏幕右侧中央为圆心，半径为 50
+self:addChild(circle)
+for i=1, 3 do
+    local subcircle = CircleController(0, 0, 16, 0)
+    circle:addChild(subcircle)
+end
+```
+
+我们还需要将子弹添加到子圆中（也可以选择添加到主圆中）。下面展示一个带子圆的波形变体：
+
+```lua
+local Circle, super = Class(Wave)
+
+function Circle:onStart()
+    self.timer:everyInstant(5/4, function()
+        local x = SCREEN_WIDTH + 80
+        local y = MathUtils.random(Game.battle.arena:getTop(), Game.battle.arena:getBottom())
+
+        local radius = 50
+        local angle = 2*math.pi
+
+        local circle = CircleController(x, y, radius, angle)
+        circle.physics.speed_x = -8
+        self:addChild(circle)
+        for i=1, 3 do
+            local subcircle = CircleController(0, 0, 16, 0)
+            circle:addChild(subcircle)
+
+            for i=1, 6 do
+                local bullet = self:spawnBulletTo(subcircle, "bullets/smallbullet", 0, 0)
+                bullet.remove_offscreen = false
+            end
+        end
+    end)
+end
+
+function Circle:update()
+    super.update(self)
+end
+
+return Circle
+```
+
+来看看这个波形的实际效果：
+
+<video controls preload="none">
+    <source src="/wiki/circle_controller_subcircles.mp4" type="video/mp4" />
+    您的浏览器不支持此视频。抱歉！
+</video>
+
+很酷，不过你会发现它感觉不太像“圆”，因为它是静止的。这就引出了下一个要点！
+
+---
+### 让子弹绕圆移动
+
+我们还需要研究如何调整子弹沿圆的位置（不是移动整个圆）！
+
+现在你应该已经知道，这完全取决于圆的角度和半径，这正是我们设置 `angle` 变量的原因。
+
+这两个变量其实也非常相似，都很好操作！我们只需要随意增加或减少它们。
+
+这可以直接在波形中完成，也可以在对象自身内部完成。为了让 `CircleController` 保持灵活，这里选择在波形中处理。
+
+`doWhile()` 计时器函数会帮助我们完成这一点，它本质上是一个与 `while` 循环结合的 `update` 函数。
+
+现在来制作（又一个）波形变体：
+
+```lua
+local Circle, super = Class(Wave)
+
+function Circle:onStart()
+    self.timer:everyInstant(5/4, function()
+        local x, y = Game.battle.arena:getCenter()
+
+        local radius = 90
+        local angle = MathUtils.random(0, 2*math.pi)
+
+        local circle = CircleController(x, y, radius, angle)
+        self:addChild(circle)
+
+        for i=1, 6 do
+            local bullet = self:spawnBulletTo(circle, "bullets/smallbullet", 640, 640)
+            bullet.remove_offscreen = false
+        end
+
+        self.timer:doWhile(function() return not circle:isRemoved() end, function ()
+            circle.radius = circle.radius - 50 * DT -- 每秒将半径减少 50
+            circle.angle = circle.angle + math.rad(90 * DT) -- 每秒顺时针旋转 90 度
+
+            if circle.radius <= 0 then
+                circle:remove()
+            end
+        end)
+    end)
+end
+
+function Circle:update()
+    super.update(self)
+end
+
+return Circle
+```
+
+这里的关键区别在于加入了 `doWhile` 循环。运行波形看看效果，然后再拆解它。
+
+<video controls preload="none">
+    <source src="/wiki/circle_controller_dowhile.mp4" type="video/mp4" />
+    您的浏览器不支持此视频。抱歉！
+</video>
+
+首先，我们为 `doWhile` 提供一个条件——它以函数的形式提供；在这里，这个函数是：
+```lua
+function()
+    return circle
+end
+```
+这是一个非常基础的条件，只检查 `circle` 是否存在——所以条件实际上就是“只要圆存在”。
+
+现在来看计时器的实际内容：
+
+```lua
+circle.radius = circle.radius - 50 * DT -- 每秒将半径减少 50
+circle.angle = circle.angle + math.rad(90 * DT) -- 每秒旋转 90 度
+
+if circle.radius <= 0 then
+    circle:remove()
+end
+```
+
+我们直接修改圆的 `radius` 和 `angle` 值。
+
+我们还额外检查了半径是否达到零，并在达到零时移除圆，这样半径变成负数后子弹就不会重新向外移动。
+
+这里的计算依靠增量时间（`DT`），以确保不同帧率下的效果一致。
+
+按照上面的方式将一个值 `a` 乘以增量时间时，意味着这个变量的变化速率是每秒 `a` 个单位。例如，半径中的 `50 * DT` 就表示每秒缩小 50 像素。
+
+改变 `angle` 和 `radius` 就是这么简单。
+
+现在把注意力转向子弹间距，作为圆形教程的收尾。
+
+---
+### 可配置的子弹间距
+
+要实现这个功能，需要对 `CircleController` 做一些修改。
+
+首先，在 `CircleController:init()` 中设置*两个*新变量：
+
+```lua
+self.fixed_spacing = nil
+self.auto_spacing_range = 2*math.pi
+```
+
+第一个变量 `fixed_spacing` 让我们可以用一个表，为圆周上的每颗子弹定义独立的角度间距。
+
+第二个变量 `auto_spacing_range` 让我们可以定义**自动间距覆盖的圆周总角度**，从而能够在自动间距中创建一个“缺口”。
+
+现在需要实现这些变量。回到 `CircleController:update()`：
+
+```lua
+function CircleController:update()
+    super.update(self)
+
+    local spacing_angle = self.fixed_spacing and 0 or self.auto_spacing_range / #self.children_memory
+
+    for i, child in ipairs(self.children_memory) do
+        if self.fixed_spacing then
+            -- 如果存在新索引，则将间距值与它累加
+            spacing_angle = self.fixed_spacing[i] and spacing_angle + self.fixed_spacing[i]
+        end
+        if child then
+            if self.fixed_spacing then
+                -- 如果存在固定间距值……
+                child.x = self.radius * math.cos(self.angle + spacing_angle)
+                child.y = self.radius * math.sin(self.angle + spacing_angle)
+            else
+                -- 如果不存在固定间距值……
+                child.x = self.radius * math.cos(self.angle + spacing_angle * i)
+                child.y = self.radius * math.sin(self.angle + spacing_angle * i)
+            end
+        end
+    end
+end
+```
+
+这个修改后的 update 版本改变了 `spacing_angle` 的计算方式：
+- 如果定义了 `fixed_spacing` 表，它就会变成该表中截至 `i` 的所有值的累加和。
+- 否则，它会被计算为 auto_spacing_range 除以子对象数量——和之前一样均匀分布，但现在可以覆盖不足一整圈的范围。
+
+在波形中修改这些字段非常简单，直接设置它们即可，就像设置 `angle` 和 `radius` 一样：
+
+```lua
+-- 圆形生成示例
+local circle = CircleController(x, y, radius, angle)
+self:addChild(circle)
+
+self.auto_spacing_range = math.rad(300) -- 在圆上留下 60 度的缺口。
+self.fixed_spacing = {math.rad(80), math.rad(20), math.rad(20), math.rad(80), math.rad(20), math.rad(20), math.rad(80), math.rad(20), math.rad(20)} -- 在圆上创建三组聚集的子弹。
+```
+
+注意，定义 `fixed_spacing` 后，它会拥有更高优先级——因此默认将它设置为 `nil`。
+
+`auto_spacing_range` 应该很好理解，但 `fixed_spacing` 稍微复杂一些，所以我们来看一个使用它的波形示例：
+
+```lua
+local Circle, super = Class(Wave)
+
+function Circle:onStart()
+    self.timer:everyInstant(5/4, function()
+        local x, y = Game.battle.arena:getCenter()
+
+        local radius = 90
+        local angle = MathUtils.random(0, 2*math.pi)
+
+        local circle = CircleController(x, y, radius, angle)
+        self:addChild(circle)
+        circle.fixed_spacing = {math.rad(80), math.rad(20), math.rad(20), math.rad(80), math.rad(20), math.rad(20), math.rad(80), math.rad(20), math.rad(20)}
+
+        for i=1, #circle.fixed_spacing do
+            local bullet = self:spawnBulletTo(circle, "bullets/smallbullet", 640, 640)
+            bullet.remove_offscreen = false
+        end
+
+        self.timer:doWhile(function() return not circle:isRemoved() end, function ()
+            circle.radius = circle.radius - 50 * DT -- 每秒将半径减少 20
+            circle.angle = circle.angle + math.rad(90 * DT) -- 每秒旋转 90 度
+
+            if circle.radius <= 0 then
+                circle:remove()
+            end
+        end)
+    end)
+end
+
+function Circle:update()
+    super.update(self)
+end
+
+return Circle
+```
+
+这里也加入了前面使用过的 `doWhile`，但重点是 `fixed_spacing` 表。
+
+这个表表示每颗子弹与下一颗子弹之间的角度；同时要记住，**子弹数量必须限制在这个表的长度以内**，这就是 `for` 循环上限使用 `#circle.fixed_spacing` 的原因。
+
+波形运行起来后如下所示：
+
+<video controls preload="none">
+    <source src="/wiki/circle_controller_fixed_spacing.mp4" type="video/mp4" />
+    您的浏览器不支持此视频。抱歉！
+</video>
+
+---
+
+这几乎就是波形中圆形的全部内容了！
+
+作为补充说明，这些代码严格来说完全不只适用于波形！如果你在其他地方也需要相同的移动效果，它可以兼容任何类型的对象。
+
+将这些圆形移动方式组合起来，看看如何让你的波形更加丰富！
+</Box>
+
+<Box>
+## 基础残影 [afterimages]
+
+在战斗中，你可能会想给某些子弹、战斗者或其他图形添加残影效果。
+
+Kristal 提供了 [`AfterImage`](/wiki/api/AfterImage) 对象，用来简化为对象设置残影的过程。
+
+AfterImage 对象**自动处理残影精灵图的效果**——换句话说，AfterImage 对象只是由多个 AfterImage 精灵图组成的一组残影中的单个精灵图，**并不是会自动处理整个效果的对象**。
+
+因此，我们需要编写必要的代码来生成 AfterImage，才能组成完整的效果。
+
+AfterImage 适用于任何拥有精灵图的对象，也适用于精灵图本身。下面假设示例中定义了一个名为 `sprite_to_afterimage` 的局部变量，其中保存着我们想要生成残影的 Sprite。
+
+我们还需要准备一个 `Timer` 实例，将它称作 `timer`。在波形中，你可能会使用 `self.timer`（波形的计时器）；其他对象则会使用 `Game.battle.timer`。
+
+你可以将这些占位变量替换为实际的精灵图和计时器引用，也可以先把目标精灵图和计时器赋给这些变量。
+
+例如，如果你正在处理一个子弹文件，可以这样写：
+```lua
+local sprite_to_afterimage = self.sprite
+local timer = self.wave.timer
+```
+
+至于实际的残影，可以使用一个简单的计时器：
+```lua
+-- 这个计时器会每隔 `1/15` 秒自动生成一次；可以修改下面函数中的数字来调整间隔，使效果更快或更慢
+timer:every(1/15, function()
+    -- 如果精灵图不再存在，就停止计时器，避免发生崩溃
+    if not sprite_to_afterimage then
+        return false
+    end
+
+    -- AfterImage 接收三个参数：精灵图、残影的初始 alpha，以及淡出速度。
+    -- 调整这些值，看看什么样的效果最适合你的需求！
+    local after_image = AfterImage(sprite_to_afterimage, 0.4, 0.04)
+    -- 必须将 AfterImage 设为精灵图的子对象，否则它不会在游戏中显示！
+    sprite_to_afterimage:addChild(after_image)
+end)
+```
+记得必须在这段代码之前定义 `timer` 和 `sprite_to_afterimage`，或者将它们替换为有效的 `Timer` 和 `Sprite` 对象。
+
+### 暂停与恢复
+如果想切换残影的开启和关闭，可以使用计时器上该函数的句柄。
+
+要获取函数的句柄，可以直接使用初始函数的返回结果，例如下面这一行：
+```lua
+local handle = timer:every(...)
+```
+这会将新计时器函数的句柄保存到局部变量 `handle` 中，之后可以用它暂停和恢复。使用同一个保存句柄的 Timer 对象：
+```lua
+timer:pause(handle) -- 无限期暂停句柄
+timer:unpause(handle) -- 恢复句柄
+```
+当然，要确保根据使用场景，为句柄使用合适的计时器和变量！
+
+例如，如果想让 `EnemyBattler` 在某些波形中使用 `AfterImage`，应该在 `EnemyBattler:init()` 中设置计时器，但可能会在波形脚本中访问它。
+
+如果使用局部变量保存句柄，波形将无法访问它，因此需要将它赋给敌人的某个字段，例如 `self.afterimage_handle`。
+
+由于战斗进行期间可以全局访问 `Game.battle.timer`，选择一个可访问的计时器也很简单。
+</Box>
+
+<Box>
+## 攻击预告（警示） [attack-telegraphing]
+
+所有波形都应当尽力让玩家看懂。无法理解或预判的波形，很可能也无法躲避！
+
+因此，了解如何为波形添加预告，对于制作有趣的战斗非常重要。
+
+本小指南只关注绘制基础攻击预告的代码技巧，但当然还有其他预告方式。
+
+例如 Spamton NEO 战斗中的加号炸弹，它们的精灵图会表示爆炸的机制。在某些场景中，这类预告可能比我们的代码方案更合适。
+
+### 直线轨迹
+
+有时你可能会让子弹沿一条运动线高速移动，或者让大量子弹同时从不同角度飞来。
+
+下面来看看如何绘制一条与子弹轨迹相匹配的直线。
+
+LOVE 函数 `love.graphics.line(x1, y1, x2, y2)` 可以在 `draw()` 函数中绘制直线——它需要两个不同的坐标来确定直线的起点和终点。
+
+不过在查看坐标之前，有一点很重要：**直线所处的图层会与调用它的对象的 `draw` 函数所在图层相同**。
+
+因此，要根据想让直线显示在哪一层，谨慎选择使用哪个对象的 `draw` 函数。
+
+首先，直线的第一个点 `(x1, y1)` 应当是飞来子弹的生成点。
+
+第二个点则需要计算为子弹运动路径上的某个点。
+
+将子弹方向记为 `direction`，运动路径上的第一个点记为 `(x1, y1)`，将想绘制的直线长度（单位为像素）记为 `length`，就可以按如下方式计算直线的第二个点：
+
+```lua
+local x2 = x1 + length * math.cos(direction)
+local y2 = y1 + length * math.sin(direction)
+```
+
+现在需要绘制直线！只需这样做：
+
+```lua
+love.graphics.line(x1, y1, x2, y2)
+```
+
+不过，我们可能还想改变直线的外观……可以在绘制直线前使用一些额外函数，修改图形状态。
+
+下面来看看可用的选项：
+
+```lua
+love.graphics.setColor({ 1, 0, 0, 0.4 }) -- 绘制半透明的红色
+love.graphics.setLineWidth(16) -- 绘制宽度为 16px 的直线
+love.graphics.setLineStyle("rough") -- 绘制边缘粗糙的直线
+```
+
+上面的示例会绘制一条宽度为 16px 的半透明红色直线。
+
+也可以选择非常细的直线：
+
+```lua
+love.graphics.setColor(COLORS.red) -- 绘制纯红色
+love.graphics.setLineWidth(1) -- 绘制 1px 的直线
+love.graphics.setLineStyle("rough") -- 绘制边缘粗糙的直线
+```
+
+调整这些值，直到得到想要的直线样式。
+
+根据波形的不同，让预告在正确的时间出现和消失可能会更困难。
+
+一两条直线很容易处理：只需设置布尔值，让波形/子弹与 `draw()` 函数互相传递状态。
+
+但如果增加更多子弹和随机性，就需要一个更协调的方案。
+
+一个不错的策略是使用表：我们可以将直线的信息添加到表中，然后读取这个表来绘制直线。
+
+下面进一步看看这种做法。
+
+先在波形上定义一个表：`self.lines = {}`。这行代码放在 `Wave:init()` 中。
+
+当我们要开始为子弹显示攻击预告时，需要将信息添加到这个表中。
+
+此时计算 `x1`、`y1`、`x2` 和 `y2`。
+
+有了这些值后，可以使用 `table.insert()` 向表中插入新条目：
+
+```lua
+table.insert(self.lines, {x1, y1, x2, y2})
+```
+
+当想停止绘制预告时，就需要将它移除。
+
+假设所有子弹的预告持续时间相同，我们可以把这个表当作栈，每次使用 `table.remove(self.lines, 1)` 移除第一项。
+
+如果想让预告长度可变，则可以在表中添加另一个数字，让它充当计时器：
+
+```lua
+table.insert(self.lines, {x1, y1, x2, y2, time})
+```
+
+这里的 `time` 应当是一个局部变量，表示预告应当显示的秒数。
+
+接下来，为了绘制直线预告，需要遍历所有直线，并绘制当前存在的直线：
+
+```lua
+-- 位于 draw() 函数中……
+
+-- 如果使用直线生命周期，用来存储剩余时间为 0 的直线。
+local lines_to_remove = {}
+
+-- 重要：此行应当改为引用实际绘制位置所在波形的 `lines` 表。
+local lines_table = self.lines
+
+for _, line in ipairs(lines_table) do
+    local x1, y1, x2, y2, time = unpack(line)
+
+    -- 在这里配置图形状态
+
+    -- 绘制直线
+    love.graphics.line(x1, y1, x2, y2)
+
+    -- 处理计时器
+    if time then
+        line[5] = time - DT
+
+        if line[5] <= 0 then
+            table.insert(lines_to_remove, line)
+        end
+    end
+end
+
+-- 移除计时器已过期的直线。必须单独执行，因为不能在遍历表时从表中移除内容。
+for _, line in ipairs(lines_to_remove) do
+    TableUtils.removeValue(lines_table, line)
+end
+```
+
+这个方案应该可以处理任意数量的直线！
+
+### 形状函数
+
+快速制作攻击预告的另一种方式，是绘制一个代表即将变得危险的区域的形状。
+
+LOVE 提供了一些可以在这里使用的形状函数：
+
+- `love.graphics.circle(mode, x, y, radius)`
+- `love.graphics.rectangle(mode, x, y, width, height)`
+- `love.graphics.polygon(mode, vertices)`
+
+实现这些形状的方式与绘制直线基本相同，只是不需要计算第二个点，因此这里不再重复介绍实现技巧。
+
+我们来看看它们与直线之间差异的几个重要注意事项！
+
+首先，这些函数都会指定一个 `mode`——因为我们既可以传入 `"line"` 只绘制形状轮廓，也可以传入 `"fill"` 绘制填充形状。
+
+如果想让这些形状的线条和填充使用不同颜色，可以先绘制填充，再绘制轮廓，并分别设置颜色。例如：
+
+```lua
+love.graphics.setLineWidth(2) -- 线宽为 2px
+love.graphics.setColor({ 0, 0, 1, 0.4 }) -- 半透明的蓝色圆形填充
+love.graphics.circle("fill", ...) -- 绘制半透明的蓝色填充
+love.graphics.setColor(COLORS.red) -- 红色圆形轮廓
+love.graphics.circle("line", ...) -- 绘制纯红色的圆形轮廓
+```
+
+每种形状的 `x` 和 `y` 值含义不同：
+- 对于圆形，`x` 和 `y` 表示圆心。
+- 对于矩形，它们表示矩形的左上角。
+- 对于多边形，每个顶点都有自己的一组坐标，因此没有单独的 `x` 和 `y`。
+
+### 警示精灵图
+
+也可以使用精灵图来表示警告！
+
+这相当容易实现，因为精灵图只是我们可以随时生成和移除的对象。
+
+我们只需要知道精灵图左上角的位置，从而将它生成在正确位置。
+
+```lua
+local warning_sprite = Sprite(texture, x, y)
+```
+
+我们将这个精灵图保存到 `warning_sprite` 变量中，以便随意修改它（包括稍后移除它）。
+
+还**必须将精灵图设为另一个对象的子对象**，它才会显示在屏幕上：
+
+```lua
+Game.battle:addChild(warning_sprite)
+```
+
+这会将我们的精灵图作为战斗 `Game.battle` 的子对象添加进去。
+
+任何对象都可以作为父对象，但 `Game.battle` 通常是最合理的选择。
+
+在 `Wave` 脚本中，还可以使用 `Wave:spawnSprite()` 函数作为替代方案，它会替我们处理父子关系：
+
+```lua
+local warning_sprite = self:spawnSprite(texture, x, y)
+```
+
+如果想让精灵图播放动画，可以在这里启动它：
+
+```lua
+warning_sprite:play(speed, loop, on_finished)
+```
+
+如果使用非循环动画，并希望让攻击与动画结束时间对齐，这里的第三个参数尤其有用。
+
+顾名思义，这个参数是一个回调函数，会在动画结束时运行。
+
+假设我们的精灵图是一个爆炸前蓄力的动画——与其尝试使用计时器让动画和爆炸对齐，不如使用 `on_finished` 回调来生成爆炸子弹并移除精灵图：
+
+```lua
+-- 位于波形文件的某处……
+
+warning_sprite:play(1/15, false, function()
+    self:spawnBullet("explosionbullet", warning_sprite.x, warning_sprite.y)
+
+    warning_sprite:remove()
+end)
+```
+
+在其他情况下，移除精灵图的最佳方式，就是在与它相关的子弹出现的同一时刻移除它。
+
+另外，如果你不想让精灵图出现和消失，而是想让它始终存在、通过改变外观来表示攻击，也可以使用相同的逻辑，只需对设置方式做一些修改。
+
+不要生成新的精灵图，而是对目标使用 `setSprite()`；同时使用 `resetSprite()` 代替移除操作。
+
+这种方法既适用于由波形生成的精灵图，也适用于原本就存在的精灵图。
+
+特别是，敌人的精灵图存储在对应 EnemyBattler 的 `EnemyBattler.sprite` 中。在波形中，最好通过 `Wave:getAttackers()` 访问它们。
+</Box>
+
+<Box>
+## 将子弹限制在竞技场内 [bullet-masking]
+
+`Arena` 对象包含一个特殊的 `ArenaMask`，它会将所有以它为父对象的子弹（以及其他对象）限制在竞技场内。这个遮罩存储在竞技场的 `mask` 变量中，可以通过 `Game.battle.arena.mask` 访问。
+
+可以通过 `Wave:spawnBulletTo(parent, bullet, ...)` 将子弹生成到竞技场遮罩上。
+这个函数的工作方式与 `Wave:spawnBullet(bullet, ...)` 相同，但需要先指定父对象：
+```lua
+self:spawnBulletTo(Game.battle.arena.mask, "mybullet", 0, 0)
+```
+
+也可以在生成子弹后再将它设为遮罩的子对象，只需像下面这样对该子弹调用 `setParent()`：
+```lua
+-- `bullet` 变量中保存着我们想要限制在遮罩内的子弹……
+bullet:setParent(Game.battle.arena.mask)
+```
+
+你可能会以为对遮罩使用 `addChild()` 也有相同效果，但**由于子弹已经拥有父对象，这样做会引发多个问题**。不要这样做。
+
+### 非零的父对象位置
+开始将子弹限制到竞技场遮罩后，还要注意一点：它并不位于 `(0, 0)`！好吧，准确地说……*遮罩*位于 `(0, 0)`，但*竞技场*不是。无论如何，这对我们意味着什么？
+
+当你将一个对象设为另一个对象的子对象时，子对象的原点坐标——`(0, 0)`——会变成父对象的原点，而不是屏幕左上角。
+
+这意味着子弹的 `x` 和 `y` 值会根据竞技场的位置发生平移，用来计算它在屏幕上的位置，因此子弹的位置往往会出错。
+
+考虑到这一点来设计波形完全没有问题，但如果原本认为子弹原点位于屏幕左上角，就不太适合重新设计整个波形。幸运的是，有解决办法！
+
+所有对象都有 `getScreenPos()` 和 `setScreenPos(x, y)` 函数，可以获取和设置对象在屏幕上显示时的坐标。很方便吧！
+
+如果我们在 `(320, 240)` 生成一个新子弹，然后将它设为竞技场遮罩的子对象，那么传入 `spawnBullet()` 的坐标会根据竞技场位置发生平移。不过，如果再将这些坐标传给 `setScreenPos()`，子弹就会回到 `(320, 240)`（屏幕中央）！
+
+下面用一小段代码展示这一过程：
+```lua
+local bullet = self:spawnBullet("bullets/smallbullet", 320, 240) -- 使用 smallbullet 纹理在屏幕中央（320, 240）生成子弹
+bullet:setParent(Game.battle.arena.mask) -- 将子弹限制在竞技场内。这会使子弹偏离 `(320, 240)`！
+bullet:setScreenPos(320, 240) -- 将子弹移回 (320, 240)。
+```
+
+对于静止的竞技场，我们只需要在生成子弹以及对其进行非相对移动时，像这样“校准”子弹。
+
+如果竞技场也在移动，那么被遮罩的子弹也会随竞技场移动——设计波形时要记住这一点！
+</Box>
+
+<Box>
+## 自定义灵魂模式 [custom-souls]
+
+Kristal 在战斗中通过 [`Soul`](/wiki/api/Soul) 对象提供了标准的红色灵魂模式——但如果我们想要蓝色、绿色、黄色，或其他任何颜色呢？
+
+在这种情况下，我们需要自定义灵魂模式！下面来看看如何制作自定义灵魂，以及如何在战斗中激活它。
+
+**（本节不是创建某种特定灵魂类型的教程。）**
+
+**（如果你正在使用自定义灵魂库，只想知道如何切换到它提供的自定义灵魂，请跳转到[“在战斗中切换灵魂”](/wiki/wavemaking-reference#changing-souls-in-battle)。）**
+
+要开始创建自定义灵魂模式，我们需要**创建一个新对象**，并确保这个对象**继承原本的 `Soul`**。
+
+这意味着要在项目的 `scripts/objects` 文件夹中创建一个新文件，并插入以下代码：
+
+```lua
+local MySoul, super = Class(Soul)
+
+function MySoul:init(x, y, color)
+    super.init(self, x, y, color)
+end
+
+return MySoul
+```
+
+这会将原本的红色灵魂复制到新对象中。这样做是必要的，因为 `Soul` 包含与代码有关的重要函数，例如战斗过渡和 GameOver；同时它也为我们提供了一个很好的基础，可以在此之上继续制作。
+
+### `doMovement()` 函数
+查看 Soul 对象的 [API 参考](/wiki/api/Soul)，可以看到它提供的所有函数；但在这个小指南中，最值得强调的是 `Soul:doMovement()`。
+
+每当灵魂可以移动时，`Soul:doMovement()` 就会在每帧调用一次；灵魂是否可以移动由 `soul.can_move` 变量决定。对于默认灵魂，`doMovement()` 如下所示：
+
+```lua
+--- 如果灵魂可以移动，则在 [`Soul:update()`](lua://Soul.update) 内每帧调用。
+--- 基于玩家输入的灵魂移动应当在此方法中处理。
+function Soul:doMovement()
+    local speed = self.speed
+
+    -- 如果需要，在这里进行速度计算。
+
+    if self.allow_focus then
+        if Input.down("cancel") then speed = speed / 2 end -- 专注模式。
+    end
+
+    local move_x, move_y = 0, 0
+
+    -- 键盘输入：
+    if Input.down("left")  then move_x = move_x - 1 end
+    if Input.down("right") then move_x = move_x + 1 end
+    if Input.down("up")    then move_y = move_y - 1 end
+    if Input.down("down")  then move_y = move_y + 1 end
+
+    self.moving_x = move_x
+    self.moving_y = move_y
+
+    if move_x ~= 0 or move_y ~= 0 then
+        if not self:move(move_x, move_y, speed * DTMULT) then
+            self.moving_x = 0
+            self.moving_y = 0
+        end
+    end
+end
+```
+
+这段代码是否有助于创建你设想的灵魂模式，取决于你打算进行多大程度的修改；但我们还是应该了解这段代码所做的一些**重要**事情：
+- `moving_x` 和 `moving_y` 变量会根据移动被设置为 `-1/0/1`。这让其他代码能够知道灵魂的移动方向，以及它是否正在移动——`Soul:isMoving()` 函数就是基于这些变量的！
+- 这里调用了 `self:move()` 函数——这个函数会检查与竞技场边界的碰撞。它还处在一个 `if` 条件中：这里的具体条件会在灵魂因碰撞而完全没有移动时运行内部代码块，并适当地将 `moving_x` 和 `moving_y` 重置为 0。
+- 灵魂的速度会乘以 **DTMULT**——`doMovement()` 中的代码**每帧都会运行**，所以必须这样做，才能让灵魂在不同帧率下保持一致的移动速度。
+
+即使是你可能不会视为*移动*、但属于玩家控制的一些行为，也应该使用 `doMovement()`。
+
+这是因为 Soul 的更新函数结构是：过渡检查 -> 移动（`doMovement()`）-> 碰撞和擦弹。第一步过渡检查会在灵魂处于过渡中时阻止移动和碰撞检查。
+
+因此，`doMovement()` 是处理所有玩家输入的理想位置：借助过渡检查，以及后续的擦弹代码，我们可以把所有输入代码整齐地放在两者之间，完全不必修改 `update()`。
+
+*（对于更复杂的灵魂，例如绿色灵魂，你可能还想自定义擦弹代码；这时无论是否使用 `doMovement()` 而不是 `update()`，差别就没那么大了，因为无论如何你都会挂接其中一个函数。）*
+
+### 在战斗中切换灵魂
+
+无论你是制作了自己的灵魂类型，还是通过自定义库使用灵魂，都需要知道如何真正让它成为战斗中的玩家灵魂。
+
+#### Encounter:createSoul() 函数
+
+首先，我们要查看 **Encounter** 文件。`Encounter` 对象实际上负责通过 `Encounter:createSoul(x, y, color)` 选择每个波形开始时生成的灵魂。
+
+它的默认实现如下：
+```lua
+--- *(Override)* 创建本场战斗使用的灵魂（在每个波形开始时调用）
+--- 默认情况下返回普通的（红色）灵魂。
+---@param x         number  灵魂应当生成的 x 坐标。
+---@param y         number  灵魂应当生成的 y 坐标。
+---@param color?    table   应当覆盖灵魂默认颜色的自定义颜色。
+---@return Soul
+function Encounter:createSoul(x, y, color)
+    return Soul(x, y, color)
+end
+```
+
+如你所见，这个函数会**创建并返回**将要使用的灵魂类型——至少是波形开始时生成的灵魂类型。
+
+如果想在整场战斗中使用某种灵魂，只需将语句中的灵魂 id/全局名称替换成目标灵魂，并在需要时修改传入的参数。
+
+例如，如果灵魂名为 `MySoul`，就可以写成 `return MySoul(x, y, color)`。
+
+如果不确定灵魂的 id/全局名称是什么，它默认就是文件名中区分大小写的名称。也就是说，在上面的示例中，创建的对象来自 `scripts/objects/MySoul.lua` 文件。
+
+对于库中的灵魂，需要查阅库作者提供的信息，因为作者应当会在附带文档或库的描述中注明灵魂的 id。
+
+如果想在战斗中使用多个灵魂，可以添加一些条件来决定返回哪种灵魂。
+
+假设我们想在第一回合使用默认灵魂，之后的回合使用自定义灵魂 `MySoul`；如果遭遇战中的 `funky_soul` 变量为 `true`，则使用另一个自定义灵魂 `FunkySoul`：
+```lua
+function Encounter:createSoul(x, y, color)
+    -- 第一回合返回默认灵魂……
+    if self.turn == 1 then
+        return Soul(x, y, color)
+    end
+    -- 如果将这个变量设为 true，且当前不是第一回合，则返回 FunkySoul。
+    if self.funky_soul then
+        -- 大多数自定义灵魂类型都会定义自己的颜色，所以通常不需要传入 `color`，只需传入 `x` 和 `y`
+        return FunkySoul(x, y)
+    end
+    -- 其他回合返回自定义灵魂。
+    return MySoul(x, y, color)
+end
+```
+
+进一步看看这里 `FunkySoul`/`MySoul` 的选择——如果想根据各种不同的触发条件切换灵魂类型，像这样使用变量会非常方便。
+
+由于这段代码位于遭遇战文件中，我们可以通过 `Game.battle.encounter` 全局访问和修改这个变量。
+
+这意味着如果想让某个 ACT 触发 FunkySoul，只需在 ACT 代码中添加 `Game.battle.encounter.funky_soul = true`，就能触发 FunkySoul。
+
+如果想让法术、物品或类似内容触发 FunkySoul，也可以采用同样的方式。实际上，只要战斗处于活动状态，几乎可以在任何地方设置这个变量。
+
+考虑到这一点，请记住 `createSoul()` 是一个**遭遇战**函数——所以只有当包含这段代码的特定遭遇战被添加时，修改变量才会生效。
+
+如果想让它适用于所有战斗，就必须 [挂接 `Encounter` 本身](/wiki/hooks)，将它变成新的默认实现。
+
+#### `Battle:swapSoul()` 函数
+
+关于 `createSoul()` 函数就是这些。现在来看看使用自定义灵魂的另一个重要函数——`Battle:swapSoul()`。
+
+`Encounter:createSoul(x, y, color)` 函数负责决定每个波形开始时使用的灵魂；而 `Battle:swapSoul(object)` 让我们能够在波形内部进一步改变当前的 Soul 对象。
+
+我们可以随时调用 `Battle:swapSoul(object)`，它会移除当前灵魂，并将它替换为作为 `object` 传入的 Soul。
+
+如果想在被敌方子弹击中时激活名为 `FunkySoul` 的自定义灵魂，可以利用它的 `onCollide()` 代码之类的函数来实现：
+```lua
+-- 创建 FunkySoul。
+local soul = FunkySoul()
+Game.battle:swapSoul(soul)
+```
+
+这样会立即激活 FunkySoul——注意，与 `createSoul()` 相比，我们没有给它传入 `x` 或 `y` 参数；这是因为 `swapSoul()` 会替我们处理灵魂的位置。
+
+就是这样！在波形中切换灵魂模式其实非常直接——战斗中可以全局访问 `Game.battle`，这也意味着我们几乎可以从任何地方切换灵魂。
+
+### 补充说明
+
+我们可以组合使用上面介绍的两种灵魂模式切换方法：如果某颗子弹激活了 FunkySoul，可以同时将前面示例中的 `funky_soul` 变量设为 true，使它在整场战斗中保持激活：
+```lua
+-- 假想的会触发 FunkySoul 的“FunkyBullet”
+function FunkyBullet:onCollide(soul)
+    super.onCollide(self, soul)
+
+    local soul = FunkySoul()
+    Game.battle:swapSoul(soul)
+    Game.battle.encounter.funky_soul = true
+end
+```
+这样，FunkySoul 就会一直保持激活，直到我们将该值重新设为 `false`，以某种方式让灵魂恢复正常。
+
+---
+
+如果想在战斗中访问灵魂，它位于 `Game.battle.soul` 下。不过请注意，**灵魂会在波形之间被销毁**，因此在防御阶段之外尝试访问它的代码会导致崩溃。
+
+同样，**灵魂上设置的任何自定义变量都会被重置**；所以如果有数据需要在波形之间保留，**必须将它存储在其他位置**。
+</Box>
