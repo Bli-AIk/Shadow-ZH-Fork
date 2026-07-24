@@ -96,7 +96,8 @@
     "hooks": "Hooks",
     "ui": "The UI System",
     "api": "API Reference",
-    "apiDescription": "An auto-generated API reference for Kristal."
+    "apiDescription": "An auto-generated API reference for Kristal.",
+    "backToTop": "Back to top"
   },
   "Search": {
     "title": "Search The Wiki",

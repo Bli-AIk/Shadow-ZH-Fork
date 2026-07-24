@@ -40,27 +40,35 @@ body {
   flex-direction: column;
 }
 
-html[lang="zh"] body,
-html[data-display-mode="both"] body {
+html[lang="zh"]:not([data-display-mode="both"]) body {
   font-family: "KristalZhMain", "KristalZhFallback", "8bitOperatorPlus-Regular", monospace;
 }
 
-html[lang="zh"] h1,
-html[lang="zh"] h2,
-html[lang="zh"] h3,
-html[lang="zh"] h4,
-html[lang="zh"] h5,
-html[lang="zh"] h6,
-html[lang="zh"] strong,
-html[lang="zh"] b,
-html[data-display-mode="both"] h1,
-html[data-display-mode="both"] h2,
-html[data-display-mode="both"] h3,
-html[data-display-mode="both"] h4,
-html[data-display-mode="both"] h5,
-html[data-display-mode="both"] h6,
-html[data-display-mode="both"] strong,
-html[data-display-mode="both"] b {
+html[data-display-mode="both"] [data-language="zh"] {
+  font-family: "KristalZhMain", "KristalZhFallback", "8bitOperatorPlus-Regular", monospace;
+}
+
+html[data-display-mode="both"] [data-language="en"] {
+  font-family: "8bitOperatorPlus-Regular", monospace;
+  letter-spacing: normal;
+}
+
+html[lang="zh"]:not([data-display-mode="both"]) h1,
+html[lang="zh"]:not([data-display-mode="both"]) h2,
+html[lang="zh"]:not([data-display-mode="both"]) h3,
+html[lang="zh"]:not([data-display-mode="both"]) h4,
+html[lang="zh"]:not([data-display-mode="both"]) h5,
+html[lang="zh"]:not([data-display-mode="both"]) h6,
+html[lang="zh"]:not([data-display-mode="both"]) strong,
+html[lang="zh"]:not([data-display-mode="both"]) b,
+html[data-display-mode="both"] [data-language="zh"] h1,
+html[data-display-mode="both"] [data-language="zh"] h2,
+html[data-display-mode="both"] [data-language="zh"] h3,
+html[data-display-mode="both"] [data-language="zh"] h4,
+html[data-display-mode="both"] [data-language="zh"] h5,
+html[data-display-mode="both"] [data-language="zh"] h6,
+html[data-display-mode="both"] [data-language="zh"] strong,
+html[data-display-mode="both"] [data-language="zh"] b {
   font-family: "KristalZhMain", "KristalZhFallback", "8bitOperatorPlus-Bold", monospace;
 }
 
@@ -188,6 +196,13 @@ thead {
 
 pre {
   text-wrap: balance;
+}
+
+html[lang="zh"]:not([data-display-mode="both"]) pre,
+html[lang="zh"]:not([data-display-mode="both"]) code,
+html[data-display-mode="both"] [data-language="zh"] pre,
+html[data-display-mode="both"] [data-language="zh"] code {
+  letter-spacing: normal;
 }
 
 code {

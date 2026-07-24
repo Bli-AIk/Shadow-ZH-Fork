@@ -45,7 +45,7 @@ export default async function RootLayout({ children, params }) {
   const t = await getTranslations('Common');
 
   return (
-    <html lang={locale}>
+    <html lang={locale} suppressHydrationWarning>
       <head>
         <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.8.0/styles/github-dark.min.css" />
       </head>

@@ -96,7 +96,8 @@
     "hooks": "Hook",
     "ui": "UI 系统",
     "api": "API 参考",
-    "apiDescription": "Kristal 的自动生成 API 参考。"
+    "apiDescription": "Kristal 的自动生成 API 参考。",
+    "backToTop": "返回顶部"
   },
   "Search": {
     "title": "搜索 Wiki",

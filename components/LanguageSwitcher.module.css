@@ -1,37 +1,67 @@
 .control {
-    display: flex;
-    align-items: center;
-    gap: 0.35rem;
-    font-size: 16px;
-    white-space: nowrap;
+    position: fixed;
+    right: 1rem;
+    bottom: 1rem;
+    z-index: 20;
 }
 
-.label {
-    color: lightgray;
-}
-
-.control select {
-    min-width: 7rem;
-    padding: 0.35rem;
+.trigger {
+    width: 3rem;
+    height: 3rem;
     border: 2px solid white;
     border-radius: 0;
     background: #000;
     color: white;
-    font: inherit;
+    font: 16px/1 "8bitOperatorPlus-Regular", monospace;
+    cursor: pointer;
+    text-shadow: 2px 2px #000;
+}
+
+.trigger:hover,
+.trigger:focus-visible {
+    border-color: yellow;
+    color: white;
+    outline: none;
+}
+
+.menu {
+    position: absolute;
+    right: 0;
+    bottom: calc(100% + 0.5rem);
+    display: flex;
+    min-width: 8rem;
+    flex-direction: column;
+    border: 2px solid white;
+    background: #000;
+    box-shadow: 2px 2px #000;
+}
+
+.menu button {
+    border: 0;
+    border-bottom: 1px solid #666;
+    padding: 0.55rem 0.75rem;
+    background: #000;
+    color: white;
+    font: 16px/1.2 "8bitOperatorPlus-Regular", monospace;
+    text-align: left;
     cursor: pointer;
 }
 
-.control select:hover,
-.control select:focus {
-    border-color: yellow;
+.menu button:last-child {
+    border-bottom: 0;
+}
+
+.menu button:hover,
+.menu button:focus-visible,
+.menu button.active {
+    background: #222;
     color: yellow;
     outline: none;
 }
 
 @media screen and (max-width: 768px) {
     .control {
-        width: 100%;
-        justify-content: center;
-        padding: 0.5rem 0;
+        right: 0.75rem;
+        bottom: 0.75rem;
     }
 }

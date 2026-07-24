@@ -11,11 +11,11 @@ function attribute(name, value) {
     };
 }
 
-function part(language, node, missing = false) {
+function part(language, node, key, missing = false) {
     return {
         type: 'mdxJsxFlowElement',
         name: 'BilingualPart',
-        attributes: [attribute('language', language), ...(missing ? [attribute('missing', 'true')] : [])],
+        attributes: [attribute('key', key), attribute('language', language), ...(missing ? [attribute('missing', 'true')] : [])],
         children: node ? [node] : [],
     };
 }
@@ -24,10 +24,10 @@ function block(index, english, chinese, missing = false) {
     return {
         type: 'mdxJsxFlowElement',
         name: 'BilingualBlock',
-        attributes: [attribute('id', `block-${index + 1}`)],
+        attributes: [attribute('key', `bilingual-block-${index + 1}`), attribute('id', `block-${index + 1}`)],
         children: [
-            part('en', english),
-            part('zh', chinese || english, missing || !chinese),
+            part('en', english, `bilingual-block-${index + 1}-en`),
+            part('zh', chinese || english, `bilingual-block-${index + 1}-zh`, missing || !chinese),
         ],
     };
 }

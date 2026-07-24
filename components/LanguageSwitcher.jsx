@@ -1,27 +1,45 @@
 "use client";
 
-import { useEffect, useState } from 'react';
-import { useLocale, useTranslations } from 'next-intl';
+import { useEffect, useRef, useState } from 'react';
+import { useTranslations } from 'next-intl';
 import { usePathname, useRouter } from 'src/i18n/navigation';
 import { useSearchParams } from 'next/navigation';
 import { useDisplayMode } from './DisplayModeProvider';
 import styles from './LanguageSwitcher.module.css';
 
 export default function LanguageSwitcher() {
-    const locale = useLocale();
     const t = useTranslations('Common');
     const router = useRouter();
     const pathname = usePathname();
     const searchParams = useSearchParams();
     const { mode, setMode } = useDisplayMode();
-    const [value, setValue] = useState(mode);
+    const [open, setOpen] = useState(false);
+    const controlRef = useRef(null);
 
-    useEffect(() => setValue(mode), [mode]);
+    useEffect(() => {
+        if (!open) return undefined;
 
-    const onChange = (event) => {
-        const nextMode = event.target.value;
-        setValue(nextMode);
+        const closeOnOutsideClick = (event) => {
+            if (!controlRef.current?.contains(event.target)) setOpen(false);
+        };
+        const closeOnEscape = (event) => {
+            if (event.key === 'Escape') {
+                setOpen(false);
+                controlRef.current?.querySelector('button')?.focus();
+            }
+        };
+
+        document.addEventListener('pointerdown', closeOnOutsideClick);
+        document.addEventListener('keydown', closeOnEscape);
+        return () => {
+            document.removeEventListener('pointerdown', closeOnOutsideClick);
+            document.removeEventListener('keydown', closeOnEscape);
+        };
+    }, [open]);
+
+    const onChange = (nextMode) => {
         setMode(nextMode);
+        setOpen(false);
 
         if (nextMode === 'both') {
             const params = new URLSearchParams(searchParams.toString());
@@ -36,13 +54,31 @@ export default function LanguageSwitcher() {
     };
 
     return (
-        <label className={styles.control}>
-            <span className={styles.label}>{t('language')}</span>
-            <select value={value} onChange={onChange} aria-label={t('language')}>
-                <option value="en">{t('english')}</option>
-                <option value="zh">{t('chinese')}</option>
-                <option value="both">{t('bilingual')}</option>
-            </select>
-        </label>
+        <div ref={controlRef} className={styles.control}>
+            <button
+                type="button"
+                className={styles.trigger}
+                aria-label={t('language')}
+                aria-haspopup="menu"
+                aria-expanded={open}
+                title={t('language')}
+                onClick={() => setOpen((current) => !current)}
+            >
+                <span aria-hidden="true">文/A</span>
+            </button>
+            {open && (
+                <div className={styles.menu} role="menu" aria-label={t('language')}>
+                    <button type="button" role="menuitem" className={mode === 'en' ? styles.active : ''} onClick={() => onChange('en')}>
+                        {t('english')}
+                    </button>
+                    <button type="button" role="menuitem" className={mode === 'zh' ? styles.active : ''} onClick={() => onChange('zh')}>
+                        {t('chinese')}
+                    </button>
+                    <button type="button" role="menuitem" className={mode === 'both' ? styles.active : ''} onClick={() => onChange('both')}>
+                        {t('bilingual')}
+                    </button>
+                </div>
+            )}
+        </div>
     );
 }

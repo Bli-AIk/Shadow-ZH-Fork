@@ -38,6 +38,11 @@
     transition: color 0.2s;
 }
 
+html[lang="zh"] .item {
+    font-family: "KristalZhMain", "KristalZhFallback", "8bitOperatorPlus-Bold", monospace;
+    letter-spacing: 2px;
+}
+
 .item:hover {
     color: yellow;
 }
