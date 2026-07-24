@@ -1,0 +1,43 @@
+export const metadata = {
+    title: '安装并游玩项目',
+    description: '安装和游玩 Kristal 同人游戏的说明。',
+}
+
+# 安装并游玩项目
+
+<Box>
+
+打开 Kristal 后，主菜单中有一个用于打开项目文件夹的选项。你可以把下载的同人游戏放到这里。
+
+<>![](/wiki/open_folder.png)</>
+
+注意，只要打包方式正确，就不必解压同人游戏。你可以直接把 ZIP 文件放进项目文件夹。
+
+</Box>
+
+<Box>
+## “同人游戏没有出现在列表中！” [doesnt-show-up]
+
+如果同人游戏没有出现在列表中，可能是打包方式不正确。如果它是 ZIP 压缩包，请确认它没有嵌套在另一个文件夹中。
+
+**你不能把库当作同人游戏来游玩。**库是*供同人游戏使用的*，不能单独运行。
+</Box>
+
+<Box>
+## “这个选项不起作用/Kristal 崩溃了！” [manual-paths]
+
+这个问题的原因尚不清楚，而且很可能不在我们的控制范围内。这种情况下，你需要手动进入同人游戏文件夹。
+
+### Beta/Nightly 版本
+
+路径位于 `C:\Users\<YOUR_USERNAME>\AppData\Roaming\Kristal\mods\`。
+
+### 源代码版本
+
+**Windows：** `C:\Users\<YOUR_USERNAME>\AppData\Roaming\LOVE\Kristal\mods\`
+
+**Mac：** `/Users/<YOUR_USERNAME>/Library/Application Support/LOVE/Kristal/`
+
+**Linux：** `$XDG_DATA_HOME/love/kristal/` 或 `~/.local/share/love/kristal/`
+
+</Box>
