@@ -6,7 +6,7 @@ export const metadata = {
     description: '了解 Kristal 中所有事件的使用方法。',
 }
 
-# 使用大地图事件 [using-overworld-events]
+# 使用主世界事件 [using-overworld-events]
 
 
 <Box className={styles.content_table}>
@@ -255,7 +255,7 @@ export const metadata = {
     ## 路径系统教程 [path-system-tutorial]
     ---
 
-    路径用于定义大地图中某些对象的移动方式。简单来说，它是一系列点，对象会在这些点之间移动。
+    路径用于定义主世界中某些对象的移动方式。简单来说，它是一系列点，对象会在这些点之间移动。
 
     要创建路径，创建一个名称以 `paths` 开头的新对象图层。然后使用 Tiled 的 **插入多边形工具（P）** 创建一个多边形。
     多边形的**周长**就是对象将要沿着移动的路径。别忘了给多边形添加**名称**，之后你需要通过它引用该路径。
@@ -414,7 +414,7 @@ export const metadata = {
 
     这个 [`Event`](/wiki/api/Event) 应该是一个 `area`，因此请使用矩形创建它，并在 `objects` 图层上将其命名为 `interactable`。
 
-    你可以使用它为大地图中的对象**添加氛围文本**。
+    你可以使用它为主世界中的对象**添加氛围文本**。
 
     事件拥有以下属性：
     - `solid: boolean = false` -> 如果为 **true**，玩家会像撞到碰撞体一样与此对象发生碰撞。
@@ -452,7 +452,7 @@ export const metadata = {
 
     ## 脚本 [script]
 
-    脚本是玩家走进后会立即触发的大地图 [`Event`](/wiki/api/Event)。
+    脚本是玩家走进后会立即触发的主世界 [`Event`](/wiki/api/Event)。
 
     在地图的 `objects` 图层上将一个对象命名为 `script`，即可创建此对象。
 
@@ -759,7 +759,7 @@ export const metadata = {
     ## 摄像机目标 [camera-target]
     ---
 
-    这是一个大地图区域 [`Event`](/wiki/api/Event)，玩家位于其中时会让摄像机对准指定位置。
+    这是一个主世界区域 [`Event`](/wiki/api/Event)，玩家位于其中时会让摄像机对准指定位置。
     这在你希望玩家关注某个特定对象时很有用。
 
     这个事件是一个 `area`。在地图的 `objects` 图层上将对象命名为 `cameratarget`，即可创建此事件。
@@ -819,7 +819,7 @@ export const metadata = {
     ## 隐藏队伍 [hide-party]
     ---
 
-    这是大地图中的一个区域，玩家走进事件时会隐藏[跟随者](/wiki/api/Follower)以及[player](/wiki/api/Player)。
+    这是主世界中的一个区域，玩家走进事件时会隐藏[跟随者](/wiki/api/Follower)以及[player](/wiki/api/Player)。
 
     这个事件是一个 `area`。在地图的 `objects` 图层上将对象命名为 `hideparty`，即可创建此事件。
 
@@ -846,7 +846,7 @@ export const metadata = {
     ## 设置旗标事件 [set-flag-event]
     ---
 
-    这是一个大地图区域，玩家走进时会将旗标设置为指定值。
+    这是一个主世界区域，玩家走进时会将旗标设置为指定值。
 
     这个 [`Event`](/wiki/api/Event) 是一个 `area`。在地图的 `objects` 图层上将对象命名为 `setflag`，即可创建此事件。
 
@@ -1048,7 +1048,7 @@ export const metadata = {
     ## 传送门 [warp-door]
     ---
 
-    传送门是允许玩家在大地图位置之间**快速旅行**的对象。
+    传送门是允许玩家在主世界位置之间**快速旅行**的对象。
 
     要创建这个 [`Event`](/wiki/api/Event)，请在 `objects` 图层上放置一个点，并将其命名为 `warpdoor`。
 
@@ -1120,7 +1120,7 @@ export const metadata = {
     ## 快速存档事件 [quick-save-event]
     ---
 
-    这是一个进入后会触发[快速存档](/wiki/api/Game#saveQuick)的大地图对象。
+    这是一个进入后会触发[快速存档](/wiki/api/Game#saveQuick)的主世界对象。
     如果想在玩家 Game Over 后保存旗标值，可以使用它。
 
     `QuicksaveEvent` 是一个区域 [`Event`](/wiki/api/Event)。在地图的 `objects` 图层上将对象命名为 `quicksave`，即可创建此对象。
@@ -1155,7 +1155,7 @@ export const metadata = {
     ## 镜面区域 [mirror-area]
     ---
 
-    镜面区域是大地图中的一个区域，会像镜子一样反射位于它下方的角色。
+    镜面区域是主世界中的一个区域，会像镜子一样反射位于它下方的角色。
 
     `MirrorArea` 是一个 [`Event`](/wiki/api/Event)。在地图的 `objects` 图层上将对象命名为 `mirror`，即可创建此对象。
 
@@ -1526,7 +1526,7 @@ export const metadata = {
 
     ## 切换控制器 [toggle-controller]
     ---
-    这个 [`Event`](/wiki/api/Event) 是一种**控制器**，用于切换大地图中其他事件的存在状态。
+    这个 [`Event`](/wiki/api/Event) 是一种**控制器**，用于切换主世界中其他事件的存在状态。
 
     此控制器会在其旗标**发生变化时立即**切换其他事件的存在状态，因此不需要重新加载房间就能激活或停用其他事件。
 
@@ -1755,7 +1755,7 @@ export const metadata = {
 
     ## 追逐敌人 [chaser-enemy]
     ---
-    追逐敌人是你在大地图中遇到、碰撞后会开始一场遭遇战的敌人。
+    追逐敌人是你在主世界中遇到、碰撞后会开始一场遭遇战的敌人。
     这是一个复杂的事件，希望本教程能帮助你在项目中实现敌人。
 
     追逐敌人不是 [`Event`](/wiki/api/Event) 的扩展，而是 [`Character`](/wiki/api/Character) 的扩展，但创建方式和事件一样。
@@ -1777,7 +1777,7 @@ export const metadata = {
     - `encounter: string` -> 玩家与敌人碰撞时会触发的遭遇战 ID。存放在 `scripts/battle/encounters` 中。
     - `enemy: string` -> 此敌人要使用的敌人 ID。存放在 `scripts/data/actors` 中。
     <br></br>等等……既然已经定义了 `actor`，为什么还需要定义 `enemy`？我也不太清楚，但可以告诉你它们分别做什么。
-    **actor** 用于大地图中的精灵，以及切换到战斗时使用；而 **enemy** 会与 actor 一起添加到切换进入战斗的敌人列表中。
+    **actor** 用于主世界中的精灵，以及切换到战斗时使用；而 **enemy** 会与 actor 一起添加到切换进入战斗的敌人列表中。
     - `group: string` -> 可以分配给多个敌人的任意 ID，用来将它们编为一组。因此玩家完成这场遭遇战后，该组中的所有敌人都会从地图中卸载。
     - `path: string` -> 敌人要沿着移动的路径形状名称。参考[路径系统教程](#path-system-tutorial)。
     - `speed: number = 6` -> 如果定义了 `path`，敌人沿指定路径移动的速度。可以是浮点数。
@@ -1944,7 +1944,7 @@ export const metadata = {
     #### 移动敌人 [moving-the-enemy]
     ---
 
-    有多种方法可以让敌人在大地图中移动。
+    有多种方法可以让敌人在主世界中移动。
 
     我们先测试**路径系统**，同时了解组的工作方式。
 

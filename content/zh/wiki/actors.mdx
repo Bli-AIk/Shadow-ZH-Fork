@@ -36,7 +36,7 @@ return actor
     self.width = 19
     self.height = 37
 
-    -- 此 Actor 在大地图中的碰撞箱（可选，默认使用宽度和高度）
+    -- 此 Actor 在主世界中的碰撞箱（可选，默认使用宽度和高度）
     self.hitbox = {0, 25, 19, 14}
 
     -- 定义 Soul 在此 Actor 上应放置位置的表（当它是玩家时）。
@@ -217,7 +217,7 @@ end
 ---
 如果创建新的 ActorSprite 不符合你的风格，`Actor` 自身还提供了一些实用函数，让我们可以操作对象使用 Actor 时创建的基础 `ActorSprite` 实例。
 
-这些函数可以通过 **on** 和 **pre** 前缀，以及它们接收的 `sprite` 参数来区分（战斗和大地图上下文函数则分别接收 `battler` 和 `chara`）。
+这些函数可以通过 **on** 和 **pre** 前缀，以及它们接收的 `sprite` 参数来区分（战斗和主世界上下文函数则分别接收 `battler` 和 `chara`）。
 
 我们不再编写操作 `self` 的代码，而是使用 `sprite`，因为它才是一个 **ActorSprite 实例**！
 

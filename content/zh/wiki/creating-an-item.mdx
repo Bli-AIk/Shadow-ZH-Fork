@@ -80,7 +80,7 @@ return item
 ### `self.usable_in`
 
 `self.usable_in` 决定物品可以在哪里使用。它可以是以下值之一：
-- `world`：可以在大地图中使用
+- `world`：可以在主世界中使用
 - `battle`：可以在战斗中使用
 - `all`：在哪里都可以使用
 - `none`：无法使用
@@ -89,7 +89,7 @@ return item
 
 ### 让它做点什么
 
-让我们把它改成可以在大地图中使用。这很简单，只要把 `self.usable_in` 改成 `"world"`。我们还应该让玩家选择一名盟友来使用它，所以把 `self.target` 改成 `"ally"`。
+让我们把它改成可以在主世界中使用。这很简单，只要把 `self.usable_in` 改成 `"world"`。我们还应该让玩家选择一名盟友来使用它，所以把 `self.target` 改成 `"ally"`。
 
 ```lua
 function item:onWorldUse(target)
@@ -97,7 +97,7 @@ function item:onWorldUse(target)
 end
 ```
 
-这是你在大地图中使用物品时会被调用的函数。它接收一个参数 `target`，也就是你选择的目标。
+这是你在主世界中使用物品时会被调用的函数。它接收一个参数 `target`，也就是你选择的目标。
 
 那么，来让它把人炸飞吧。这就是我希望玩家选择目标的原因。
 
