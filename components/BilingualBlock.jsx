@@ -34,6 +34,10 @@ function applyChineseSpacing(node, keyPrefix = 'zh-node') {
     return cloneElement(node, { children: applyChineseSpacing(node.props.children, `${keyPrefix}-children`) });
 }
 
+export function ChineseText({ children }) {
+    return applyChineseSpacing(children);
+}
+
 export function BilingualBlock({ children, id }) {
     return <div className={styles.block} data-bilingual-block={id || undefined}>{children}</div>;
 }

@@ -1,47 +1,77 @@
+import { cloneElement, isValidElement } from 'react';
 import { Link } from "src/i18n/navigation";
 
-export default function Header(props) {
-    const { anchorId, ...headingProps } = props;
-    // get text content from props.children
-    if (typeof props.children === "string") {
-        let transformed = props.children.toString()
-        // transform text to be a valid id (spaces replaced with dashes, lowercase, alphanumeric characters only)
+function textContent(children) {
+    if (typeof children === 'string' || typeof children === 'number') return String(children);
+    if (Array.isArray(children)) return children.map(textContent).join('');
+    if (isValidElement(children)) return textContent(children.props.children);
+    return '';
+}
 
-        // but first, if there's text inside of square brackets, let's transform THAT instead
+function removeTrailingText(children, count) {
+    if (count <= 0) return children;
+    if (Array.isArray(children)) {
+        let remaining = count;
+        const result = [...children];
 
-        let original = transformed.replaceAll(/\[.*\]/g, (match) => {
-            transformed = match
-            return ""
-        })
-        original = original.trim()
-
-        transformed = anchorId || transformed
-            .replaceAll(" ", "-")
-            .toLowerCase()
-            .replaceAll(/[^a-z0-9-]/g, "")
-        // return a link with the transformed text as the id
-
-        switch (props.level) {
-            case 1: return <h1 {...headingProps}><Link href={`#${transformed}`} id={transformed}>{original}</Link></h1>
-            case 2: return <h2 {...headingProps}><Link href={`#${transformed}`} id={transformed}>{original}</Link></h2>
-            case 3: return <h3 {...headingProps}><Link href={`#${transformed}`} id={transformed}>{original}</Link></h3>
-            case 4: return <h4 {...headingProps}><Link href={`#${transformed}`} id={transformed}>{original}</Link></h4>
-            case 5: return <h5 {...headingProps}><Link href={`#${transformed}`} id={transformed}>{original}</Link></h5>
-            case 6: return <h6 {...headingProps}><Link href={`#${transformed}`} id={transformed}>{original}</Link></h6>
+        for (let index = result.length - 1; index >= 0 && remaining > 0; index -= 1) {
+            const childText = textContent(result[index]);
+            if (!childText) continue;
+            const removed = Math.min(remaining, childText.length);
+            result[index] = removeTrailingText(result[index], removed);
+            remaining -= removed;
         }
-        return <h1 {...props}/>
+
+        return result;
     }
-    else
-    {
-        switch (props.level)
-        {
-            case 1: return <h1 {...headingProps}/>
-            case 2: return <h2 {...headingProps}/>
-            case 3: return <h3 {...headingProps}/>
-            case 4: return <h4 {...headingProps}/>
-            case 5: return <h5 {...headingProps}/>
-            case 6: return <h6 {...headingProps}/>
-        }
-        return <h1 {...props}/>
+    if (typeof children === 'string') return children.slice(0, Math.max(0, children.length - count));
+    if (typeof children === 'number') {
+        const value = String(children);
+        return value.slice(0, Math.max(0, value.length - count));
+    }
+    if (!isValidElement(children)) return children;
+
+    return cloneElement(children, {
+        children: removeTrailingText(children.props.children, count),
+    });
+}
+
+function slugify(value) {
+    const slug = value
+        .replaceAll(" ", "-")
+        .toLowerCase()
+        .replaceAll(/[^a-z0-9-]/g, "");
+    if (slug) return slug;
+
+    const codePoints = Array.from(value)
+        .map((character) => character.codePointAt(0).toString(16))
+        .join('-');
+    return codePoints ? `section-${codePoints}` : 'section';
+}
+
+export default function Header(props) {
+    const { anchorId, children, ...headingProps } = props;
+    const rawText = textContent(children);
+    const anchorMatch = rawText.match(/\s*\[([^\]]+)\]\s*$/);
+    const visibleText = anchorMatch ? rawText.slice(0, anchorMatch.index).trim() : rawText.trim();
+    const anchorText = anchorMatch ? anchorMatch[1] : visibleText;
+    const transformed = anchorId || slugify(anchorText);
+    const headingChildren = anchorMatch
+        ? removeTrailingText(children, rawText.length - anchorMatch.index)
+        : children;
+    const content = (
+        <Link href={`#${transformed}`} id={transformed}>
+            {headingChildren || visibleText}
+        </Link>
+    );
+
+    switch (props.level) {
+        case 1: return <h1 {...headingProps}>{content}</h1>;
+        case 2: return <h2 {...headingProps}>{content}</h2>;
+        case 3: return <h3 {...headingProps}>{content}</h3>;
+        case 4: return <h4 {...headingProps}>{content}</h4>;
+        case 5: return <h5 {...headingProps}>{content}</h5>;
+        case 6: return <h6 {...headingProps}>{content}</h6>;
+        default: return <h1 {...headingProps}>{content}</h1>;
     }
 }

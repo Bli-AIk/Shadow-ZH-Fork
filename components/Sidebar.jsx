@@ -2,83 +2,103 @@
 
 import { Link } from 'src/i18n/navigation';
 import { useEffect, useRef } from 'react';
-import { useTranslations } from 'next-intl';
 import styles from './Sidebar.module.css';
 import Searchbar from 'components/Searchbar';
+import { ChineseText } from './BilingualBlock';
+import { useDisplayMode } from './DisplayModeProvider';
+import englishMessages from '../messages/en.json';
+import chineseMessages from '../messages/zh.json';
 
-function SidebarContent({ t }) {
+const english = englishMessages.Sidebar;
+const chinese = chineseMessages.Sidebar;
+
+function BilingualInline({ englishText, chineseText }) {
+    return (
+        <span className={styles.bilingualInline}>
+            <span data-language="en">{englishText}</span>
+            <span data-language="zh"><ChineseText>{chineseText}</ChineseText></span>
+        </span>
+    );
+}
+
+function SidebarContent() {
+    const text = (key) => (
+        <BilingualInline englishText={english[key]} chineseText={chinese[key]} />
+    );
+    const link = (href, key) => <Link href={href}>{text(key)}</Link>;
+
     return <>
         <br />
-        <h3><Link href="/wiki/">{t('general')}</Link></h3>
+        <h3>{link('/wiki/', 'general')}</h3>
         <hr />
-        <p>{t('generalDescription')}</p>
+        <p>{text('generalDescription')}</p>
         <ul>
-            <li><Link href="/wiki/">{t('general')}</Link></li>
-            <li><Link href="/wiki/downloading">{t('downloading')}</Link></li>
-            <li><Link href="/wiki/playing-mods">{t('playing')}</Link></li>
-            <li><Link href="/wiki/glossary">{t('glossary')}</Link></li>
+            <li>{link('/wiki/', 'general')}</li>
+            <li>{link('/wiki/downloading', 'downloading')}</li>
+            <li>{link('/wiki/playing-mods', 'playing')}</li>
+            <li>{link('/wiki/glossary', 'glossary')}</li>
         </ul>
         <br />
-        <h3><Link href="/wiki/mod-creation">{t('projectCreation')}</Link></h3>
+        <h3>{link('/wiki/mod-creation', 'projectCreation')}</h3>
         <hr />
-        <p>{t('projectDescription')}</p>
+        <p>{text('projectDescription')}</p>
         <ul>
-            <li><Link href="/wiki/lua-tutorial">{t('luaTutorial')}</Link></li>
-            <li><Link href="/wiki/basics">{t('basics')}</Link></li>
-            <li><Link href="/wiki/creating-a-mod">{t('creatingProject')}</Link></li>
-            <li><Link href="/wiki/writing-text">{t('writingText')}</Link></li>
-            <li><Link href="/wiki/using-libraries">{t('usingLibraries')}</Link></li>
-            <li><Link href="/wiki/creating-an-item">{t('creatingItem')}</Link></li>
-            <li><Link href="/wiki/making-shops">{t('creatingShop')}</Link></li>
-            <li><Link href="/wiki/creating-a-spell">{t('creatingSpell')}</Link></li>
-            <li><Link href="/wiki/actors">{t('actors')}</Link></li>
-            <li><Link href="/wiki/party-members">{t('partyMembers')}</Link></li>
-            <li><Link href="/wiki/keybinds">{t('keybinds')}</Link></li>
-            <li><Link href="/wiki/releasing-mods">{t('releasingProjects')}</Link></li>
+            <li>{link('/wiki/lua-tutorial', 'luaTutorial')}</li>
+            <li>{link('/wiki/basics', 'basics')}</li>
+            <li>{link('/wiki/creating-a-mod', 'creatingProject')}</li>
+            <li>{link('/wiki/writing-text', 'writingText')}</li>
+            <li>{link('/wiki/using-libraries', 'usingLibraries')}</li>
+            <li>{link('/wiki/creating-an-item', 'creatingItem')}</li>
+            <li>{link('/wiki/making-shops', 'creatingShop')}</li>
+            <li>{link('/wiki/creating-a-spell', 'creatingSpell')}</li>
+            <li>{link('/wiki/actors', 'actors')}</li>
+            <li>{link('/wiki/party-members', 'partyMembers')}</li>
+            <li>{link('/wiki/keybinds', 'keybinds')}</li>
+            <li>{link('/wiki/releasing-mods', 'releasingProjects')}</li>
         </ul>
         <br />
-        <h3><Link href="/wiki/mod-creation">{t('overworld')}</Link></h3>
+        <h3>{link('/wiki/mod-creation', 'overworld')}</h3>
         <hr />
-        <p>{t('overworldDescription')}</p>
+        <p>{text('overworldDescription')}</p>
         <ul>
-            <li><Link href="/wiki/designing-a-map">{t('designingMap')}</Link></li>
-            <li><Link href="/wiki/map-layers">{t('mapLayers')}</Link></li>
-            <li><Link href="/wiki/cutscenes">{t('cutscenes')}</Link></li>
-            <li><Link href="/wiki/map-properties">{t('mapProperties')}</Link></li>
-            <li><Link href="/wiki/using-events">{t('events')}</Link></li>
-            <li><Link href="/wiki/battle-areas">{t('battleAreas')}</Link></li>
-            <li><Link href="/wiki/world-tool">{t('worldTool')}</Link></li>
+            <li>{link('/wiki/designing-a-map', 'designingMap')}</li>
+            <li>{link('/wiki/map-layers', 'mapLayers')}</li>
+            <li>{link('/wiki/cutscenes', 'cutscenes')}</li>
+            <li>{link('/wiki/map-properties', 'mapProperties')}</li>
+            <li>{link('/wiki/using-events', 'events')}</li>
+            <li>{link('/wiki/battle-areas', 'battleAreas')}</li>
+            <li>{link('/wiki/world-tool', 'worldTool')}</li>
         </ul>
         <br />
-        <h3><Link href="/wiki/mod-creation">{t('battles')}</Link></h3>
+        <h3>{link('/wiki/mod-creation', 'battles')}</h3>
         <hr />
-        <p>{t('battleDescription')}</p>
+        <p>{text('battleDescription')}</p>
         <ul>
-            <li><Link href="/wiki/battlers">{t('battlers')}</Link></li>
-            <li><Link href="/wiki/encounters">{t('encounters')}</Link></li>
-            <li><Link href="/wiki/enemy-attacks">{t('enemyAttacks')}</Link></li>
-            <li><Link href="/wiki/wavemaking-reference">{t('wavemaking')}</Link></li>
+            <li>{link('/wiki/battlers', 'battlers')}</li>
+            <li>{link('/wiki/encounters', 'encounters')}</li>
+            <li>{link('/wiki/enemy-attacks', 'enemyAttacks')}</li>
+            <li>{link('/wiki/wavemaking-reference', 'wavemaking')}</li>
         </ul>
         <br />
-        <h3><Link href="/wiki/mod-creation#advanced-mod-creation">{t('advanced')}</Link></h3>
+        <h3>{link('/wiki/mod-creation#advanced-mod-creation', 'advanced')}</h3>
         <hr />
-        <p>{t('advancedDescription')}</p>
+        <p>{text('advancedDescription')}</p>
         <ul>
-            <li><Link href="/wiki/debugging">{t('debugging')}</Link></li>
-            <li><Link href="/wiki/hooks">{t('hooks')}</Link></li>
-            <li><Link href="/wiki/ui">{t('ui')}</Link></li>
+            <li>{link('/wiki/debugging', 'debugging')}</li>
+            <li>{link('/wiki/hooks', 'hooks')}</li>
+            <li>{link('/wiki/ui', 'ui')}</li>
         </ul>
         <br />
-        <h3><Link href="/wiki/api">{t('api')}</Link></h3>
+        <h3>{link('/wiki/api', 'api')}</h3>
         <hr />
-        <p>{t('apiDescription')}</p>
-        <Link href="#top" style={{ textAlign: 'right' }}>{t('backToTop')}</Link>
+        <p>{text('apiDescription')}</p>
+        <Link href="#top" style={{ textAlign: 'right' }}>{text('backToTop')}</Link>
     </>;
 }
 
 export default function Sidebar() {
     const sidebarRef = useRef(null);
-    const t = useTranslations('Sidebar');
+    const { mode } = useDisplayMode();
 
     useEffect(() => {
         const sidebarEl = sidebarRef.current;
@@ -113,17 +133,27 @@ export default function Sidebar() {
         };
     }, []);
 
-    const content = <SidebarContent t={t} />;
-    const toggleTitle = <h2>{t('title')}</h2>;
+    const content = <SidebarContent />;
+    const toggleTitle = <h2><BilingualInline englishText={english.title} chineseText={chinese.title} /></h2>;
+    const searchPlaceholder = mode === 'zh'
+        ? chinese.searchPlaceholder
+        : mode === 'both'
+            ? `${english.searchPlaceholder} / ${chinese.searchPlaceholder}`
+            : english.searchPlaceholder;
+    const searchSubmit = mode === 'zh'
+        ? chinese.searchSubmit
+        : mode === 'both'
+            ? `${english.searchSubmit} / ${chinese.searchSubmit}`
+            : english.searchSubmit;
 
     return <>
         <div ref={sidebarRef} className={styles.sidebar}>
             {toggleTitle}
-            <Searchbar id="header-search" placeholder={t('searchPlaceholder')} submit={t('searchSubmit')} />
+            <Searchbar id="header-search" placeholder={searchPlaceholder} submit={searchSubmit} />
             {content}
         </div>
         <div className={styles['mobile-sidebar']}>
-            <Searchbar id="mobile-header-search" placeholder={t('searchPlaceholder')} submit={t('searchSubmit')} />
+            <Searchbar id="mobile-header-search" placeholder={searchPlaceholder} submit={searchSubmit} />
             <details>
                 <summary>{toggleTitle}</summary>
                 {content}

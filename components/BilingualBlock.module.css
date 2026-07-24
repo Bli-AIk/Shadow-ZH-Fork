@@ -3,7 +3,7 @@
 }
 
 .part {
-    display: block;
+    display: contents;
 }
 
 :global([data-language="zh"]) {
@@ -37,16 +37,4 @@
 :global([data-display-mode="zh"] [data-language="en"]),
 :global(html[data-display-mode="zh"] [data-language="en"]) {
     display: none;
-}
-
-:global([data-display-mode="both"] [data-language]),
-:global(html[data-display-mode="both"] [data-language]) {
-    display: block;
-}
-
-:global([data-display-mode="both"] [data-language="zh"]),
-:global(html[data-display-mode="both"] [data-language="zh"]) {
-    border-top: 1px dashed rgba(255, 255, 255, 0.5);
-    margin-top: 0.75rem;
-    padding-top: 0.25rem;
 }

@@ -4,6 +4,26 @@
     background-color: rgba(0, 0, 0, 0.5);
 }
 
+.bilingualInline {
+    display: inline;
+}
+
+.bilingualInline > [data-language="zh"] {
+    line-height: 1.5;
+}
+
+:global([data-display-mode="both"] .bilingualInline > [data-language="zh"]),
+:global(html[data-display-mode="both"] .bilingualInline > [data-language="zh"]) {
+    margin-left: 0.75ch;
+}
+
+:global([data-display-mode="en"] .bilingualInline > [data-language="zh"]),
+:global(html[data-display-mode="en"] .bilingualInline > [data-language="zh"]),
+:global([data-display-mode="zh"] .bilingualInline > [data-language="en"]),
+:global(html[data-display-mode="zh"] .bilingualInline > [data-language="en"]) {
+    display: none;
+}
+
 .sidebar {
     position: fixed;
     top: var(--sidebar-offset, 0px);
