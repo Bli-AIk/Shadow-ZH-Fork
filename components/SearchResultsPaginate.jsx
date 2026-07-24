@@ -2,7 +2,7 @@
 import styles from "./SearchResultsPaginate.module.css";
 import { useState } from 'react';
 import ReactPaginate from 'react-paginate';
-import Link from 'next/link';
+import { Link } from 'src/i18n/navigation';
 //https://www.npmjs.com/package/react-paginate
 
 function Items({ currentItems }) {

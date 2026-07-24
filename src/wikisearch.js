@@ -1,18 +1,30 @@
 import lunr from 'lunr';
-import data from '@/app/data/wiki-index.json'
+import enData from '@/app/data/wiki-index.en.json';
+import zhData from '@/app/data/wiki-index.zh.json';
 
 const STRING_MAX_SIZE = 80;
+const indexes = {
+    en: lunr.Index.load(enData),
+    zh: lunr.Index.load(zhData),
+};
 
-const index = lunr.Index.load(data);
-export function searchQuery(q){
-    return typeof(q) == "string" && q.length > 0 ? 
-        index.search(q).map( (raw) => {
-            var trim = JSON.parse(raw.ref);
-            //trim.route = 
-            trim.title = trim.title.length > STRING_MAX_SIZE - 3 ? trim.title.substring(0, STRING_MAX_SIZE - 3) + "..." : trim.title;
-            trim.description = trim.description.length > STRING_MAX_SIZE - 3 ? trim.description.substring(0, STRING_MAX_SIZE - 3 ) + "..." : trim.description;
-            return trim;
-        })
-        :
-        []
+function trimResult(raw) {
+    const result = JSON.parse(raw.ref);
+    result.title = result.title.length > STRING_MAX_SIZE - 3 ? `${result.title.substring(0, STRING_MAX_SIZE - 3)}...` : result.title;
+    result.description = result.description.length > STRING_MAX_SIZE - 3 ? `${result.description.substring(0, STRING_MAX_SIZE - 3)}...` : result.description;
+    return result;
+}
+
+export function searchQuery(query, { locale = 'en', both = false } = {}) {
+    if (typeof query !== 'string' || query.length === 0) return [];
+
+    const locales = both ? ['en', 'zh'] : [locale === 'zh' ? 'zh' : 'en'];
+    const seenRoutes = new Set();
+    return locales.flatMap((currentLocale) => indexes[currentLocale].search(query)
+        .map(trimResult)
+        .filter((result) => {
+            if (seenRoutes.has(result.route)) return false;
+            seenRoutes.add(result.route);
+            return true;
+        }));
 }

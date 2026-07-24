@@ -3,22 +3,26 @@ import styles from './page.module.css'
 import { searchQuery } from 'src/wikisearch.js'
 import SearchResultsPaginate from 'components/SearchResultsPaginate'
 import Searchbar from 'components/Searchbar'
+import { getTranslations } from 'next-intl/server'
 
 export default async function Page({params, searchParams}) {
-    const { query } = await searchParams;
+    const { locale } = await params;
+    const { query, view } = await searchParams;
+    const both = view === 'both';
+    const t = await getTranslations('Search');
 
     return (<>
-        <h1 className={styles.search}>Search The Wiki</h1>
+        <h1 className={styles.search}>{t('title')}</h1>
 
         <Box>
         {
             query ? <div className={styles.searchbox}>
-                <Searchbar placeholder="Enter a term to search for..." defaultValue={query} submit="Search" />
-                <h2>{"Search Results for: \"" + query + "\""}</h2>
-                <SearchResultsPaginate itemsPerPage={10} items={searchQuery(query)}/>
+                <Searchbar placeholder={t('inputPlaceholder')} defaultValue={query} submit={t('submit')} />
+                <h2>{t('resultsFor', { query })}</h2>
+                <SearchResultsPaginate itemsPerPage={10} items={searchQuery(query, { locale, both })}/>
             </div> : <>
                 <p>
-                    Enter a term in the search bar above to search through the wiki!
+                    {t('empty')}
                 </p>
             </>
         }

@@ -1,152 +1,135 @@
-import path from 'path';
-import fs from 'fs';
-import {TYPES} from '../src/docparser.mjs';
+import path from 'node:path';
+import fs from 'node:fs';
+import { TYPES } from '../src/docparser.mjs';
 import sanitizeHtml from 'sanitize-html';
-
-import {remark} from 'remark';
+import { remark } from 'remark';
 import mdx from 'remark-mdx';
 import strip from 'remark-mdx-to-plain-text';
 import lunr from 'lunr';
 
-const FILE_NAME = "wiki-index.json"
+const FILE_ROOT = path.resolve(process.cwd(), 'content');
+const DATA_ROOT = path.resolve(process.cwd(), 'app/data');
+const BOOST = Object.freeze({ ARTICLE: 3, API_TYPE: 2, API_FIELD: 1, TITLE: 4, DESCRIPTION: 2, CONTENT: 1 });
 
-const BOOST = Object.freeze({
-    ARTICLE: 3,
-    API_TYPE: 2,
-    API_FIELD: 1,
+function readJson(filePath, fallback) {
+    try {
+        return JSON.parse(fs.readFileSync(filePath, 'utf8'));
+    } catch {
+        return fallback;
+    }
+}
 
-    TITLE: 4,
-    DESCRIPTION: 2,
-    CONTENT: 1,
-});
+function extractMetadata(body) {
+    const get = (key) => {
+        const match = body.match(new RegExp(`${key}:\\s*['"]((?:\\\\.|[^'"])*)['"]`));
+        return match ? match[1].replaceAll("\\'", "'") : '';
+    };
+    return { title: get('title'), description: get('description') };
+}
 
-console.log("[wiki-index] Generating search index...");
+function plainText(body) {
+    const source = body
+        .replace(/export\s+const\s+metadata\s*=\s*{[\s\S]*?}\s*/g, '')
+        .split('\n')
+        .map((line) => {
+            if (line.startsWith('#')) return line.replace(/(?<!# )\[[\w-]*\]/g, '');
+            if (line.startsWith('import ') || line.startsWith('export ')) return '';
+            return line;
+        })
+        .join('\n');
 
-const dirRelativeToPublicFolder = './wiki/'
-const dir = path.resolve('./app/', dirRelativeToPublicFolder);
-const paths = fs.readdirSync(dir, {recursive: true})
-    .filter((rpath) => rpath.includes("page") && rpath.endsWith(".mdx"));
-            //only text content; handle API pages seperately
-//            rpath.includes("page") &&
-//            !rpath.includes(".module") &&
-//            !rpath.includes("api") &&
-//            !rpath.includes("search") &&
-//            !rpath.match(/^page\..../));
-    //.map( (rpath) => dir + path.sep + rpath )
+    return sanitizeHtml(String(remark().use(mdx).use(strip).processSync(source)), { allowedTags: [] });
+}
 
-const articles = paths.map(rpath => {
-    var name = rpath.substring(0,rpath.indexOf("\\"));
-    var body = fs.readFileSync(dir + path.sep + rpath).toString()
-    
-    var metadata = body.match(/(?<=export\sconst\smetadata\s=\s){[\s\S]+?}/g)?.[0];
-    body = body.replace(metadata,"");
-    if(metadata){
-        //sanitize JSON
-        metadata.match(/(?<=\s)\w+(?=:)/g).forEach( (k) => {metadata = metadata.replace(k, "'"+k+"'")});
-        metadata = metadata.replace(/('(?=(,\s*')))|('(?=:))|((?<=([{:,]\s*))')|((?<={)')|('(?=}))/g, '"');
-        let i = metadata.lastIndexOf("'");
-        metadata = metadata.substring(0,i) + '"' + metadata.substring(i+1);   //regex replace fails?
-        metadata = metadata.replace(/,[\s]*}/g, "}");
-        metadata = metadata.replace(/\\./g, (m) => {
-            switch (m){
-                case "\\\"": return "\"";
-                case "\\\'": return "\'"
-                case "\\n" :  return "\n";
-                case "\\t" : return "\t";
+function articleSource(locale, slug) {
+    const file = path.join(FILE_ROOT, locale, 'wiki', `${slug}.mdx`);
+    if (fs.existsSync(file)) return fs.readFileSync(file, 'utf8');
+    return fs.readFileSync(path.join(FILE_ROOT, 'en', 'wiki', `${slug}.mdx`), 'utf8');
+}
+
+function articleMetadata(locale, slug, source, messages) {
+    const fallback = extractMetadata(source);
+    return messages?.ArticleMetadata?.[slug] ?? fallback;
+}
+
+function apiTranslation(translations, kind, name, fallback) {
+    return translations?.[kind]?.[name] || fallback;
+}
+
+function apiCorpus(locale, messages) {
+    const translations = readJson(path.join(FILE_ROOT, locale, 'api.json'), {});
+    const apiType = [];
+    const apiField = [];
+
+    for (const type of TYPES) {
+        let text = '';
+        if (type.fields) {
+            for (const field of type.fields) {
+                const key = `${type.name}.${field.name}`;
+                const desc = field.desc ?? field.rawdesc ?? '';
+                const translated = apiTranslation(translations, 'fields', key, desc);
+                apiField.push({
+                    id: JSON.stringify({ route: `/wiki/api/${type.name}#${field.name}`, title: `${type.name}.${field.name}`, description: `(API: ${field.type.replace('set', '').replace('doc.', '')}) ${translated}` }),
+                    title: `${type.name}.${field.name}`,
+                    description: `(API: ${field.type.replace('set', '').replace('doc.', '')}) ${translated}`,
+                    content: `${type.name}.${field.name} ${translated}`,
+                    boost: BOOST.API_FIELD,
+                });
+                text += ` | ${field.name} ${translated}`;
             }
-        });
-        metadata = JSON.parse(metadata);
-    }
+        }
 
-    remark()
-    .use(mdx)
-    .use(strip)
-    .process(
-        body.split("\n")
-        .map( (line) =>
-            {
-                line = line[0] == "#" ? line.replace(/(?<!# )\[[\w-]*\]/g, "") : line; //preliminary heading-link parse out, dont match ### [text](link), parsed later
-                line = line.indexOf("import ") == 0 ? "" : line; //remark mdx doesnt catch this
-                line = line.indexOf("export ") == 0 ? "" : line; //this neither :(
-                return line;
-            }
-        ).join("\n"),
-        function(err, file) {
-            body = sanitizeHtml(String(file.value), {allowedTags: []});
-            if (err){
-                console.warn("Couldn't parse " + name + ", is it .mdx?");
-                //throw err;
-            }     
-    });
-    
-    return {
-        id: JSON.stringify({
-            route: "/wiki/" + rpath.split(path.sep).join(path.posix.sep).replace(/\/page\..*/,""),
-            title: metadata.title ?? "[NO TITLE]",
-            description: metadata.description ?? "[NO DESCRIPTION]"
-        }),
-
-        title: metadata.title ?? "[NO TITLE]",
-        description: metadata.description ?? "[NO DESCRIPTION]",
-        content: body,
-        boost: BOOST.ARTICLE
-    }
-});
-//type and function of type lookup
-
-const apiType = [];
-const apiField = [];
-TYPES.forEach( (type) => {
-    let text = "";
-    if(type.fields) {
-        type.fields.forEach( (field) => {
-            let desc =  (field.desc ?? field.rawdesc) ?? "";
-            apiField.push({
-                id: JSON.stringify({
-                    route: "/wiki/api/" + type.name + "#" + field.name,
-                    title: type.name + "." + field.name,
-                    description: "(API: " + field.type.replace("set", "").replace("doc.", "") + ") " + ((field.desc ?? field.rawdesc) ?? "")
-                }),
-
-                title: type.name + "." + field.name,
-                description: "(API: " + field.type.replace("set", "").replace("doc.", "") + ") " + ((field.desc ?? field.rawdesc) ?? ""),
-                content: type.name + "." + field.name,
-                boost: BOOST.API_FIELD
-            });
-            text = text + " | " + field.name + " " + desc
-        });
-    }
-    apiType.push({
-        id: JSON.stringify({
-            route: "/wiki/api/" + type.name,
+        const desc = type.desc ?? type.rawdesc ?? '';
+        const translated = apiTranslation(translations, 'types', type.name, desc);
+        apiType.push({
+            id: JSON.stringify({ route: `/wiki/api/${type.name}`, title: type.name, description: `(API: ${type.type.replace('set', '')}) ${translated}` }),
             title: type.name,
-            description: "(API: " + type.type.replace("set", "") + ") " + ((type.desc ?? type.rawdesc) ?? "")
-        }),
+            description: `(API: ${type.type.replace('set', '')}) ${translated}`,
+            content: `${type.name} ${text}`,
+            boost: BOOST.API_TYPE,
+        });
+    }
 
-        title: type.name,
-        description: "(API: " + type.type.replace("set", "") + ") " + ((type.desc ?? type.rawdesc) ?? ""),
-        content: text,
-        boost: BOOST.API_TYPE
-    })
-})
+    return apiType.concat(apiField);
+}
 
-const corpus = articles.concat(apiType).concat(apiField);
+function buildIndex(locale, messages) {
+    const sourceRoot = path.join(FILE_ROOT, 'en', 'wiki');
+    const slugs = fs.readdirSync(sourceRoot)
+        .filter((file) => file.endsWith('.mdx'))
+        .map((file) => file.slice(0, -4))
+        .sort();
 
-var index = lunr(function() {
-    this.ref("id");
-    this.field("title", {boost: BOOST.TITLE});
-    this.field("description", {boost: BOOST.DESCRIPTION});
-    this.field("content", {boost: BOOST.CONTENT});
+    const articles = slugs.map((slug) => {
+        const source = articleSource(locale, slug);
+        const metadata = articleMetadata(locale, slug, fs.readFileSync(path.join(sourceRoot, `${slug}.mdx`), 'utf8'), messages);
+        return {
+            id: JSON.stringify({ route: `/wiki/${slug}`, title: metadata.title || '[NO TITLE]', description: metadata.description || '[NO DESCRIPTION]' }),
+            title: metadata.title || '[NO TITLE]',
+            description: metadata.description || '[NO DESCRIPTION]',
+            content: plainText(source),
+            boost: BOOST.ARTICLE,
+        };
+    });
 
-    corpus.forEach(function (doc) {
-        this.add(doc, doc.boost);
-    }, this);
-})
+    const corpus = articles.concat(apiCorpus(locale, messages));
+    const index = lunr(function () {
+        this.ref('id');
+        this.field('title', { boost: BOOST.TITLE });
+        this.field('description', { boost: BOOST.DESCRIPTION });
+        this.field('content', { boost: BOOST.CONTENT });
+        corpus.forEach((doc) => this.add(doc, doc.boost));
+    });
 
-console.log(`[wiki-index] Generated index for ${corpus.length} documents.`);
+    fs.mkdirSync(DATA_ROOT, { recursive: true });
+    fs.writeFileSync(path.join(DATA_ROOT, `wiki-index.${locale}.json`), JSON.stringify(index, null, 4));
+    return corpus.length;
+}
 
-fs.writeFileSync(path.join(process.cwd(),`/app/data/${FILE_NAME}`),
-    JSON.stringify(index, null, 4)
-);
-
-console.log(`[wiki-index] Done! Wrote index to /app/data/${FILE_NAME}`);
+const enMessages = readJson(path.join(process.cwd(), 'messages/en.json'), {});
+const zhMessages = readJson(path.join(process.cwd(), 'messages/zh.json'), {});
+console.log('[wiki-index] Generating language-specific search indexes...');
+console.log(`[wiki-index] en: ${buildIndex('en', enMessages)} documents`);
+console.log(`[wiki-index] zh: ${buildIndex('zh', zhMessages)} documents`);
+fs.copyFileSync(path.join(DATA_ROOT, 'wiki-index.en.json'), path.join(DATA_ROOT, 'wiki-index.json'));
+console.log('[wiki-index] Done.');

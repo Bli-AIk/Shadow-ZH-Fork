@@ -4,6 +4,7 @@ import { parse as parseMarkdown } from 'src/markdown.js';
 import Docbox from 'components/Docbox';
 import styles from './page.module.css';
 import { Fragment } from 'react';
+import { Link } from 'src/i18n/navigation';
 
 export async function generateStaticParams() {
     const types = TYPES
@@ -141,7 +142,9 @@ function parseTypes(view){
             return <span key={str + "_" + i} className={styles.syntaxTypeMod} title={hoverText[str]}>{str}</span>
         } else {
             const link = outgoingLinks[str] ?? tryGetLoveWiki(str) ?? ("/wiki/api/" + str)
-            return <a key={str + "_" + i} className={styles.syntaxType} href={link}><span>{str}</span></a>
+            return link.startsWith('/wiki/')
+                ? <Link key={str + "_" + i} className={styles.syntaxType} href={link}><span>{str}</span></Link>
+                : <a key={str + "_" + i} className={styles.syntaxType} href={link}><span>{str}</span></a>
         }
     })
 }
@@ -263,7 +266,7 @@ async function Api_type(type, { params }) {
             {classHeirarchy.map( (cls, index) => 
                     <span key={cls.name} style={{color: "gray"}}>
                     {index === 0 ? "┗> " : " > "}
-                    <a href={"/wiki/api/" + cls.name}>{cls.name}</a>
+                    <Link href={"/wiki/api/" + cls.name}>{cls.name}</Link>
                     </span>
             )}
             </h4>
