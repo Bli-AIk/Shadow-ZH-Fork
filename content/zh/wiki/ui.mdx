@@ -1,0 +1,494 @@
+import styles from '../../wiki-styles/ui.module.css'
+
+export const metadata = {
+    title: 'UI 系统',
+    description: '使用 Kristal UI 系统的指南。',
+}
+
+# UI 系统 [the-ui-system]
+
+<Box>
+UI 系统虽然有些复杂，但功能非常强大。
+它可以让你创建菜单、HUD 等自定义 UI。
+</Box>
+
+<Box>
+## 基础 [the-basics]
+
+---
+
+UI 由**组件**组成。组件是 UI 的一个独立部分。你可以把它们理解为[对象](/wiki/objects)，但更加高级。
+
+以主菜单为例。灵魂是一个组件，每个菜单项是一个组件，Kristal 标志也是一个组件。
+
+组件各自负责不同的工作，使用方式也各不相同。
+如果有需要，你甚至可以__创建自己的组件__，而且这很可能是必要的。
+
+组件有很多类型，但它们都有一些共同点：
+- 除了**根组件**之外，每个组件都有一个父组件。
+- 每个组件都可以拥有子组件，就像其他对象一样。
+- 每个组件都有尺寸设置。
+- 每个组件都有外边距和内边距。
+
+不过，这些东西具体是什么意思呢？
+</Box>
+
+<Box>
+## 组件的构成 [the-anatomy-of-a-component]
+
+---
+
+### 外边距与内边距 [margins-and-paddings]
+
+如前所述，组件有**外边距**和**内边距**。
+这些东西是什么？为什么*所有*组件都有它们？
+
+当你记住组件可以拥有子组件时，答案就很清楚了。外边距和内边距用于在组件之间留出空间。
+
+组件是一个盒子。
+外边距是盒子与其他盒子之间的空间，内边距则是盒子与其内容之间的空间。
+每一侧的外边距和内边距也可以不同。
+
+下图中，每一侧的外边距和内边距都是 20 像素。
+青色区域表示外边距，粉色区域表示内边距。白色盒子就是组件本身。
+
+<>![](/wiki/margins_and_paddings.png)</>
+
+在 Kristal 中，开启**调试渲染**后，可以看到每个组件的外边距和内边距。
+
+---
+
+### 尺寸设置 [sizings]
+
+尺寸设置决定组件的大小。组件分别有水平尺寸设置和垂直尺寸设置。
+
+#### [`FixedSizing(number size, number? size_2)`](/wiki/api/FixedSizing)
+这种尺寸设置很简单。它会让组件保持固定大小，不发生变化。
+
+如果提供了 `size_2`，尺寸设置会将 `size` 视为宽度，将 `size_2` 视为高度。
+
+这意味着 `FixedSizing(100, 100)` 与 `FixedSizing(100)` 相同。
+
+#### [`FillSizing()`](/wiki/api/FillSizing)
+这种尺寸设置会让组件“填充”父组件：它的大小等于父组件的大小，
+减去父组件的内边距，再减去该组件的外边距。
+
+#### [`FitSizing()`](/wiki/api/FitSizing)
+这种尺寸设置会让组件缩小或扩大，以适应其内容。
+
+---
+
+同时使用 `FillSizing` 和 `FitSizing` 的一个例子是菜单项。
+
+你可能希望菜单项在水平方向拉伸以适应菜单，但希望它的高度与菜单项内部的内容（例如文本）相同。
+
+<>![](/wiki/menu_option_example.png)</>
+
+---
+
+### 布局 [layouts]
+
+简单来说，布局就是在组件内部放置子组件的一种方式。
+
+布局有两种类型：[`HorizontalLayout`](/wiki/api/HorizontalLayout) 和 [`VerticalLayout`](/wiki/api/VerticalLayout)。
+创建布局时，可以为它指定选项，例如组件之间的间距或对齐方式。
+
+共有六种对齐模式：
+- `"start"`：将组件对齐到父组件的起点。
+- `"center"`：将组件对齐到父组件的中心。
+- `"end"`：将组件对齐到父组件的终点。
+- `"space-between"`：均匀排列组件。第一个和最后一个组件分别紧贴布局的起点和终点。
+- `"space-around"`：均匀排列组件。效果如同每个组件周围都有不可见的间距。
+- `"space-evenly"`：均匀排列组件。各处使用相同的间距，包括第一个和最后一个组件两侧。
+
+这有点让人困惑，所以这里给出一些视觉示例：
+
+<div style={{display: "flex", flexWrap: "wrap", justifyContent: "center"}}>
+
+<div>
+#### `"start"`
+<>![](/wiki/alignment_start.png)</>
+</div>
+
+<div>
+#### `"center"`
+<>![](/wiki/alignment_center.png)</>
+</div>
+
+<div>
+#### `"end"`
+<>![](/wiki/alignment_end.png)</>
+</div>
+
+<div>
+#### `"space-between"`
+<>![](/wiki/alignment_space_between.png)</>
+</div>
+
+<div>
+#### `"space-around"`
+<>![](/wiki/alignment_space_around.png)</>
+</div>
+
+<div>
+#### `"space-evenly"`
+<>![](/wiki/alignment_space_evenly.png)</>
+</div>
+
+</div>
+
+---
+
+最后，到了动手制作的时候！
+</Box>
+
+<Box>
+## 制作 UI [making-a-ui]
+---
+
+制作 UI 很简单。你只需要创建一个组件，然后把它添加到某个位置。
+
+如果你在主世界中，请将它添加到 [`Game.world`](/wiki/api/Game#world)！在战斗中，则尝试 [`Game.battle`](/wiki/api/Game#battle)。
+
+如果它可以出现在*任何地方*、*任何时间*，请尝试 [`Game.stage`](/wiki/api/Game#stage)。
+
+现在就来创建并添加组件吧！
+
+```lua
+local root = Component(FixedSizing(640, 480)) -- 根组件应该使用固定大小。
+    root:setLayout(VerticalLayout({ gap = 0, align = "center" })) -- 垂直居中！
+    root:addChild(Text("Hello, world!")) -- 向其中添加文本对象！
+Game.stage:addChild(root) -- 将它添加到舞台！
+```
+
+假设你在一片黑色虚空中运行它，应该会看到下面的结果：
+
+<>![](/wiki/hello_world.png)</>
+
+很好！我们的组件大小是 640x480，子组件在垂直方向居中！
+
+开启调试渲染会稍微帮助你理解其中发生了什么：
+
+<>![](/wiki/hello_world_debug.png)</>
+
+### “你说的居中是什么意思？它明明在左边！” [vertically-centered]
+
+这是一个**垂直布局**，所以它在垂直方向居中。
+垂直布局完全不会处理水平方向的对齐。
+那么，如果我们也想让它位于屏幕中央，该如何让它在水平方向对齐呢？
+
+很简单！只要**创建一个水平布局**即可！
+
+```lua
+local outer = Component(FixedSizing(640, 480)) -- 根组件应该使用固定大小。
+    outer:setLayout(VerticalLayout({ gap = 0, align = "center" })) -- 垂直居中！
+    local inner = Component(FillSizing(), FitSizing()) -- 水平拉伸，垂直方向适应内容
+        inner:setLayout(HorizontalLayout({ gap = 0, align = "center" })) -- 水平居中！
+        inner:addChild(Text("Hello, world!")) -- 向其中添加文本对象！
+    outer:addChild(inner) -- 将内部组件添加到外部组件！
+Game.stage:addChild(outer) -- 将它添加到舞台！
+```
+
+结果应该如下：
+
+<>![](/wiki/hello_world_2.png)</>
+
+开启调试渲染后则如下：
+
+<>![](/wiki/hello_world_2_debug.png)</>
+
+### “等一下，我糊涂了。到底发生了什么？” [centering-explanation]
+
+我们拆开来说明。
+
+首先，创建外部组件，也就是**根组件**。
+这个组件会容纳其他所有内容。
+它会让子组件在垂直方向居中。
+
+接下来，创建内部组件，它是外部组件的第一个、也是唯一一个子组件。
+记住，外部组件会让子组件在垂直方向居中，所以内部组件也会在垂直方向居中。
+
+内部组件会在水平方向拉伸以填满外部组件，并在垂直方向适应自己的内容。
+也就是说，内部组件的宽度会与外部组件相同，高度会与其子组件相同。
+
+于是，我们向它添加一个子组件，也就是文本对象。
+同样，内部组件在垂直方向会与文本大小相同，但在水平方向会拉伸以填满外部组件。
+
+我们让内部组件的子组件在水平方向居中，完成对齐拼图。
+这样，它内部的文本就会在水平方向居中。
+
+最后，将内部组件添加到外部组件，再将外部组件添加到舞台，整个过程就完成了。
+
+我们成功让一个组件同时在水平和垂直方向居中了！
+不过……这工作量还真大。有没有其他做法？
+</Box>
+
+<Box>
+## 没有，原因如下 [why-centering-is-hard]
+---
+
+强大的东西都需要复杂性。事情就是这样。
+当然，我们可以制作一百万种不同的布局类型，但它们要如何与换行配合——糟糕。
+
+### 换行，你在哪里？ [no-wrapping]
+如果你试图把太多组件塞进另一个组件，它应该会开始换行。理想情况下是这样。实际上，它只会溢出。
+
+<>![](/wiki/overflow.png)</>
+
+这个组件的大小是 320x240。我们向其中添加 8 个子组件，每个高 32 像素，元素之间的间距为 8 像素。
+
+算一下 8 * (32 + 8)。呃，是 320。320 比组件的高度 240 更大。糟糕。
+
+这里没有换行，那该怎么办？很简单：选择一种**溢出模式**。
+
+---
+
+### 溢出模式 [overflow-modes]
+
+共有三种溢出模式：`"visible"`、`"hidden"` 和 `"scroll"`，可以配合 [`component:setOverflow(mode)`](/wiki/api/Component#setOverflow) 使用。
+
+#### `"visible"`
+这是默认的溢出模式。它会允许组件溢出，并且溢出的部分仍然可见。
+
+#### `"hidden"`
+这种溢出模式会隐藏所有溢出的组件，使它们不可见。
+
+#### `"scroll"`
+这种溢出模式允许你滚动组件。
+- 你可以将 [`AbstractMenuComponent:setScrollType(type)`](/wiki/api/AbstractMenuComponent#setScrollType) 与 `"paged"` 或 `"scroll"`（默认值）搭配使用。
+
+---
+
+### “你一直在说换行，或者说没有换行。快点进入正题！” [no-wrapping-explanation]
+
+好吧，好吧。换行很复杂，不是随便添加一下就能完美运行的功能。需要考虑很多事情。
+
+这意味着，**目前**还没有换行功能。坦白说，我没能想出一个好的实现方式。
+
+如果你需要换行，也许手动放置组件是个好主意。顺便说一句，这是可以做到的。
+</Box>
+
+<Box>
+## 手动放置组件 [manual-component-positioning]
+---
+
+你有没有想过，如果不调用 `component:setLayout(layout)` 会发生什么？很简单，它没有布局。
+或者更准确地说，它拥有**默认布局**，这个布局的名字就叫 [`Layout`](/wiki/api/Layout)。
+
+默认布局会将组件吸附到父组件的左上角
+（同时考虑外边距和内边距），根据滚动调整组件位置，然后……就这些。
+
+`HorizontalLayout` 和 `VerticalLayout` 也会做同样的事情，只是在此基础上增加更多功能。
+它们总是先将组件吸附到左上角。
+
+那么，我们到底该如何选择组件的位置？不能只是设置 `x` 和 `y` 属性，对吧？
+
+你说得对——不能。布局实际上会设置组件的 `x` 和 `y` 属性，因此你自己设置的值只会被覆盖。
+
+这时就需要用到一点不太优雅的办法。你可以使用子组件的外边距，让它从左上角偏移。
+
+所以，与其这样做：
+
+```lua
+component.x = 100
+component.y = 200
+```
+
+不如这样做：
+
+```lua
+component:setMargins(100, 200, 0, 0)
+```
+
+这……并不理想，但确实有效。通常不建议手动放置组件，不过这是可以做到的。
+
+</Box>
+
+<Box>
+## 输入、菜单以及其他内容 [input-and-menus]
+---
+
+好了，好了，无聊的内容就到这里。我们来真正制作一个菜单。
+
+先从基础开始：输入。我们要如何获取输入？
+
+### 输入、聚焦与焦点栈 [input-focusing-and-the-focus-stack]
+
+当你聚焦一个组件时，它就会接收输入。很简单，对吧？但要如何聚焦组件呢？
+
+同样很简单——[`component:setFocused()`](/wiki/api/Component#setFocused)。
+
+但如果多个对象都想获得焦点呢？这时就要用到**焦点栈**。
+
+基本上，同一时间只能有一个对象获得焦点。假设你有一个菜单，并从它进入另一个菜单。
+第一个菜单先获得焦点，然后你通过它打开第二个菜单。此时第二个菜单获得焦点。
+但是，虽然第一个菜单已经失去焦点，它仍然在**焦点栈**中。这意味着，第二个菜单消失的瞬间，
+第一个菜单就会重新获得焦点！你不再需要担心输入同时发送给多个对象。
+
+### “快点告诉我们怎么制作菜单！” [menu-guide]
+
+先从基础开始。我们将制作一个包含两个选项的菜单：“Play”和“Quit”。
+
+使用前面制作的居中组件代码：
+
+```lua
+local outer = Component(FixedSizing(640, 480)) -- 根组件应该使用固定大小。
+    outer:setLayout(VerticalLayout({ gap = 0, align = "center" })) -- 垂直居中！
+    local inner = Component(FillSizing(), FitSizing()) -- 水平拉伸，垂直方向适应内容
+        inner:setLayout(HorizontalLayout({ gap = 0, align = "center" })) -- 水平居中！
+
+        -- 添加到 inner 的任何内容都会在水平方向居中
+    outer:addChild(inner) -- 将内部组件添加到外部组件！
+Game.stage:addChild(outer) -- 将它添加到舞台！
+```
+
+现在添加一个盒子！就是 DELTARUNE 使用的那种漂亮盒子。
+
+```lua
+local box = BoxComponent(FitSizing()) -- 让盒子适应自己的内容
+```
+
+然后在其中添加真正的菜单，并放入几个菜单项：
+
+```lua
+local menu = BasicMenuComponent(FitSizing(), FixedSizing(240))
+menu:setLayout(VerticalLayout({ gap = 0, align = "start" }))
+
+menu:addChild(TextMenuItemComponent("Option 1", function() print("Option 1 was selected!") end))
+menu:addChild(TextMenuItemComponent("Option 2", function() print("Option 2 was selected!") end))
+menu:addChild(TextMenuItemComponent("Option 3", function() print("Option 3 was selected!") end))
+menu:addChild(TextMenuItemComponent("Option 4", function() print("Option 4 was selected!") end))
+menu:addChild(TextMenuItemComponent("Option 5", function() print("Option 5 was selected!") end))
+
+menu:setFocused()
+```
+
+很好！把这些组合起来，就得到：
+
+```lua
+local outer = Component(FixedSizing(640, 480)) -- 根组件应该使用固定大小。
+    outer:setLayout(VerticalLayout({ gap = 0, align = "center" })) -- 垂直居中！
+    local inner = Component(FillSizing(), FitSizing()) -- 水平拉伸，垂直方向适应内容
+        inner:setLayout(HorizontalLayout({ gap = 0, align = "center" })) -- 水平居中！
+        -- 添加到 inner 的任何内容都会在水平方向居中
+
+        local box = BoxComponent(FitSizing())
+            local menu = BasicMenuComponent(FitSizing())
+                menu:setLayout(VerticalLayout({ gap = 0, align = "start" }))
+                menu:addChild(SoulMenuItemComponent(Text("Option 1"), function() print("Option 1 was selected!") end))
+                menu:addChild(SoulMenuItemComponent(Text("Option 2"), function() print("Option 2 was selected!") end))
+                menu:addChild(SoulMenuItemComponent(Text("Option 3"), function() print("Option 3 was selected!") end))
+                menu:addChild(SoulMenuItemComponent(Text("Option 4"), function() print("Option 4 was selected!") end))
+                menu:addChild(SoulMenuItemComponent(Text("Option 5"), function() print("Option 5 was selected!") end))
+
+                menu:setFocused()
+            box:addChild(menu)
+        inner:addChild(box)
+    outer:addChild(inner) -- 将内部组件添加到外部组件！
+Game.stage:addChild(outer) -- 将它添加到舞台！
+```
+
+现在菜单已经获得焦点，你可以使用方向键在其中导航，并按下**确认**来选择选项！
+
+</Box>
+
+<Box>
+## 菜单打开时角色仍然可以移动！ [characters-moving-while-menu-open]
+---
+
+改用 [`World:openMenu`](/wiki/api/World#openMenu) 来打开菜单。
+
+</Box>
+
+<Box>
+## 文档还没做好，那组件到底是什么？ [components]
+---
+
+问得好。
+
+<div className={styles.tree}>
+### [`Component`](/wiki/api/Component)
+- [`AbstractMenuComponent`](/wiki/api/AbstractMenuComponent) - 菜单组件基类
+  - [`BasicMenuComponent`](/wiki/api/BasicMenuComponent) - 使用方向键和确认/取消操作的基础菜单
+  - [`EasingSoulMenuComponent`](/wiki/api/EasingSoulMenuComponent) - 使用在菜单项之间平滑移动的灵魂的菜单
+- [`AbstractMenuItemComponent`](/wiki/api/AbstractMenuItemComponent) - 菜单项组件基类
+  - [`SoulMenuItemComponent`](/wiki/api/SoulMenuItemComponent) - 使用灵魂表示选中状态的菜单项，可以与 `EasingSoulMenuComponent` 结合使用
+  - [`TextMenuItemComponent`](/wiki/api/TextMenuItemComponent) - 只有文本的菜单项，选中时默认变为黄色
+  - [`TextInputMenuItemComponent`](/wiki/api/TextInputMenuItemComponent) - 文本输入菜单项
+  - [`ListMenuItemComponent`](/wiki/api/ListMenuItemComponent) - 列表菜单项
+    - [`ArrowListMenuItemComponent`](/wiki/api/ArrowListMenuItemComponent) - 带箭头的列表菜单项
+    - [`IntegerListMenuItemComponent`](/wiki/api/IntegerListMenuItemComponent) - 整数范围菜单项
+        - [`ArrowIntegerListMenuItemComponent`](/wiki/api/ArrowIntegerListMenuItemComponent) - 带箭头的整数范围菜单项
+  - [`BooleanMenuItemComponent`](/wiki/api/BooleanMenuItemComponent) - 切换菜单项
+  - [`LabelMenuItemComponent`](/wiki/api/LabelMenuItemComponent) - 为子组件提供标签、并将焦点传递给子组件的菜单项
+- [`BoxComponent`](/wiki/api/BoxComponent) - UI 盒子
+- [`MainMenuBoxComponent`](/wiki/api/MainMenuBoxComponent) - 主菜单使用的 UI 盒子样式
+- [`Bar`](/wiki/api/Bar) - 进度条
+- [`Scrollbar`](/wiki/api/Scrollbar) - 滚动条，可以附加到菜单等可滚动对象
+- [`Separator`](/wiki/api/Separator) - 分隔线，可以是垂直方向的
+
+### [`Layout`](/wiki/api/Layout)
+- [`HorizontalLayout`](/wiki/api/HorizontalLayout)
+- [`VerticalLayout`](/wiki/api/VerticalLayout)
+
+### [`Sizing`](/wiki/api/Sizing)
+- [`FixedSizing`](/wiki/api/FixedSizing)
+- [`FillSizing`](/wiki/api/FillSizing)
+- [`FitSizing`](/wiki/api/FitSizing)
+
+</div>
+
+</Box>
+
+<Box>
+## 示例？ [examples]
+---
+
+带滚动条、平滑移动和多种菜单项类型，包含子菜单和分页滚动的菜单：
+
+```lua
+local soul = Game.stage:addChild(EasingSoul(0, 0))
+soul.use_parent = true
+
+local box = MainMenuBoxComponent(FitSizing())
+    local menu = EasingSoulMenuComponent(FitSizing(), FixedSizing(240), { hold = true, soul = soul })
+        menu.open_sound = "ui_move"
+        menu:setScrollbar(ScrollbarComponent({gutter = "dotted", margins = {8, 0, 0, 0}, arrows = true}))
+        menu:setLayout(VerticalLayout({ gap = 0, align = "start" }))
+        menu:setOverflow("scroll")
+        menu:setScrollType("paged")
+
+        menu:addChild(LabelMenuItemComponent("Label: ", IntegerMenuItemComponent(1, 10, 1), FillSizing(), FitSizing()))
+        menu:addChild(SeparatorComponent())
+        menu:addChild(TextInputMenuItemComponent())
+        menu:addChild(BooleanMenuItemComponent(false, function(value) end))
+        menu:addChild(ListMenuItemComponent({ "List Option 1", "List Option 2", "List Option 300" }, 1, function(index) end))
+        menu:addChild(ArrowListMenuItemComponent({ "List Option 1", "List Option 2", "List Option 300" }, 1, function(index) end))
+        menu:addChild(IntegerMenuItemComponent(1, 10, 1, function(value) end))
+        menu:addChild(IntegerMenuItemComponent(1, 10, 1, function(value) end, {wrap = false, hold = true}))
+        menu:addChild(ArrowIntegerMenuItemComponent(1, 10, 1, function(value) end))
+        menu:addChild(ArrowIntegerMenuItemComponent(1, 10, 1, function(value) end, {wrap = false, hold = true}))
+        -- 重新创建 DELTARUNE 的音量控制器
+        menu:addChild(ArrowIntegerMenuItemComponent(0, 100, 60, function(value) Kristal.setVolume(value / 100) end, {step = 2, suffix = "%", sound = "noise", wrap = false, hold = true, sound_delay = 3, sound_at_limit = true}))
+        menu:addChild(TextMenuItemComponent(Text("Option"),
+            function()
+                menu.visible = false
+                local menu2 = EasingSoulMenuComponent(FitSizing(), FitSizing(), { hold = true, soul = soul })
+                menu2:setLayout(VerticalLayout())
+                menu2:addChild(TextMenuItemComponent(Text("Option 1"), function() end))
+                menu2:addChild(TextMenuItemComponent(Text("Option 2"), function() end))
+                menu2:setCancelCallback(function()
+                    menu2:close()
+                    menu.visible = true
+                end)
+                menu2:setFocused()
+                box:addChild(menu2)
+            end, {highlight=false}
+        ))
+        menu:setSelected(2)
+        menu:setFocused()
+    box:addChild(menu)
+Game.stage:addChild(box)
+```
+
+</Box>

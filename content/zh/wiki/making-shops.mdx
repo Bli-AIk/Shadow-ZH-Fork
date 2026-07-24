@@ -1,0 +1,627 @@
+import Box from 'components/Box'
+import CollapseBox from 'components/CollapseBox'
+
+export const metadata = {
+    title: '创建新商店',
+    description: '学习如何在 Kristal 中制作商店',
+}
+
+
+# 创建商店 [creating-shops]
+
+<Box>
+    在本教程中，你将学习如何为项目创建商店，
+    包括带有店主和背景的**完整商店**，
+    或者更简单的**自动售货机**、**单物品商店**。
+</Box>
+
+<Box>
+
+    ## 完整商店 [complete-shop]
+    ---
+    先从制作一个**完整商店**开始。
+
+    <CollapseBox title="商店文件" id="shop-file">
+
+        首先创建商店文件：进入 `scripts/shops`，新建一个 `<name>.lua` 文件。除非你指定 ID，否则 `<name>` 就是商店的名称。
+
+        在这个例子中，我会创建一个名为 `test_shop.lua` 的新文件。你将在这个文件中定义商店的逻辑。接着添加新类。
+
+        ```lua
+        ---@class TestShop : Shop
+        local TestShop, super = Class(Shop, "complete_shop")
+
+        function TestShop:init()
+            super.init(self)
+        end
+
+        return TestShop
+        ```
+
+        在这个例子中，我将 `complete_shop` 定义为商店的 ID，之后会用这个名称引用它。
+        如果不定义 ID，也可以使用商店文件的名称；在本例中就是 `test_shop`。
+
+        现在……我们需要一种进入新商店的方式。为此，可以创建一个[`过渡事件`](/wiki/using-events#transitions)，并将
+        `shop` 属性设置为商店名称。
+
+        在 Transition 的属性中，还要定义玩家离开商店时的出生位置。下面介绍创建商店时有用的 Transition 属性：
+
+        - `shop: string` -> 要将玩家送往的商店名称。
+        - `x: number` -> 玩家离开商店时出生位置的 x 坐标。
+        - `y: number` -> 玩家离开商店时出生位置的 y 坐标。
+        - `marker: string = spawn` -> 玩家离开商店时出生位置的标记名称。
+
+        建议使用 `marker`，而不是直接填写 `x` 和 `y` 的值，因为前者更容易修改。
+
+        - `facing: string` -> 玩家离开商店时面朝的方向。可以是 `left`、`right`、`up` 或 `down`。
+
+        说明完这些，我们来为新商店创建过渡和出口标记。这就是我创建的结果。
+
+        ![](/wiki/shop_tutorial_1.png)
+
+        如你所见，我会使用 DELTARUNE 的素材来制作这个教程，主要是 Seam 的素材。我不会分发这些素材，
+        但你可以在 **spriters-resource.com** 之类的网站上轻松找到它们。
+
+        完成过渡后，商店目前看起来是这样的。
+
+        <video controls preload="none">
+        <source src="/wiki/shop_tutorial_1.mp4" type="video/mp4" />
+            你的浏览器不支持此视频。抱歉！
+        </video>
+
+        商店已经可以运行了，接下来需要定义其他所有内容。
+
+    </CollapseBox>
+
+    <CollapseBox title="商店文本" id = "shop-text">
+
+        ### 商店文本 [shop-text]
+        ---
+        定义商店的普通文本非常简单，只需要在 init 函数中定义文本变量即可。
+
+        下面是商店拥有的文本及其默认值。
+
+        - `self.currency_text = $%d` -> 此商店中用于显示货币的标签。**%d 表示金钱应显示的位置**。
+        - `self.encounter_text = * Encounter text` -> 第一次进入商店时显示的文本。
+        - `self.shop_text = * Shop text` -> 返回商店主菜单时显示的文本。
+        - `self.leaving_text = * Leaving text` -> 离开商店时显示的文本。
+        - `self.buy_menu_text = Purchase\ntext` -> 处于 BUY 物品菜单时显示的文本。
+        - `self.buy_confirmation_text = Buy it for\n%s ?` -> 即将购买物品时显示的文本。**%s 会被替换为物品价格**。
+        - `self.buy_refuse_text = Buy\nrefused\ntext` -> 拒绝购买时显示的文本。
+        - `self.buy_text = Buy text` -> 购买物品时显示的文本。
+        - `self.buy_storage_text = Storage\nbuy text` -> 购买物品并将其放入仓库时显示的文本。
+        - `self.buy_too_expensive_text = Not\nenough\nmoney.` -> 金钱不足以购买物品时显示的文本。
+        - `self.buy_no_space_text = You're\ncarrying\ntoo much.` -> 空间不足以购买物品时显示的文本。
+        - `self.sell_no_price_text = No\nprice\ntext` -> 物品没有出售价格时显示的文本。
+        - `self.sell_menu_text = Sell\nmenu\ntext` -> 处于 SELL 菜单时显示的文本。
+        - `self.sell_nothing_text = Sell\nnothing\nattempt` -> 尝试出售空位时显示的文本。
+        - `self.sell_confirmation_text = Sell it for\n%s ?` -> 即将出售物品时显示的文本。**%s 会被替换为物品价格**。
+        - `self.sell_refuse_text = Sell\nrefuse\ntext` -> 拒绝出售时显示的文本。
+        - `self.sell_text = Sell\ntext` -> 出售物品时显示的文本。
+        - `self.talk_text = Talk\ntext` -> 进入交谈菜单时显示的文本。
+        - `self.sell_no_storage_text = Empty\ninventory\ntext` -> 仓库中没有任何物品时显示的文本。
+        - `self.sell_everything_text = Sold\neverything\ntext` -> 卖掉仓库中的所有物品时显示的文本。
+
+        `storage` 是玩家存放物品的地方。商店使用以下四个仓库：`items`、`weapons`、`armors` 和 `storage`。
+
+        - `items storage` 用于存放可以在战斗中使用、也可以在**物品页签**中使用的物品。
+        - `weapons storage` 用于存放武器，可以在**装备页签**中访问。
+        - `armors storage` 用于存放防具，可以在**装备页签**中访问。
+        - `storage storage` 是**可以在存档点访问的**仓库，用于存放玩家不想放在物品栏中的物品。
+
+        ### 示例 [example]
+        ---
+
+        下面是我为示例商店设计的文本。
+        ```lua
+        ---@class TestShop : Shop
+        local TestShop, super = Class(Shop, "complete_shop")
+
+        function TestShop:init()
+            super.init(self)
+
+            self.encounter_text = "* Welcome back, traveler..."
+            self.shop_text = "* What will it be this time?"
+            self.leaving_text = "* Come back again...[wait:10] \n* Or not..."
+            self.buy_menu_text = "See something you like?"
+            self.buy_confirmation_text = "Only for %s"
+            self.buy_refuse_text = "Buy something else then"
+            self.buy_text = "Thanks \nfor the purchase"
+            self.buy_storage_text = "You'll keep it in you storage."
+            self.buy_too_expensive_text = "Sorry,[wait:5] but that's not enough."
+            self.sell_no_price_text = "I don't buy these"
+            self.sell_menu_text = "What junk do you have?"
+            self.sell_nothing_text = "You don't have anything there"
+            self.sell_refuse_text = "Okay then"
+            self.sell_text = "Here is your change"
+            self.sell_no_storage_text = "You don't have anything \nto sell"
+            self.sell_everything_text = "That should be all"
+            self.talk_text = "What do you want to talk about?"
+            self.sell_options_text.items = "Let's see what items you have"
+            self.sell_options_text.weapons = "What weapons have grown dull?"
+            self.sell_options_text.armors = "Any interesting armor?"
+            self.sell_options_text.storage = "What have you been storing?"
+        end
+
+        return TestShop
+        ```
+
+        添加文本后，看看它在游戏中的效果。
+
+        <video controls preload="none">
+        <source src="/wiki/shop_tutorial_2.mp4" type="video/mp4" />
+            你的浏览器不支持此视频。抱歉！
+        </video>
+
+        </CollapseBox>
+
+    <CollapseBox title="添加物品" id="adding-items">
+
+        ## 添加物品 [adding-items]
+        ---
+
+        文本完成后，接下来需要添加商店要卖给玩家的物品。
+
+        要向商店添加物品，需要使用 [`self:registerItem(item, options)`](/wiki/api/Shop#registerItem) 函数。**item** 是要出售的物品 ID，
+        **options** 则是一个包含出售物品属性的表。
+
+        出售物品的 `options` 定义以下字段：
+        - `name` -> 商店中显示的物品名称。默认使用物品的 `self.name`。
+        - `description` -> 商店中显示的物品描述。默认使用物品的 `self.shop`。
+        - `price` -> 此商店中物品的价格。默认使用物品的 `self.price`。
+        - `bonuses` -> 物品提供的预览属性加成（不会影响物品实际的属性加成）。
+        - `color` -> 物品名称文本的颜色。默认使用白色。
+        - `flag` -> 用于保存该物品剩余库存的标志名称。默认为 `stock_<index>_<item.id>`。
+        - `stock` -> 该物品的默认库存数量。如果未指定，则为无限。
+
+        `Item` 已经定义了其中大部分选项，但如果你需要**覆盖**物品已经定义的内容，
+        或定义 Item 尚未定义的选项，就可以使用这个选项表。
+
+        ### 示例 [example]
+        ---
+        在这个例子中，我会添加 **Ancient Sweet** 和 **CD Bagel** 作为恢复类物品，添加 **Twisted Sword** 作为武器，添加 **Shadow Mantle** 作为防具。
+
+        其中大多数物品无法在 DELTARUNE 中购买，因此我还会为物品定义描述。由于我不打算直接修改物品数据，所以会使用选项表。
+
+        添加这些物品的代码如下：
+        ```lua
+        function TestShop:init()
+        ...
+        self:registerItem("ancientsweet", {description = "Only Kris \ncan eat this \nHeals 400HP", stock = 4, color = COLORS.aqua})
+        self:registerItem("cd_bagel")
+        self:registerItem("twistedswd", {name = "Twisted Sword", description = "A strange \nblade", price = 6666, stock = 1, color = COLORS.yellow})
+        self:registerItem("shadowmantle", {price = 666, description = "Shadows slip \noff like water", stock = 1, color = COLORS.black})
+        end
+        ```
+
+        看看它在游戏中的效果。
+
+        <video controls preload="none">
+        <source src="/wiki/shop_tutorial_3.mp4" type="video/mp4" />
+            你的浏览器不支持此视频。抱歉！
+        </video>
+
+    </CollapseBox>
+
+    <CollapseBox title="商店店主" id="shopkeeper-bg-music">
+
+        ## 店主、背景和音乐 [shopkeeper-background-and-music]
+        ---
+        定义商店的背景和音乐非常简单。首先，将商店音乐放入 `assets/music` 文件夹，将商店背景图片放入
+        `assets/sprites/shops` 文件夹。然后在商店代码中定义它们。
+
+        ```lua
+        function TestShop:init()
+        ...
+        self.background = "shops/<your_background_name>"
+        self.shop_music = "<your_music_name>"
+        end
+        ```
+
+        **在这个例子中**，我从 DELTARUNE 中取用了 Seam 商店的音乐，将其保存为 `assets/music/shop1.ogg`，并将 Seam 商店背景保存为
+        `assets/sprites/shops/bg_seam_shop.png`，然后在商店代码中指定它们。
+
+        ```lua
+        function TestShop:init()
+        ...
+        self.background = "shops/bg_seam_shop"
+        self.shop_music = "shop1"
+        end
+        ```
+
+        创建**店主**很容易，但需要**几个步骤**。
+
+        **第一步**，为店主创建包含所有所需表情的素材，并将它们保存到 `assets/sprites/shopkeepers/<name>`。
+        name 是存放店主精灵图的文件夹名称。
+
+        在这个例子中，我取用了 Seam 的精灵图，并将它们放在 `assets/sprites/shopkeepers/seam` 文件夹中。
+
+        ![](/wiki/shop_tutorial_2.png)
+
+        **不同的名称就是店主的动画**。如果你有多帧动画，Kristal 会让动画与店主说话同步。
+        在文本中，可以使用 **\[emote:\<animation\>\]** 标签改变店主当前的动画。示例中会进一步说明。
+
+        完成店主精灵图后，**第二步**是创建店主的 actor。
+
+        创建这个 actor 非常简单，只需在 `scripts/data/actors/<shopkeeper_name>.lua` 目录中**新建一个 .lua 文件**。
+        你可以参考我的店主代码。
+
+        ```lua
+        ---@class Seam : Actor
+        local Seam, super = Class(Actor, "seam")
+
+        function Seam:init()
+            super.init(self)
+
+            -- actor 的名称
+            self.name = "seam"
+
+            -- 精灵图的尺寸
+            -- 商店会用它来确定店主的位置
+            self.width = 135
+            self.height = 109
+
+            -- 店主精灵图的路径
+            self.path = "shopkeepers/seam"
+            -- 要使用的默认动画
+            self.default = "talk"
+        end
+
+        return Seam
+        ```
+
+        创建 actor 后，需要用下面这段代码在商店数据中定义它。
+
+        ```lua
+        function TestShop:init()
+        ...
+        -- 进入 BUY 菜单时让店主滑入
+        self.shopkeeper.slide = true
+        -- 设置刚刚创建的 actor
+        self.shopkeeper:setActor("seam")
+        end
+        ```
+
+        完成这些后，来看看商店的效果。
+
+        <video controls preload="none">
+        <source src="/wiki/shop_tutorial_4.mp4" type="video/mp4" />
+            你的浏览器不支持此视频。抱歉！
+        </video>
+
+    </CollapseBox>
+
+    <CollapseBox title="交谈菜单" id="talking-menu">
+
+        ## 交谈选项 [talking-options]
+        ---
+        我们已经创建了商店，但还缺少一些东西。没有一些有趣的背景故事，商店又算什么呢？
+
+        接下来创建一些交谈选项。**第一步**，我们要定义**交谈选项**和**替换选项**。
+        替换选项是你已经谈过某件事后选择的交谈主题，用于进一步展开该主题。
+
+        要定义初始主题，请使用 [`self:registerTalk("topic")`](/wiki/api/Shop#registerTalk) 函数。`"topic"` 是交谈选项的名称。
+
+        如果还想定义替换主题，可以使用 [`self:registerTalkAfter("new_topic", index)`](/wiki/api/Shop#registerTalkAfter)。`"new_topic"` 是新交谈主题的名称，
+        `index` 是它所替换主题的索引，取值为**1 到 4 之间**的数字。
+
+        如果想替换一个已经被替换过的主题，过程会复杂一点，但也没有复杂太多。
+
+        定义好主题后，需要为交谈选项放置对话。为此，重写 [`Shop:startTalk(dialogue)`](/wiki/api/Shop#startTalk)，并将对话放入 [`Shop:startDialogue(text, callback)`](/wiki/api/Shop#startDialogue) 中。
+        下面通过一个例子来帮助理解。
+
+        ### 示例 [example]
+        ---
+        我创建了下面这个图表，来展示想要讨论的主题。
+
+        - 关于你
+        - 关于这里
+        - 符号
+            - 预言
+                - 结局
+        - 你的眼睛
+
+        我在代码中这样定义主题：
+
+            ```lua
+        function TestShop:init()
+        ...
+        self:registerTalk("About you")
+        self:registerTalk("About this place")
+        self:registerTalk("Symbol")
+        self:registerTalk("Your eye")
+
+        -- 在本例中，这会替换第 3 个主题 Symbol
+        self:registerTalkAfter("The prophecy", 3)
+        -- 设置标志为 true 后，这会替换同一个主题
+        self:registerTalkAfter("The ending", 3, "talk_3_1", true)
+        end
+        ```
+
+        现在定义处理交谈和不同交谈主题的函数。
+
+        ```lua
+        ---管理交谈的函数
+        ---@param dialogue string 玩家正在使用的交谈主题
+        function TestShop:startTalk(dialogue)
+            if dialogue == "About you" then
+            elseif dialogue == "About this place" then
+            elseif dialogue == "Symbol" then
+            elseif dialogue == "Your eye" then
+            elseif dialogue == "The prophecy" then
+            elseif dialogue == "The ending" then
+            end
+        end
+        ```
+
+        现在只需使用 [`Shop:startDialogue(text, callback)`](/wiki/api/Shop#startDialogue) 函数，将店主对话放入对应主题中即可。
+        你可以先使用下面的内容作为占位符。
+
+        ```lua
+        self:startDialogue({
+            "talk_1",
+            "talk_2",
+            "talk_3",
+            "talk_4",
+        }, function ()
+            -- 这是一个回调函数，会在玩家完成交谈后执行
+        end)
+        ```
+
+        这里就要使用 **\[emote:\<emotion\>\]** 标签了。在对话中调用它时，店主精灵图会替换为名称为 \<emotion\> 的精灵图。
+        例如，如果我想让 Seam 使用 **laugh** 动画，可以这样写：
+
+        ```lua
+        self:startDialogue({
+            "[emote:laugh] * This is me laughing.",
+        }, function ()
+            -- 用它重置店主的动画
+            self.shopkeeper:setSprite("talk")
+        end)
+        ```
+
+        由于 **emote** 修改了精灵图的动画，所以需要在回调中将其改回去。
+
+        下面是我为测试商店编写的对话。
+
+        ```lua
+        ---管理交谈的函数
+        ---@param dialogue string 玩家正在使用的交谈主题
+        function TestShop:startTalk(dialogue)
+            if dialogue == "About you" then
+                self:startDialogue({
+                    "[emote:laugh]* You shouldn't think too hard about who I am.",
+                    "[emote:talk]* I'm just your convenient shopkeeper,[wait:5] nothing more,[wait:5] nothing less."
+                })
+            elseif dialogue == "About this place" then
+                self:startDialogue({
+                    "* You are in the test rooms.",
+                    "[emote:idle]* A place made to test the functions of this world."
+                }, function ()
+                    self.shopkeeper:setSprite("talk")
+                end)
+
+            elseif dialogue == "Symbol" then
+                self:startDialogue({
+                    "* That's the Deltarune. \nThe symbol that gives this world purpose.",
+                })
+
+            elseif dialogue == "Your eye" then
+                self:startDialogue({
+                    "[emote:impatient]* That's not something I want to talk about.",
+                }, function ()
+                    self.shopkeeper:setSprite("talk")
+                end)
+
+            elseif dialogue == "The prophecy" then
+                self:startDialogue({
+                    "* Oh yes...[wait:5] the prophecy,[wait:5] I know it fully,[wait:5] even how it ends...",
+                    "[emote:oh]* What...[wait:5] you want to know how it ends?",
+                    "[emote:laugh]* That is not something for me to say.",
+                }, function ()
+                    self.shopkeeper:setSprite("talk")
+                    -- 设置这个标志后，Kristal 会将该对话选项替换为 "The ending"
+                    self:setFlag("talk_3_1", true)
+                end)
+
+            elseif dialogue == "The ending" then
+                self:startDialogue({
+                    "[emote:impatient]* Even if you keep on insisting, I'll not say anything more.",
+                }, function ()
+                    self.shopkeeper:setSprite("talk")
+                end)
+            end
+        end
+        ```
+
+        看看它在游戏中的效果。
+
+        这样，你就应该能够**创建一个完整商店**了。如果想制作更复杂的商店，可以查看 [`Shop`](/wiki/api/Shop) 代码。
+
+        <video controls preload="none">
+        <source src="/wiki/shop_tutorial_5.mp4" type="video/mp4" />
+            你的浏览器不支持此视频。抱歉！
+        </video>
+
+    </CollapseBox>
+
+</Box>
+
+<Box>
+
+    ## 制作自动售货机 [making-a-vending-machine]
+    ---
+    下面介绍如何制作一个不会过渡到其他地点、只使用商店界面的商店。第三章中的自动售货机就是很好的例子，
+    所以我会尝试在这里复刻它们。
+
+    首先创建 **shop.lua** 文件。我会将自己的文件命名为 `vending_machine.lua`。
+
+    ```lua
+    ---@class VendingMachine : Shop
+    local VendingMachine, super = Class(Shop)
+
+    function VendingMachine:init()
+        super.init(self)
+    end
+
+    return VendingMachine
+    ```
+
+    然后添加商店文本和出售的物品。
+
+    ```lua
+    function VendingMachine:init()
+        super.init(self)
+        self.encounter_text = "* Buy from the vending machine."
+        self.shop_text = "* Buy from the vending machine."
+        self.leaving_text = "* You bid farewell to the vending machine."
+        self.buy_menu_text = "Buy for money."
+        self.buy_confirmation_text = "Only for \n%s"
+        self.buy_refuse_text = "Buy for money."
+        self.buy_text = "You feel \nbetter."
+        self.buy_storage_text = "Saved in your storage."
+        self.buy_too_expensive_text = "You don't have enough money.."
+
+        self:registerItem("butjuice", {name = "Juice", description = "Great Healing!\nGreat Price!\nHeals 100HP", stock = 6})
+        self:registerItem("tensionbit", {description = "Raises TP by\n32% in battle.", price = 240, stock = 2})
+        self:registerItem("revivedust", {description = "Revives all \nfallen party \nmembers to 25% HP.", price = 220, stock = 2})
+        self:registerItem("scarlixir", {description = "Has a fruity \ntaste. \nHeals 160 HP.", stock = 4})
+
+    end
+    ```
+
+    由于我们不想隐藏世界，也不需要 SELL 或 TALK 菜单，所以要配置商店的菜单选项。
+
+    ```lua
+    function VendingMachine:init()
+        ...
+        -- 使用此设置后，地图不会被隐藏
+        self.hide_world = false
+        -- 这是菜单选项。第一项是文本，第二项是状态
+        self.menu_options = {
+            {"Buy",  "BUYMENU" },
+            {"Purchase", "BUYMENU" }, -- 替换 SELL 菜单
+            {"Smile", "SMILE" }, -- 替换 TALK 菜单
+            {"Exit", "LEAVE" }
+        }
+        -- 移除 UI 后面的黑色矩形；如果需要，也可以保留它
+        self.bg_cover:remove()
+    end
+    ```
+
+    由于我们给菜单添加了新状态，需要在代码中处理这个新状态。
+    可以使用 [`Shop:onStateChange(old, new)`](/wiki/api/Shop#onStateChange)，在商店代码中重写它，
+    并添加新状态。
+    ```lua
+    function VendingMachine:onStateChange(old, new)
+        super.onStateChange(self, old, new)
+        if new == "SMILE" then
+            self:startDialogue("* You smiled.")
+        end
+    end
+    ```
+
+    剩下的工作就是创建调用这个商店的方式。为此，我会添加自动售货机精灵图，
+    再添加一个 [`Interactable`](/wiki/using-events#interactable)，并为它提供一个 [`script`](/wiki/using-events#making-scripts)。
+
+    我会将脚本命名为 `vending_machine.lua`，并只添加下面这段代码。
+
+    ```lua
+    ---执行商店的函数
+    ---@param event Event 执行此脚本的事件
+    ---@param player Player 执行此脚本的玩家
+    return function(event, player)
+        -- 告诉游戏加载名为 "vending_machine" 的商店
+        Game:enterShop("vending_machine")
+    end
+    ```
+
+    然后修改地图。
+
+    ![](/wiki/shop_tutorial_3.png)
+
+    这是它在游戏中的效果。
+
+    <video controls preload="none">
+    <source src="/wiki/shop_tutorial_6.mp4" type="video/mp4" />
+        你的浏览器不支持此视频。抱歉！
+    </video>
+
+</Box>
+
+<Box>
+
+    ## 迷你商店 UI [mini-shop-ui]
+    ---
+    本教程还有一件事要介绍：[`WorldCutscene:showShop()`](/wiki/api/WorldCutscene#showShop) 和
+    [`WorldCutscene:hideShop()`](/wiki/api/WorldCutscene#hideShop)。在过场动画中，可以使用它们显示玩家拥有的金钱和剩余空间。
+
+    下面将展示如何创建使用这些函数的过场动画，以及如何在项目中使用它们。
+
+    [`过场动画教程`](/wiki/cutscenes)对此有更详细的说明。在 `scripts/world/cutscenes` 中新建一个 **\<name\>.lua** 文件。**name** 是
+    过场动画的分组名称。然后添加一个新的空过场动画。我会将分组命名为 **test**，将过场动画命名为 **shop**。
+
+    在 `scripts/world/cutscenes/test.lua` 中：
+
+    ```lua
+    return {
+        ---迷你商店 UI 测试
+        ---@param cutscene WorldCutscene
+        ---@param event Event
+        shop = function (cutscene, event)
+        end
+    }
+    ```
+
+    现在创建一个过场动画，让玩家以 250 D$ 的价格购买一杯 rhapsotea。
+
+    ```lua
+    return {
+        ---迷你商店 UI 测试
+        ---@param cutscene WorldCutscene
+        ---@param event Event
+        shop = function (cutscene, event)
+            -- 显示迷你商店 UI
+            cutscene:showShop()
+            cutscene:text("* Do you want to buy a rhapsotea? * One for 250 D$ ")
+            -- 询问玩家是否要购买
+            local buyOption = cutscene:choicer({"Yes", "No"})
+
+            if buyOption == 1 then
+                -- 如果玩家选择了是
+                -- Game.money 用于存储玩家的金钱
+                if Game.money >= 250 then
+                    -- 如果玩家有足够金钱，尝试给予 rhapsotea 物品
+                    if Game.inventory:tryGiveItem("rhapsotea") then
+                        -- 播放装备音效
+                        Assets.playSound("equip")
+                        -- 如果玩家获得了物品，则扣除金钱
+                        Game.money = Game.money - 250
+                        cutscene:text("* You got a Rhapsotea.")
+                    else
+                        -- 如果玩家的物品栏和仓库都已满，则不扣除金钱
+                        cutscene:text("* You're carrying too much.")
+                    end
+                else
+                    -- 如果玩家没有足够金钱
+                    cutscene:text("* You don't have enough money.")
+                end
+            end
+            -- 隐藏迷你商店 UI
+            cutscene:hideShop()
+        end
+    }
+    ```
+
+    完成过场动画后，我会向场景添加一些装饰物，并将过场动画分配给一个 [`Interactable`](/wiki/using-events#interactable)。
+
+    ![](/wiki/shop_tutorial_4.png)
+
+    看看它在游戏中的效果。
+
+    <video controls preload="none">
+    <source src="/wiki/shop_tutorial_7.mp4" type="video/mp4" />
+        你的浏览器不支持此视频。抱歉！
+    </video>
+
+</Box>
