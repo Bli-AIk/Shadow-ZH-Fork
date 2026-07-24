@@ -1,0 +1,225 @@
+export const metadata = {
+    title: 'Actors',
+    description: 'The actor system, and how to use it.',
+}
+
+# Actors
+
+<Box>
+
+An actor is a representation of a character, whether it's an NPC, a follower, or a party member! Actors are what gives visuals to characters, and defines their sprites, the origins of those sprites, and all sorts of stuff.
+
+So, let's get started by making... Kris! Again!
+
+</Box>
+
+<Box>
+## Getting Started With Actors
+
+```lua
+local actor, super = Class(Actor, "kris")
+
+function actor:init()
+    super.init(self)
+end
+
+return actor
+```
+
+We get started with the same boilerplate as always. Now let's set some variables:
+
+```lua
+    -- Display name (optional)
+    self.name = "Kris"
+
+    -- Width and height for this actor, used to determine its center
+    self.width = 19
+    self.height = 37
+
+    -- Hitbox for this actor in the overworld (optional, uses width and height by default)
+    self.hitbox = {0, 25, 19, 14}
+
+    -- A table that defines where the Soul should be placed on this actor if they are a player.
+    -- First value is x, second value is y.
+    self.soul_offset = {10, 24}
+
+    -- Color for this actor used in outline areas (optional, defaults to red)
+    self.color = {0, 1, 1}
+
+    -- Path to this actor's sprites (defaults to "")
+    self.path = "party/kris/dark"
+    -- This actor's default sprite or animation, relative to the path (defaults to "")
+    self.default = "walk"
+
+    -- Sound to play when this actor speaks (optional)
+    self.voice = nil
+    -- Path to this actor's portrait for dialogue (optional)
+    self.portrait_path = nil
+    -- Offset position for this actor's portrait (optional)
+    self.portrait_offset = nil
+
+    -- Whether this actor as a follower will blush when close to the player
+    self.can_blush = false
+```
+
+Woah, woah, that's a lot. What's this about a soul? Blushing? Portraits? Voices? What's going on here?
+
+Let's go through these one by one.
+
+### Soul Offset
+
+In a battle, the Soul is the little heart that you control. ~~It's the very culmination of your being~~. When that soul gets spawned, it appears on top of the player, and moves to the center of the arena. This offset is used to place the soul correctly.
+
+### Portraits
+
+If your character is going to be speaking, you'll want to give them a portrait. This is a sprite that appears next to the text box when they speak. The portrait offset is used to place the portrait correctly.
+
+### Voices
+
+Again, if they're gonna be speaking, they'll need a voice, too!
+
+### Blushing
+
+Ralsei blushes if you get close enough to them. With `can_blush`, you can make your actor do the same!
+
+</Box>
+
+<Box>
+## Animations
+---
+
+Now that we've got our actor set up, let's give them some animations!
+
+In the init function, let's add an animation table:
+
+```lua
+    -- Table of sprite animations
+    self.animations = {
+        ["slide"] = {"slide", 4/30, true},
+    }
+```
+
+This table is a list of animations that this actor can play. The key is the name of the animation, and the value is a table containing the name of the animation, the speed of the animation, and whether or not the animation should loop.
+</Box>
+
+<Box>
+## Offsets
+---
+
+Does a certain animation not line up correctly? That's where offsets come in.
+
+```lua
+    -- Table of sprite offsets (indexed by sprite name)
+    self.offsets = {
+        ["battle/idle"] = {-5, -1},
+    }
+```
+
+This table is a list of offsets for each sprite. The key is the name of the sprite, and the value is a table containing the x and y offset of the sprite.
+
+</Box>
+
+<Box>
+## Battle Preparation
+
+If your character is a party member, you'll have to worry about their battle sprites. Let's add some! Take a look at Kris's:
+
+```lua
+        -- Battle animations
+        ["battle/idle"]         = {"battle/idle", 0.2, true},
+
+        ["battle/attack"]       = {"battle/attack", 1/15, false},
+        ["battle/act"]          = {"battle/act", 1/15, false},
+        ["battle/spell"]        = {"battle/act", 1/15, false},
+        ["battle/item"]         = {"battle/item", 1/12, false, next="battle/idle"},
+        ["battle/spare"]        = {"battle/act", 1/15, false, next="battle/idle"},
+
+        ["battle/attack_ready"] = {"battle/attackready", 0.2, true},
+        ["battle/act_ready"]    = {"battle/actready", 0.2, true},
+        ["battle/spell_ready"]  = {"battle/actready", 0.2, true},
+        ["battle/item_ready"]   = {"battle/itemready", 0.2, true},
+        ["battle/defend_ready"] = {"battle/defend", 1/15, false},
+
+        ["battle/act_end"]      = {"battle/actend", 1/15, false, next="battle/idle"},
+
+        ["battle/hurt"]         = {"battle/hurt", 1/15, false, temp=true, duration=0.5},
+        ["battle/defeat"]       = {"battle/defeat", 1/15, false},
+        ["battle/swooned"]      = {"battle/defeat", 1/15, false},
+
+        ["battle/transition"]   = {"sword_jump_down", 0.2, true},
+        ["battle/intro"]        = {"battle/attack", 1/15, true},
+        ["battle/victory"]      = {"battle/victory", 1/10, false},
+```
+
+This, of course, being in `self.animations`. Let's also add some offsets:
+
+```lua
+        -- Battle offsets
+        ["battle/idle"] = {-5, -1},
+
+        ["battle/attack"] = {-8, -6},
+        ["battle/attackready"] = {-8, -6},
+        ["battle/act"] = {-6, -6},
+        ["battle/actend"] = {-6, -6},
+        ["battle/actready"] = {-6, -6},
+        ["battle/item"] = {-6, -6},
+        ["battle/itemready"] = {-6, -6},
+        ["battle/defend"] = {-5, -3},
+
+        ["battle/defeat"] = {-8, -5},
+        ["battle/hurt"] = {-5, -6},
+
+        ["battle/intro"] = {-8, -9},
+        ["battle/victory"] = {-3, 0},
+```
+
+Perfect! We're battle-ready!
+</Box>
+
+<Box>
+
+## ActorSprites
+
+Actors are sometimes misunderstood as being *objects*, but they aren't. They're more like data templates for characters, which are then used by objects to make them appear as that character.
+
+This also means actors do not have positions, instances, children, or really any tangible form of their own. So, what if we want our actor to do something that relies on these?
+
+The answer is that we'll also need to create or modify something called an [ActorSprite](/wiki/api/ActorSprite). It's name is pretty much what it is - a `Sprite` instance linked up to an `Actor`.
+
+Every time an actor is used by another object, that object calls `createSprite()` on that actor to get a **new instance** of `ActorSprite`. It starts out looking like this:
+
+```lua
+function actor:createSprite()
+    return ActorSprite(self)
+end
+```
+
+You can create a **custom** ActorSprite to use by making a custom object (inside of `scripts/objects`) that **extends from ActorSprite**:
+
+```lua
+local MyNewActorSprite, super = Class(ActorSprite, "MyNewActorSprite")
+
+-- Override functions from ActorSprite in here to change your sprite's functionality
+
+return MyNewActorSprite
+```
+
+Then, to make your actor use it, you create and return an instance of that object in `createSprite()` instead of the standard `ActorSprite`:
+
+```lua
+function actor:createSprite()
+    return MyNewActorSprite(self)
+end
+```
+
+You can consult the [API Reference for ActorSprite](/wiki/api/ActorSprite) for a full list of `ActorSprite` functions.
+
+---
+If creating a new ActorSprite isn't your style, there's also some handy functions on `Actor` itself that allow us to operate on the basic `ActorSprite` instances created by objects using our actor.
+
+These functions can be distinguished by the **on** and **pre** prefixes as well as the `sprite` argument they receive (Battle and World context functions receive `battler` and `chara` respectively instead). 
+
+Rather than writing code that works with `self`, we use `sprite`, which is an **ActorSprite instance** instead!
+
+We could go through them all here, but they're conveniently available on the [API Reference for Actor](/wiki/api/Actor) already.
+</Box>

@@ -22,6 +22,7 @@
     align-items: center;
     padding-left: 32px;
     padding-right: 32px;
+    gap: 1rem;
 }
 
 .item {
@@ -67,6 +68,8 @@
         padding: 0;
         width: 100%;
         gap: 0px;
+        flex-wrap: wrap;
+        height: auto;
     }
 
     .item {
@@ -81,5 +84,9 @@
 
     .item_icon {
         display: block;
+    }
+
+    .navbar_inner :global(.control) {
+        order: 2;
     }
 }

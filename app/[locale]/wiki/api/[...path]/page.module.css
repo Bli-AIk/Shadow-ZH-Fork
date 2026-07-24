@@ -1,0 +1,45 @@
+.wikiNoShadow {
+    text-shadow: 0px 0px
+}
+
+.detailHeader:hover > * {
+    color: yellow
+}
+
+.syntaxObject {
+    color: lawngreen;
+}
+
+.syntaxMethod {
+    color: deepskyblue;
+}
+
+.syntaxField {
+    color: gold;
+}
+
+.syntaxUndocumented {
+    color: indianred;
+}
+
+.syntax {
+    color: gray;
+}
+
+.syntaxSymbol {
+    color: lightgray;
+}
+
+.syntaxType {
+    color: hotpink;
+}
+
+.syntaxTypeMod {
+    color: pink;
+    cursor: help;
+}
+
+.syntaxString {
+    color: lightgreen;
+    cursor: help;
+}

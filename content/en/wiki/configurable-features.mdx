@@ -1,0 +1,48 @@
+import styles from '../../wiki-styles/configurable-features.module.css'
+
+export const metadata = {
+    title: 'Configurable Features',
+    description: 'A list of all of the configurable features in Kristal.',
+}
+
+# Configurable Features
+
+<Box className={styles.table}>
+
+<>![](/wiki/feature_config.png)</>
+
+Each config option defaults to the value in the current chapter.
+For example, DELTARUNE Chapter 1 has storage disabled by default, and Chapter 2 has it enabled by default.
+
+You can change each feature individually through the feature config menu.
+
+| Key                      | Description                                                                        | Ch. 1          | Ch. 2          |
+| ------------------------ | ---------------------------------------------------------------------------------- | -------------- | -------------- |
+| `enableStorage`          | Extra 48-slot item storage                                                         | False          | True           |
+| `smallSaveMenu`          | Single-file save menu  with no storage/recruits options                            | True           | False          |
+| `partyActions`           | Whether X-Actions appear in spell menu by default                                  | False          | True           |
+| `growStronger`           | Stat increases after defeating an enemy with violence                              | False          | True           |
+| `growStrongerChara`      | The character who grows stronger if they're in the party                           | Unset          | "noelle"       |
+| `susieStyle`             | What sprite set Susie should use                                                   | 1              | 2              |
+| `ralseiStyle`            | What sprite set Ralsei should use                                                  | 1              | 2              |
+| `oldTensionBar`          | Whether the Tension Bar uses blocky corners or not                                 | True           | False          |
+| `oldUIPositions`         | Whether to use Chapter 1 positions of UI elements or not                           | True           | False          |
+| `oldGameOver`            | Whether to use Chapter 1 game over or not                                          | True           | False          |
+| `targetSystem`           | Whether battles should use the targeting system or not                             | True           | False          |
+| `speechBubble`           | The default style for enemy speech bubbles                                         | "round"        | "cyber"        |
+| `enemyAuras`             | The red aura around enemies                                                        | False          | True           |
+| `mercyMessages`          | Seeing +X% when an enemy's mercy goes up                                           | False          | True           |
+| `mercyBar`               | Whether the mercy bar should appear or not                                         | False          | True           |
+| `enemyBarPercentages`    | Whether the HP and Mercy bars should show percentages                              | False          | True           |
+| `prioritySpareableText`  | Whether enemies' spareable text should be prioritized over tired / low-health text | True           | False          |
+| `pushBlockInputLock`     | Whether pushing a block should freeze the player                                   | True           | True           |
+| `keepTensionAfterBattle` | Whether TP should be kept after battle instead of reset                            | False          | False          |
+| `overworldSpells`        | Whether spells should be usable in the overworld                                   | True           | False          |
+| `damageUnderflowFix`     | If disabled, negative enemy damage heals the enemy                                 | True           | True           |
+| `darkCurrency`           | The full currency name for the Dark World                                          | "Dark Dollars" | "Dark Dollars" |
+| `darkCurrencyShort`      | The short currency name for the Dark World                                         | "D$"           | "D$"           |
+| `lightCurrency`          | The full currency name for the Light World                                         | "Money"        | "Money"        |
+| `lightCurrencyShort`     | The short currency name for the Light World                                        | "$"            | "$"            |
+| `tpName`                 | The name of Tension Points in battles                                              | "TP"           | "TP"           |
+
+</Box>

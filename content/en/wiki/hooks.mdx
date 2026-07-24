@@ -1,0 +1,349 @@
+export const metadata = {
+    title: 'Hooks',
+    description: 'The key to complete modding freedom!',
+}
+
+# Hooks
+
+<Box>
+
+Hooks are a powerful modding tool you can use to customise nearly everything about Kristal. 
+
+Let's learn what they are and how to use them!
+
+</Box>
+
+<Box>
+## What is a hook? [what-is-a-hook]
+
+A hook is the name we give to code that attaches itself to an existing class, effectively "hooking" onto it.
+
+Strictly speaking, hooks actually **replace** code - but we can (and often do) run the original code as well as our hook.
+
+Hooks can be applied to **almost anything** in Kristal - allowing you to interact with or modify **pretty much everything about the engine**!
+
+Hooks allow you to achieve the same effect as modifying and adding to the engine source, **without altering anything outside of your project**.
+
+And - unlike source modifications - **hooks won't interfere with your ability to upgrade to new Kristal versions later**. They're a win-win scenario!
+</Box>
+
+<Box>
+## Making a Hook
+
+An important prerequisite to hooking is **having a copy of the source code available**.
+
+If you don't already, it is highly recommended you use the Kristal source code. You can follow the steps [here](/wiki/downloading#source-code) to get and use it.
+
+Alternatively, you can [reference the source code from GitHub](https://github.com/KristalTeam/Kristal/tree/main). (But we really recommend downloading it!)
+
+With that out of the way, let's make some hooks!
+
+---
+
+In Kristal, all hook files should be placed into `scripts/hooks/`. 
+
+*(Well, mostly. If you want to hook anything from the engine's `data/` folder, the steps are slightly different. This is explained [later](#registry-hooks).)*
+
+Each hook targets exactly one class at a time with the `HookSystem.hookScript(target)` function. To create a new hook, we start by creating a file in the hooks folder named after the target.
+
+Say you wanted to hook the `EnemyBattler` class. You would create `EnemyBattler.lua` inside `scripts/hooks/`. Then, you would insert the following:
+
+```lua
+local EnemyBattler, super = HookSystem.hookScript(EnemyBattler)
+
+return EnemyBattler
+```
+
+These two very important lines **must** be at the **top and bottom of the file respectively**. All code goes between them.
+
+And... we've successfully set up a hook! 
+
+... What does it do right now? Well... nothing...
+
+Let's change that!
+
+With `hookScript`, whenever we define a function on `EnemyBattler`, it will be hooked over the original.
+
+We can use the regular syntax we would for writing out functions in our hook. Everything from here on out works as if we were in `EnemyBattler` itself.
+
+If we wanted to hook over the `EnemyBattler:init` function, we would simply add this:
+
+```lua
+function EnemyBattler:init(...)
+    -- New init() code goes here
+end
+```
+
+Whatever code we put in here will be run whenever `EnemyBattler:init` is called.
+
+There's one more thing to consider, too.
+
+When you hook any function, the original is **replaced**. That means whatever it previously did **doesn't happen anymore**.
+
+You'll still be able to access the `super` (original) class though, and therefore you can run the original version of the function through it:
+
+```lua
+function EnemyBattler:init(...)
+    super.init(self, ...) -- Calls the original EnemyBattler:init function.
+end
+```
+
+If you want the **original code** to run, you **must** use the super class to call it from inside the hook.
+
+(If you don't know whether you should or shouldn't call the `super` function, you probably should.)
+</Box>
+
+<Box>
+## Making a Hook (continued) [making-a-hook-continued]
+
+Let's try hooking another function on EnemyBattler. This time we'll be looking at `EnemyBattler:hurt`.
+
+You can hook this function in the same as before:
+
+```lua
+function EnemyBattler:hurt(...)
+    super.hurt(self, ...)
+end
+```
+
+But... having our function arguments as `...` here isn't great. They'll pass into the original function fine, but we can't use them in our hook like this.
+
+### Navigating the Source Code
+
+This is where having the **source code** is important. There's one easy place for us to find those arguments - let's look for `EnemyBattler:hurt` in the source code!
+
+Searching every file would be painstaking, so we'll need to make appropriate use of search functions.
+
+Firstly, you need to know what file it's in - that's usually easy. If the object is `EnemyBattler`, then the file will be called `enemybattler.lua` (the lowercase of the object name). Then, we need to find the file itself.
+
+In VSCode, opening the **source code folder** and searching for `enemybattler` in the top searchbar will lead you to it. Similarly GitHub has the `go to file` searchbox. (Other editors will likely have similar search features)
+
+Then, we need to find the function. Use `Ctrl+F` to search up `EnemyBattler:hurt` and you should be taken straight to the function!
+
+What we want to do is swap `...` for the arguments listed there.
+
+If you've done it correctly, the hook should now look like this:
+
+```lua
+function EnemyBattler:hurt(amount, battler, on_defeat, color, show_status, attacked)
+    super.hurt(self, amount, battler, on_defeat, color, show_status, attacked)
+end
+```
+
+Now we can access the arguments passed into each `EnemyBattler:hurt` call and do whatever we want with them.
+
+For the purposes of introducing hooks, we'll keep it very simple and just log some values to the console - but you can very easily change them around as much as you want!
+
+With our hook set up like this, we can run code **before** and **after** the original function whenever it's called. As well as that, we can modify the arguments going into the `super.hurt` function if we want to.
+
+---
+
+#### Note: Original Function Modifications 
+
+You'll notice that we specify here how our hook setup means we can run code before and after the original. If you need to change how the original function works, you need a slightly different setup.
+
+Hooks can't partially modify the code of an existing function, but we can instead leverage how they **replace** the original to do what we need. 
+
+**Rather than calling the original**, you can **copy the source code** of the target function into the hook.
+
+Watch out for any instances of the `super` class being used in the original function. `super` in the context of the original class is the same as `super.super` in the context of it's hook, so change any of them accordingly.
+
+From there, you can modify the code in your hook however you like, and it will run instead of the original.
+
+We won't be needing this for our hook example though - let's jump back into that.
+
+</Box>
+
+<Box>
+## Making a Hook - Running Code
+
+It's time to make our hook do something! It won't be very interesting, but we mainly want to demonstrate that this hook works.
+
+Using `Kristal.Console:log(text)` we can write anything to the Kristal console (which can be opened with the `` ` `` key.)
+
+Let's add some logging about the Enemy HP before and after being hurt to start with:
+
+```lua
+function EnemyBattler:hurt(amount, battler, on_defeat, color, show_status, attacked)
+    -- Code above the original function runs before it:
+    Kristal.Console:log("Enemy " .. self.name .. " has " .. self.health .. " HP.")
+
+    super.hurt(self, amount, battler, on_defeat, color, show_status, attacked)
+
+    -- Code below the original function runs after it:
+    Kristal.Console:log("Enemy " .. self.name .. " has " .. self.health .. " HP.")
+
+    Kristal.Console:log("-------------") -- Draw a big line at the end so we can easily see where each Hurt ends
+end
+```
+
+Here, we're able to access the `EnemyBattler` instance each `hurt` call runs for and it's properties through `self`. 
+
+---
+
+Let's show that we can interact with function arguments too. 
+
+Have a go at writing out how you would log the amount of damage (stored in the `amount` parameter) being done to the enemy.
+
+Your code for logging the damage should look something like this:
+
+```lua
+Kristal.Console:log("Hurting enemy for " .. amount .. " damage")
+```
+
+If we can read them, then we can also **change** them - let's show that working too.
+
+Our target will be the `color` argument. It controls the colour of the damage number that appears on the enemy. 
+
+Normally this is based on the party member dealing the damage, but we're going to change it to a really sickly, yucky yellow instead.
+
+The quickest way to do this is by reassigning `color` before calling `super.hurt`. That simply means adding this line into the first half of our function:
+
+```lua
+color = {176/255, 176/255, 20/255} -- A very yucky shade of yellow
+```
+
+That's the last of the changes!
+
+---
+
+Let's take a look at our whole hook before we give it a test run:
+
+```lua
+local EnemyBattler, super = HookSystem.hookScript(EnemyBattler)
+
+function EnemyBattler:hurt(amount, battler, on_defeat, color, show_status, attacked)
+    -- Code above the original function runs before it:
+    Kristal.Console:log("Enemy " .. self.name .. " has " .. self.health .. " HP.") -- Log the enemy HP (Before Hurt)
+    
+    color = {176/255, 176/255, 20/255} -- Change the damage color
+
+    Kristal.Console:log("Hurting enemy for " .. amount .. " damage") -- Log the damage being dealt
+    super.hurt(self, amount, battler, on_defeat, color, show_status, attacked) -- Call the original hurt function
+
+    -- Code below the original function runs after it:
+    Kristal.Console:log("Enemy " .. self.name .. " has " .. self.health .. " HP.") 00 Log the enemy HP (after Hurt)
+
+    Kristal.Console:log("-------------")
+end
+
+return EnemyBattler
+```
+
+When we open the console, we should expect to see our three log messages for every time we hit the enemy, and see that the damage text is now a yucky yellow colour.
+
+Let's check it out! Load up any battle and attack the enemies.
+
+<video controls preload="preview">
+    <source src="/wiki/enemybattler_hook.mp4" type="video/mp4" />
+    Your browser does not support this video. Sorry!
+</video>
+
+That's what we wanted to see! Our hook works!
+
+</Box>
+
+<Box>
+## New Functions
+
+Hooks aren't just limited to existing functions - we can define new ones too.
+
+This code, for example, will add `coolNewFunction` to every `EnemyBattler`.
+
+```lua
+function EnemyBattler:coolNewFunction()
+    Kristal.Console:log("Cool New Function is running!")
+    for i=1, 3 do
+        local e = Explosion(love.math.random(0, 40), love.math.random(0, 40))
+        self:addChild(e)
+    end
+end
+```
+
+Of course, this function only does anything if it actually gets **called** by something else.
+
+Try running `coolNewFunction()` on an `EnemyBattler` somewhere and see what happens!
+
+If you need an example, you could make it run when ACTing. Choose any enemy you want and any ACT within there. Then call `coolNewFunction` within it:
+
+```lua
+function MyEnemy:onAct(battler, name)
+    if name == "MyAct" then
+        -- Imagine some ACT code here...
+
+        self:coolNewFunction()
+
+        return { "* What" }
+    end
+end
+```
+</Box>
+
+<Box>
+## Registry Hooks
+
+Remember when we said all hooks go into `scripts/hooks/`? Well, that was actually a **Lie**.
+
+As the section title very likely gave away, content managed by the Registry has to be hooked differently. That's any file in the `data/` folder of the engine source e.g. actors, party members, items.
+
+Hook files for the registry must go into their **respective data sub-folders** inside of `scripts/data/`, rather than the hooks folder.
+
+Let's run through hooking the Dark (or Darker) Candy item as an example.
+
+---
+Dark Candy is an item, so the folder you want to be in is `scripts/data/items`. Inside, create a new file named **the same as the original** - in this case, that's `dark_candy.lua`.
+
+The contents of the file are nearly the same as any other hook. Here's a basic one that changes the dark candy to heal 400 HP:
+
+```lua
+local item, super = HookSystem.hookScript("dark_candy")
+
+function item:init()
+    super.init(self)
+
+    self.heal_amount = 400
+end
+
+return item
+```
+
+The only difference here is that we're now using a string with the ID we want to hook in `HookSystem.hookScript()`. (See how the engine determines Script IDs [here](/wiki/creating-a-mod#script-ids).)
+
+That's our registry hook set up and good to go!
+</Box>
+
+<Box>
+## Hook Annotations
+
+With hooks, you are able to change function parameters or add new functions to classes.
+
+If you're using [VSCode with our recommended extensions](/wiki/creating-a-mod#installing-visual-studio-code), you'll be familiar with annotations or atleast seeing documentation appear as you code.
+
+Though an issue you'll quickly encounter between them and hooks is that the language server doesn't understand when you've hooked things...!
+
+We don't want that to happen! We need to annotate any changes in our hooks to clear up the language server's confusion.
+
+---
+
+The main thing you can always do is add the following annotation line at the very top of your hook file, above even the hookScript call:
+
+```lua
+---@class ClassName
+```
+
+Change `ClassName` to the name of the class you're hooking.
+
+You should also annotate/document any changes you've made to existing functions, but new additions should be picked up roughly by auto-annotations.
+
+If you're curious about how to annotate your hooks, read up on the lua extension's annotation system [here](https://luals.github.io/wiki/annotations/).
+
+Even if you aren't using VSCode yourself, you may want to do this anyway if you're making a **library**, as users of your library can benefit from those annotations if they are provided.
+</Box>
+
+<Box>
+It is also possible to hook functions in Kristal with the `HookSystem.hook()` function.
+
+However, this is not recommended as it does not support the Language Server and is overall less consistent with the engine than script hooking.
+
+But if you need to know about it, it is documented on [this page](/wiki/func-hooks).
+</Box>

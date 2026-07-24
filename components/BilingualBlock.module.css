@@ -1,0 +1,25 @@
+.block {
+    display: contents;
+}
+
+.part {
+    display: block;
+}
+
+.pending {
+    display: block;
+    margin: 0.5rem 0;
+    color: #ffcc00;
+    font-size: 0.8em;
+}
+
+:global([data-display-mode="en"]) .part[data-language="zh"],
+:global([data-display-mode="zh"]) .part[data-language="en"] {
+    display: none;
+}
+
+:global([data-display-mode="both"]) .part[data-language="zh"] {
+    border-top: 1px dashed rgba(255, 255, 255, 0.5);
+    margin-top: 0.75rem;
+    padding-top: 0.25rem;
+}

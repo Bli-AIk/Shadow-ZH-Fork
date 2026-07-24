@@ -1,29 +1,97 @@
-"use client"
+"use client";
 
-import Link from "next/link";
-import { useEffect, useRef } from "react";
-import styles from "./Sidebar.module.css";
-import Searchbar from 'components/Searchbar'
+import { Link } from 'src/i18n/navigation';
+import { useEffect, useRef } from 'react';
+import { useTranslations } from 'next-intl';
+import styles from './Sidebar.module.css';
+import Searchbar from 'components/Searchbar';
 
-export default function Sidebar(props) {
+function SidebarContent({ t }) {
+    return <>
+        <br />
+        <h3><Link href="/wiki/">{t('general')}</Link></h3>
+        <hr />
+        <p>{t('generalDescription')}</p>
+        <ul>
+            <li><Link href="/wiki/">{t('general')}</Link></li>
+            <li><Link href="/wiki/downloading">{t('downloading')}</Link></li>
+            <li><Link href="/wiki/playing-mods">{t('playing')}</Link></li>
+            <li><Link href="/wiki/glossary">{t('glossary')}</Link></li>
+        </ul>
+        <br />
+        <h3><Link href="/wiki/mod-creation">{t('projectCreation')}</Link></h3>
+        <hr />
+        <p>{t('projectDescription')}</p>
+        <ul>
+            <li><Link href="/wiki/lua-tutorial">{t('luaTutorial')}</Link></li>
+            <li><Link href="/wiki/basics">{t('basics')}</Link></li>
+            <li><Link href="/wiki/creating-a-mod">{t('creatingProject')}</Link></li>
+            <li><Link href="/wiki/writing-text">{t('writingText')}</Link></li>
+            <li><Link href="/wiki/using-libraries">{t('usingLibraries')}</Link></li>
+            <li><Link href="/wiki/creating-an-item">{t('creatingItem')}</Link></li>
+            <li><Link href="/wiki/making-shops">{t('creatingShop')}</Link></li>
+            <li><Link href="/wiki/creating-a-spell">{t('creatingSpell')}</Link></li>
+            <li><Link href="/wiki/actors">{t('actors')}</Link></li>
+            <li><Link href="/wiki/party-members">{t('partyMembers')}</Link></li>
+            <li><Link href="/wiki/keybinds">{t('keybinds')}</Link></li>
+            <li><Link href="/wiki/releasing-mods">{t('releasingProjects')}</Link></li>
+        </ul>
+        <br />
+        <h3><Link href="/wiki/mod-creation">{t('overworld')}</Link></h3>
+        <hr />
+        <p>{t('overworldDescription')}</p>
+        <ul>
+            <li><Link href="/wiki/designing-a-map">{t('designingMap')}</Link></li>
+            <li><Link href="/wiki/map-layers">{t('mapLayers')}</Link></li>
+            <li><Link href="/wiki/cutscenes">{t('cutscenes')}</Link></li>
+            <li><Link href="/wiki/map-properties">{t('mapProperties')}</Link></li>
+            <li><Link href="/wiki/using-events">{t('events')}</Link></li>
+            <li><Link href="/wiki/battle-areas">{t('battleAreas')}</Link></li>
+            <li><Link href="/wiki/world-tool">{t('worldTool')}</Link></li>
+        </ul>
+        <br />
+        <h3><Link href="/wiki/mod-creation">{t('battles')}</Link></h3>
+        <hr />
+        <p>{t('battleDescription')}</p>
+        <ul>
+            <li><Link href="/wiki/battlers">{t('battlers')}</Link></li>
+            <li><Link href="/wiki/encounters">{t('encounters')}</Link></li>
+            <li><Link href="/wiki/enemy-attacks">{t('enemyAttacks')}</Link></li>
+            <li><Link href="/wiki/wavemaking-reference">{t('wavemaking')}</Link></li>
+        </ul>
+        <br />
+        <h3><Link href="/wiki/mod-creation#advanced-mod-creation">{t('advanced')}</Link></h3>
+        <hr />
+        <p>{t('advancedDescription')}</p>
+        <ul>
+            <li><Link href="/wiki/debugging">{t('debugging')}</Link></li>
+            <li><Link href="/wiki/hooks">{t('hooks')}</Link></li>
+            <li><Link href="/wiki/ui">{t('ui')}</Link></li>
+        </ul>
+        <br />
+        <h3><Link href="/wiki/api">{t('api')}</Link></h3>
+        <hr />
+        <p>{t('apiDescription')}</p>
+        <Link href="#top" style={{ textAlign: 'right' }}>{t('backToTop')}</Link>
+    </>;
+}
+
+export default function Sidebar() {
     const sidebarRef = useRef(null);
+    const t = useTranslations('Sidebar');
 
-    /* Handle dynamic sidebar height */
     useEffect(() => {
         const sidebarEl = sidebarRef.current;
         if (!sidebarEl) return;
 
-        const navbarEl = document.getElementById("wiki-navbar");
-
+        const navbarEl = document.getElementById('wiki-navbar');
         const updateSidebarOffset = () => {
             if (!navbarEl) {
-                sidebarEl.style.setProperty("--sidebar-offset", "0px");
+                sidebarEl.style.setProperty('--sidebar-offset', '0px');
                 return;
             }
-
             const navbarRect = navbarEl.getBoundingClientRect();
-            const offset = Math.max(0, navbarRect.bottom);
-            sidebarEl.style.setProperty("--sidebar-offset", `${offset}px`);
+            sidebarEl.style.setProperty('--sidebar-offset', `${Math.max(0, navbarRect.bottom)}px`);
         };
 
         let raf = null;
@@ -36,101 +104,30 @@ export default function Sidebar(props) {
         };
 
         updateSidebarOffset();
-        window.addEventListener("scroll", scheduleUpdate, { passive: true });
-        window.addEventListener("resize", scheduleUpdate);
-
+        window.addEventListener('scroll', scheduleUpdate, { passive: true });
+        window.addEventListener('resize', scheduleUpdate);
         return () => {
             if (raf !== null) cancelAnimationFrame(raf);
-            window.removeEventListener("scroll", scheduleUpdate);
-            window.removeEventListener("resize", scheduleUpdate);
+            window.removeEventListener('scroll', scheduleUpdate);
+            window.removeEventListener('resize', scheduleUpdate);
         };
     }, []);
 
-    /* Content */
-
-    let toggleTitle = <h2>Kristal Wiki</h2>
-    let content = <>
-        <br/>
-        <h3><Link href="/wiki/">General Information</Link></h3>
-        <hr/>
-        <p>These pages get you ready to use the engine.</p>
-        <ul>
-            <li><Link href="/wiki/">Main Page</Link></li>
-            <li><Link href="/wiki/downloading">Downloading Kristal</Link></li>
-            <li><Link href="/wiki/playing-mods">Installing and Playing Projects</Link></li>
-            <li><Link href="/wiki/glossary">Glossary</Link></li>
-        </ul>
-        <br/>
-        <h3><Link href="/wiki/mod-creation">General Project Creation</Link></h3>
-        <hr/>
-        <p>These pages teach you about project development.</p>
-        <ul>
-            <li><Link href="/wiki/lua-tutorial">Lua Tutorial</Link></li>
-            <li><Link href="/wiki/basics">Understanding the Basics</Link></li>
-            <li><Link href="/wiki/creating-a-mod">Creating a Project</Link></li>
-            <li><Link href="/wiki/writing-text">Writing Text</Link></li>
-            <li><Link href="/wiki/using-libraries">Using Libraries</Link></li>
-            <li><Link href="/wiki/creating-an-item">Creating an Item</Link></li>
-            <li><Link href="/wiki/making-shops">Creating a Shop</Link></li>
-            <li><Link href="/wiki/creating-a-spell">Creating a Spell</Link></li>
-            <li><Link href="/wiki/actors">Actors</Link></li>
-            <li><Link href="/wiki/party-members">Party Members</Link></li>
-            <li><Link href="/wiki/keybinds">Custom Keybinds</Link></li>
-            <li><Link href="/wiki/releasing-mods">Releasing Projects</Link></li>
-        </ul>
-        <br/>
-        <h3><Link href="/wiki/mod-creation">The Overworld</Link></h3>
-        <hr/>
-        <p>Everything to do with the overworld.</p>
-        <ul>
-            <li><Link href="/wiki/designing-a-map">Designing a Map</Link></li>
-            <li><Link href="/wiki/map-layers">Map Layers</Link></li>
-            <li><Link href="/wiki/cutscenes">Cutscenes</Link></li>
-            <li><Link href="/wiki/map-properties">Map Properties</Link></li>
-            <li><Link href="/wiki/using-events">Events</Link></li>
-            <li><Link href="/wiki/battle-areas">Battle Areas</Link></li>
-            <li><Link href="/wiki/world-tool">The World Tool</Link></li>
-        </ul>
-        <br/>
-        <h3><Link href="/wiki/mod-creation">Battles</Link></h3>
-        <hr/>
-        <p>Everything related to creating battles.</p>
-        <ul>
-            <li><Link href="/wiki/battlers">Battlers</Link></li>
-            <li><Link href="/wiki/encounters">Encounters</Link></li>
-            <li><Link href="/wiki/enemy-attacks">Enemy Attacks (Waves)</Link></li>
-            <li><Link href="/wiki/wavemaking-reference">Wavemaking Tricks and References</Link></li>
-        </ul>
-        <br/>
-        <h3><Link href="/wiki/mod-creation#advanced-mod-creation">Advanced</Link></h3>
-        <hr/>
-        <p>These pages teach you more complex but powerful parts of the engine.</p>
-        <ul>
-            <li><Link href="/wiki/debugging">Debugging</Link></li>
-            <li><Link href="/wiki/hooks">Hooks</Link></li>
-            <li><Link href="/wiki/ui">The UI System</Link></li>
-        </ul>
-        <br/>
-        <h3><Link href="/wiki/api">API Reference</Link></h3>
-        <hr/>
-        <p>An auto-generated API reference for Kristal.</p>
-        <Link href="#top" style={{textAlign: "right"}}>⮬ Back to Top ⮭</Link>
-    </>
+    const content = <SidebarContent t={t} />;
+    const toggleTitle = <h2>{t('title')}</h2>;
 
     return <>
         <div ref={sidebarRef} className={styles.sidebar}>
             {toggleTitle}
-            <Searchbar id="header-search" placeholder="Search Wiki" submit="Go"/>
+            <Searchbar id="header-search" placeholder={t('searchPlaceholder')} submit={t('searchSubmit')} />
             {content}
         </div>
-        <div className={styles["mobile-sidebar"]}>
-            <Searchbar id="mobile-header-search" placeholder="Search Wiki" submit="Go"/>
+        <div className={styles['mobile-sidebar']}>
+            <Searchbar id="mobile-header-search" placeholder={t('searchPlaceholder')} submit={t('searchSubmit')} />
             <details>
-                <summary>
-                    {toggleTitle}
-                </summary>
+                <summary>{toggleTitle}</summary>
                 {content}
             </details>
         </div>
-    </>
+    </>;
 }

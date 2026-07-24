@@ -2,6 +2,9 @@
 
 @font-face { font-family: '8bitOperatorPlus-Regular'; src: url("/8bitOperatorPlus-Regular.eot?#iefix") format("embedded-opentype"), url("/8bitOperatorPlus-Regular.woff") format("woff"), url("/8bitOperatorPlus-Regular.ttf") format("truetype"), url("/8bitOperatorPlus-Regular.svg#8bitOperatorPlus-Bold") format("svg"); font-weight: normal; font-style: normal; }
 
+@font-face { font-family: 'KristalZhMain'; src: url("/kristal-main-zh.ttf") format("truetype"); font-weight: normal; font-style: normal; }
+@font-face { font-family: 'KristalZhFallback'; src: url("/kristal-zh-main-fallback.ttf") format("truetype"); font-weight: normal; font-style: normal; }
+
 * {
   box-sizing: border-box;
   padding: 0;
@@ -35,6 +38,30 @@ body {
 
   display: flex;
   flex-direction: column;
+}
+
+html[lang="zh"] body,
+html[data-display-mode="both"] body {
+  font-family: "KristalZhMain", "KristalZhFallback", "8bitOperatorPlus-Regular", monospace;
+}
+
+html[lang="zh"] h1,
+html[lang="zh"] h2,
+html[lang="zh"] h3,
+html[lang="zh"] h4,
+html[lang="zh"] h5,
+html[lang="zh"] h6,
+html[lang="zh"] strong,
+html[lang="zh"] b,
+html[data-display-mode="both"] h1,
+html[data-display-mode="both"] h2,
+html[data-display-mode="both"] h3,
+html[data-display-mode="both"] h4,
+html[data-display-mode="both"] h5,
+html[data-display-mode="both"] h6,
+html[data-display-mode="both"] strong,
+html[data-display-mode="both"] b {
+  font-family: "KristalZhMain", "KristalZhFallback", "8bitOperatorPlus-Bold", monospace;
 }
 
 small {
