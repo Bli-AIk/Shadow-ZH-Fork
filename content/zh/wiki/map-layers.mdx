@@ -1,0 +1,100 @@
+export const metadata = {
+    title: '地图图层',
+    description: '可用于地图的图层类型。',
+}
+
+# 地图图层
+
+<Box>
+## 地图图层
+---
+
+地图中的所有内容都必须位于某个图层上。
+
+有些图层的用途一目了然（例如瓦片图层），但对象图层需要额外的信息，也就是它的**图层类型**！
+
+在 Tiled 中创建“对象图层”时，请查看**属性面板**！你应该会看到一个名为 **Class** 的空字段。
+图层类型就要填写在这里！
+
+<CollapseBox title="旧版命名系统" id="legacy-name-system">
+    过去，设置图层类型的首选方式是使用类型名称命名图层，或让图层名称以类型名称开头。
+    这些名称不区分大小写，并且类型名称后面可以接任意内容。
+
+    以下是一些有效名称的例子：
+    - `objects`
+    - `objects_above`（会被视为“objects”）
+    - `markers_asdfsdfdsf`（会被视为“markers”）
+    - `MARKERS`（会被视为“markers”）
+
+    这种命名系统不够可靠，容易造成混淆。请尝试将图层改为使用 **Class** 属性。
+</CollapseBox>
+
+图层类**区分大小写**，必须与下方列出的名称完全一致。
+
+</Box>
+
+<Box>
+## 对象图层类型列表
+---
+### `objects`
+
+- 对象图层用于将事件放置到地图中。
+    - （有关事件的更多信息，请参阅[使用事件](/wiki/using-events)。）
+- 这些图层可以放置引擎事件、使用 [`Game:registerEvent()`](/wiki/api/Game#registerEvent) 注册的对象，以及 `scripts/world/events` 中的旧版事件。
+- 对象的 `Class` 或 `Name` 属性必须引用要生成的已注册事件的 ID。
+
+### `objects_party`
+
+- 如果存在名称为此名称的对象图层，队伍将始终在该图层上生成。
+    - 如果不存在此图层，则队伍会在第一个 `objects` 图层上生成，该图层位于 `markers` 图层上方。
+
+### `controllers`
+
+- 控制器图层用于将控制器放置到地图中。
+    - 这些对象类似事件，但在地图中没有实体表现。它们专门用于控制其他事件，因此得名“控制器”。
+    - （有关控制器的更多信息，请参阅[使用事件](/wiki/using-events)。）
+- 用户注册的控制器应存放在项目的 `scripts/world/events/controllers` 文件夹中。
+
+### `collision`
+
+- 此图层上的形状将被用作每张地图的碰撞区域。
+
+### `enemycollision`
+
+- 此图层上的形状将被用作只影响敌人的碰撞区域（[ChaserEnemy](/wiki/api/ChaserEnemy)）。
+- 无论此图层是否存在，敌人仍会受到标准 `collision` 图层碰撞的影响。
+    - （有关此图层的更多信息，请参阅专门介绍 [Chaser Enemy](/wiki/using-events#chaser-enemy) 的教程。）
+
+
+### `markers`
+
+- 此图层上的形状会创建引用地图中特定点或区域的标记。每个标记都必须设置名称，之后才能引用它。
+- 当前地图的标记存储在 `Game.world.map.markers` 中，可以使用 `Game.world.map:getMarker(name)` 获取。
+    - 有时，事件需要使用标记来设置某些属性。
+    - 此外，如果 `spawn` 标记存在，世界系统会使用它来决定从存档加载地图或在没有入口位置时队伍应放置在哪里。
+
+### `paths`
+
+- 此图层中每个形状的边界都会被视为一条路径。每条路径都必须设置名称，之后才能引用它。
+    - （详情请参阅[路径系统教程](/wiki/using-events#path-system-tutorial)。）
+
+### `battleareas`
+
+- 当玩家进入此图层上的任意对象时，就会进入“世界战斗”。这会使 `battleborder` 图层变为可见，并使世界变暗。
+    - （有关战斗区域的更多信息，请参阅[战斗区域](/wiki/battle-areas)。）
+
+### `blockcollision`
+
+- 此图层上的形状将被用作 `pushblock` 事件的碰撞区域。
+    - （详情请参阅[推动方块教程](/wiki/using-events#push-block)。）
+
+</Box>
+
+<Box>
+## 瓦片图层类型列表
+---
+### `battleborder`
+
+- 只有当玩家位于*战斗区域*内时才会显示。
+    - （有关战斗区域的更多信息，请参阅[战斗区域](/wiki/battle-areas)。）
+</Box>
