@@ -9,7 +9,8 @@
     "start": "next start",
     "lint": "next lint",
     "wiki-index": "node scripts/wiki-index.mjs",
-    "docs-make": "node scripts/docs-make.mjs"
+    "docs-make": "node scripts/docs-make.mjs",
+    "validate-translations": "node scripts/validate-translations.mjs"
   },
   "dependencies": {
     "@mdx-js/loader": "^3.1.1",
