@@ -22,7 +22,7 @@ export async function generateMetadata({ params }) {
   return {
     title: t('title'),
     description: t('description'),
-    metadataBase: process.env.BASE_URL ? new URL(process.env.BASE_URL) : undefined,
+    metadataBase: new URL(process.env.BASE_URL || 'http://localhost:3000'),
     openGraph: {
       url: '/',
       images: [{
