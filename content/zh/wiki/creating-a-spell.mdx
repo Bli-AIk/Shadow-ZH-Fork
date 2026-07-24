@@ -1,0 +1,135 @@
+export const metadata = {
+    title: '创建法术',
+    description: '了解如何制作法术！',
+}
+
+# 创建法术
+
+<Box>
+
+请先阅读[创建物品](/wiki/creating-an-item)，因为本指南会假设你已经知道如何制作物品。
+
+</Box>
+
+<Box>
+## 基础
+---
+
+我们要制作的是**治愈祈祷**。先从基础内容开始：
+
+```lua
+local spell, super = Class(Spell, "heal_prayer")
+
+function spell:init()
+    super.init(self)
+end
+
+return spell
+```
+
+目前看起来很简单！
+
+现在，我们来定义一些变量：
+
+```lua
+function spell:init()
+    super.init(self)
+
+    -- Display name
+    self.name = "Heal Prayer"
+    -- Name displayed when cast (optional)
+    self.cast_name = nil
+
+    -- Battle description
+    self.effect = "Heal\nAlly"
+    -- Menu description
+    self.description = "Heavenly light restores a little HP to\none party member. Depends on Magic."
+
+    -- TP cost
+    self.cost = 32
+
+    -- Target mode (ally, party, enemy, enemies, or none)
+    self.target = "ally"
+
+    -- Tags that apply to this spell
+    self.tags = {"heal"}
+end
+```
+
+现在让它真正做点什么：
+
+```lua
+function spell:onCast(user, target)
+    target:heal(user.chara:getStat("magic") * 5)
+end
+```
+
+完美！
+
+---
+
+### 什么是标签？
+
+标签用于给法术分类。例如，Snowgrave 就有 `ice`、`fatal` 和 `damage` 标签！
+
+</Box>
+
+<Box>
+## 世界法术
+---
+
+DELTARUNE 曾经有一个被废弃的机制，允许你在大地图中施放法术。要使用它，请执行以下操作：
+
+```lua
+function spell:hasWorldUsage(chara)
+    return true
+end
+
+function spell:onWorldCast(chara)
+    Game.world:heal(chara, 100)
+end
+```
+
+注意，这需要设置一些配置选项，才能允许你在大地图中使用 TP！！
+</Box>
+
+<Box>
+## 高级
+---
+
+治愈祈祷还不够好？好吧，那我们来看看 Snowgrave。
+
+```lua
+-- In the init function
+    self.cost = 200
+
+-- Outside of the init function
+function spell:getTPCost(chara)
+    local cost = super.getTPCost(self, chara)
+    if chara and chara:checkWeapon("thornring") then
+        cost = MathUtils.round(cost / 2)
+    end
+    return cost
+end
+```
+
+这段代码会根据角色是否装备了荆棘戒指，动态改变 TP 消耗。
+
+现在来看看实际的效果是如何工作的：
+
+```lua
+function spell:onCast(user, target)
+    local object = SnowGraveSpell(user)
+    object.damage = self:getDamage(user, target)
+    object.layer = BATTLE_LAYERS["above_ui"]
+    Game.battle:addChild(object)
+
+    return false
+end
+```
+
+等等……就这样？它只是生成了另一个对象？有意思。
+
+法术在场景中没有实体表现，因此想要实现特殊效果，就需要生成一个对象。
+
+</Box>

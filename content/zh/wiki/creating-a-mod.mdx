@@ -1,0 +1,408 @@
+export const metadata = {
+    title: '创建项目',
+    description: '介绍如何为 Kristal 创建项目的简单指南。',
+}
+
+# 创建项目
+
+<Box>
+
+在 Kristal 项目列表的底部，有一个写着“创建新项目”的按钮。
+
+<>![](/wiki/create_new_project.png)</>
+
+在这里，你可以配置项目名称、项目描述、项目基于 DELTARUNE 的哪个章节，
+还可以配置各章节之间发生变化的每项功能。
+
+你可以在[这里](/wiki/configurable-features)查看可配置功能的完整列表。
+</Box>
+
+<Box>
+## 安装 Visual Studio Code
+---
+
+Visual Studio Code 是 Kristal 项目推荐使用的代码编辑器。你可以[在这里](https://code.visualstudio.com/)下载。
+
+（请忽略网站上的所有 AI 内容……你可以很容易地把它们关掉。
+我们早在那之前就一直使用 Visual Studio Code 了……）
+
+安装 VSCode 后，请[从这里](https://marketplace.visualstudio.com/items?itemName=kristal.kristal-vscode)安装官方 Kristal 扩展。
+它会让你的工作轻松很多。
+
+就是这样，现在你已经准备好了！
+</Box>
+
+<Box>
+## 在 Visual Studio Code 中打开项目
+---
+
+打开项目文件夹后，右键单击文件夹内部，或直接右键单击文件夹本身，然后点击“**使用 Code 打开**”。
+下面的截图使用的是 Visual Studio Code Insiders，但无论你使用哪个版本，操作都一样。
+
+<>![](/wiki/open_with_code.png)</>
+
+出现提示时，务必点击“**是，我信任作者**”——你就是作者，因为这是你的项目！
+
+<>![](/wiki/trust_authors.png)</>
+
+</Box>
+
+<Box>
+## 使用 Visual Studio Code
+---
+
+屏幕左侧是**文件资源管理器**。这里显示的就是项目中的文件！
+你可以单击文件预览，也可以双击文件打开。
+
+（预览标签页的名称会以*斜体*显示，并且会被你尝试打开的其他文件替换。
+大多数时候，如果你想编辑文件，应该正常打开它，而不是预览。）
+
+</Box>
+
+<Box>
+## 项目结构
+---
+
+现在你已经能看到项目文件了，我们来聊聊文件夹！了解每个文件夹中存放哪些文件非常重要。
+
+---
+
+
+### 根文件夹
+
+“根”文件夹指的是项目最顶层的文件夹，也就是包含其他所有内容的那个文件夹！
+它就是你刚才用 Visual Studio Code 打开的文件夹。
+
+你可能会听到别人把它称为“项目的根目录”，
+或者像这里一样，直接称为“项目文件夹”。
+
+<details>
+
+<summary>
+*主要内容（点击展开）*
+</summary>
+
+根文件夹中存放着两个重要文件：`mod.lua` 和 `mod.json`。
+
+除此之外，项目的所有内容文件夹也都存放在这里：
+
+- assets
+- scripts
+- libraries
+- preview
+
+*本节后面会详细介绍这些文件夹。*
+
+说回这两个 `mod` 文件——它们是什么？
+
+（过去 Kristal 项目被称为“mod”，但这个名字造成了太多混淆。
+为了确保旧项目仍然兼容，我们保留了这些文件的名称。）
+
+`mod.lua` 用于修改你的 `Mod` 对象。
+`Mod` 对象可以定义要在引擎决定的各种事件调用中运行的代码。
+
+（Wiki 中没有事件调用列表……不过源代码中的 `KRISTAL_EVENT` 枚举有！
+如果你找不到它，可以点击这个[快速链接](https://github.com/KristalTeam/Kristal/blob/main/src/engine/vars.lua#L179)。）
+
+另一个文件 `mod.json` 是项目的配置文件。
+你可以在这里修改创建项目时选择的章节配置，以及项目的其他行为，例如**初始存档状态**。
+
+`mod.json` 中的许多键**只对新存档文件生效**，所以测试修改时一定要创建全新的存档！
+
+</details>
+
+---
+
+### Assets 文件夹
+
+Assets 文件夹用于存放各种资源。精灵、音效、字体、音乐和对话框都会存放在这里，供引擎加载。
+
+<details>
+
+<summary>
+*Assets 子文件夹（点击展开）*
+</summary>
+
+每一种资源都存放在自己的子文件夹中。
+
+<details>
+
+<summary>
+#### 精灵 - `assets/sprites`
+</summary>
+
+存放项目中的所有纹理和图像。支持的文件类型为 `.png` 或 `.jpg`。
+
+对于动画精灵，每一帧都应保存为单独的图像，并将帧编号附加到名称末尾（例如 `idle_1.png`、`idle_2.png`……）。
+**Kristal 不支持使用 `.gif` 文件或精灵表制作动画**。
+
+</details>
+
+<details>
+
+<summary>
+#### 音效 - `assets/sounds`
+</summary>
+
+存放项目中的所有音效文件。支持的文件类型为 `.wav` 和 `.ogg`。
+
+</details>
+
+<details>
+
+<summary>
+#### 音乐 - `assets/music`
+</summary>
+
+存放项目中的所有音乐文件。支持的文件类型为 `.wav`、`.ogg` 和 `.mp4`（推荐使用 `.ogg`）。
+
+你可以在 `mod.lua` 中使用 `MUSIC_VOLUMES` 和 `MUSIC_PITCHES` 表修改任意曲目的全局游戏内音量和音高：
+```lua
+function Mod:init()
+    -- Example: How you would make WELCOME TO THE CITY (`cybercity.ogg`) detuned the same way it is in DELTARUNE
+    MUSIC_VOLUMES["cybercity"] = 0.8
+    MUSIC_PITCHES["cybercity"] = 0.97
+end
+```
+
+</details>
+
+<details>
+
+<summary>
+#### 字体 - `assets/fonts`
+</summary>
+
+存放项目中的所有自定义字体（以及字体所需的其他支持信息）。支持的字体类型为 `.ttf`、`.fnt` 或 `.png`。
+
+</details>
+
+<details>
+
+<summary>
+#### 对话框 - `assets/bubbles`
+</summary>
+
+以 `.json` 文件存放对话框数据。用于构建对话框的实际精灵存放在 `assets/sprites/bubbles` 中。抱歉，让你的气泡破灭了……
+
+（你可以查看[源代码](https://github.com/KristalTeam/Kristal/tree/main/assets/bubbles)，了解默认对话框是如何构建的。）
+
+</details>
+
+<details>
+
+<summary>
+#### 着色器 - `assets/shaders`
+</summary>
+
+存放项目的着色器代码。所有着色器都是 `.glsl` 文件。
+
+</details>
+
+<details>
+
+<summary>
+#### 视频 - `assets/videos`
+</summary>
+
+存放视频文件。要正确播放，视频必须编码为 Ogg theora 格式（`.ogv`、`.ogg`）。
+
+</details>
+
+</details>
+
+---
+
+<details>
+
+<summary>
+*补充信息（点击展开）*
+</summary>
+
+#### 资源路径
+
+在项目中引用任意类型的资源时，代码最终都会调用 `Assets`——你甚至可能会直接调用它！
+
+你使用的资源文件路径应该从对应资源类型的**子文件夹内部**开始，并且**省略文件扩展名**。
+
+例如，存放在 `assets/sprites/world/events/sign.png` 的精灵，在代码中需要引用时只写作 `world/events/sign`。
+
+请注意，引擎中的某些函数和功能可能会从更具体的位置查找资源。例如，`Game:setBorder()` 会从 `assets/sprites/borders` 开始搜索。
+
+#### 替换引擎资源
+
+引擎直接使用的资源不会显示在项目文件夹中，但它们仍会以同样的方式加载和访问。
+
+你可以在[源代码](https://github.com/KristalTeam/Kristal/tree/main)的 `assets` 文件夹中查看引擎资源。如果你想**替换**这些资源（例如重新设计 UI），只需将替换纹理放在项目 assets 中的**相同文件路径**下即可！
+
+</details>
+
+---
+
+### Scripts 文件夹
+
+Scripts 文件夹存放项目的代码。过场动画、敌人，甚至物品等数据，全部都在这里。
+
+所有脚本都是 `.lua` 文件，并且每种脚本都必须放在特定文件夹中才能被加载。
+
+<details>
+
+<summary>
+*Scripts 子文件夹（点击展开）*
+</summary>
+
+默认情况下，项目会为大多数脚本类型创建空文件夹。下面简要介绍它们。
+
+<details>
+
+<summary>
+#### Battle - `scripts/battle`
+</summary>
+
+这个文件夹包含 Kristal 中与战斗有关的所有内容。战斗文件夹下根据脚本类型还分为几个子文件夹：
+
+- `bullets` - 存放 `Bullet` 脚本。
+- `cutscenes` - 存放 `BattleCutscene` 或 `BattleCutscene` 组脚本。
+- `encounters` - 存放 `Encounter` 脚本。
+- `enemies` - 存放 `EnemyBattler` 脚本。
+- `waves` - 存放 `Wave` 脚本。
+
+</details>
+
+<details>
+
+<summary>
+#### Borders - `scripts/borders`
+</summary>
+
+这个文件夹中的脚本定义支持动画的自定义 `Border` 对象。
+
+</details>
+
+<details>
+
+<summary>
+#### Data - `scripts/data`
+</summary>
+
+这个文件夹包含所有基于数据的内容脚本，例如物品。根据数据类型还分为几个子文件夹：
+
+- `actors` - 定义项目角色数据的脚本。
+- `items` - 项目的所有物品脚本。
+- `party` - 项目自定义队伍成员的脚本。
+- `recruits` - 所有敌人 RECRUIT 数据的脚本。
+- `spells` - 项目的法术脚本。
+
+</details>
+
+<details>
+
+<summary>
+#### Hooks - `scripts/hooks`
+</summary>
+
+这个文件夹包含 Hook 脚本——这是用于修改引擎代码的高级工具。
+
+</details>
+
+<details>
+
+<summary>
+#### Legends - `scripts/legends`
+</summary>
+
+这个文件夹包含 `LegendCutscene` 脚本，用于……传说风格的过场动画！
+
+</details>
+
+<details>
+
+<summary>
+#### Objects - `scripts/objects`
+</summary>
+
+这个文件夹包含项目的自定义对象类型。你可以用它制作高级法术效果、自定义灵魂，以及许多其他内容。
+
+这个文件夹中的每个对象都会被放入一个**与其 ID 相同**的全局变量中；你可以通过这个全局变量创建新对象的实例。如果你的对象是 `MyNewObject`，创建实例的代码如下：
+
+```lua
+-- This line creates a new instance of MyNewObject
+local object = MyNewObject()
+
+-- We also need to parent our object to something else after we've created it.
+Game.stage:addChild(object)
+```
+
+你可以在下面的[脚本 ID](#script-ids)部分了解脚本 ID 的确定方式。
+
+</details>
+
+<details>
+
+<summary>
+#### World - `scripts/world`
+</summary>
+
+这个文件夹包含 Kristal 中与地图和世界有关的所有内容。世界文件夹下根据脚本类型还分为几个子文件夹：
+
+- `bullets` - 存放 `WorldBullet` 脚本。
+- `cutscenes` - 存放 `WorldCutscene` 或 `WorldCutscene` 组脚本。
+- `events` - 存放 `Event` 脚本，即地图中出现的对象类型。
+- `maps` - 存放地图文件。
+- `scripts` - 存放通用脚本类型，主要用于 `script` 和 `interactable` 事件。
+- `tilesets` - 存放所有图块集脚本。
+
+</details>
+
+</details>
+
+---
+
+<details>
+
+<summary>
+*补充信息（点击展开）*
+</summary>
+
+#### 脚本 ID
+
+脚本会加载到 Kristal 中一个称为 `Registry` 的部分。加载时，它们会被分配一个 ID，之后访问它们时需要用到这个 ID。
+
+脚本被分配的 ID 由两个简单步骤决定——知道它们非常重要！
+
+**步骤 1。** 引擎会检查脚本 ID 是否在（大多数脚本中的）`Class()` 第二个参数中被显式定义。如果有，它就是脚本的 ID。
+
+**步骤 2。** 如果脚本没有显式 ID，引擎就会使用它的文件路径。这个路径从**脚本类型的子文件夹**开始，而不是从 `scripts` 文件夹开始。
+例如，位于 `scripts/data/items/light/pencil.lua` 的物品会被分配 ID `light/pencil`。
+
+这些 ID 也**区分大小写**——`Light/Pencil` 和 `light/pencil` 会被视为完全不同的 ID！
+
+#### 修改引擎脚本
+
+引擎有一些会在游戏中出现、但不会显示在项目文件夹中的 `data/` 脚本。如果你想修改它们，就需要使用 Hook。
+
+Hook 是引擎的高级功能，不建议刚开始时就使用。但当你确实需要它们时，可以[在这里](/wiki/hooks)阅读相关内容。
+</details>
+
+---
+
+### Libraries 文件夹
+
+Libraries 是从外部获取的代码和资源——[Libraries 页面](/wiki/using-libraries)会告诉你更多信息。
+
+---
+
+### Preview 文件夹
+
+Preview 文件夹存放项目在 Kristal 菜单中显示方式的所有相关内容。
+
+……等等？Wiki 上没有 Preview 指南？赶紧跳到文章末尾吧！
+
+</Box>
+
+<Box>
+## 接下来呢？
+---
+
+现在你已经知道如何使用 Visual Studio Code 了，是时候开始制作项目了！你可以[在这里](/wiki/mod-creation)了解更多项目创建信息。
+</Box>
