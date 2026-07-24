@@ -1,0 +1,1496 @@
+export const metadata = {
+    title: '敌人攻击（波次）',
+    description: '学习敌人攻击的基础知识。',
+}
+
+# 敌人攻击
+
+<Box>
+
+在战斗中，敌人需要拥有可以用来攻击玩家的攻击方式。没有攻击的话，就根本算不上什么战斗！
+
+在 Kristal 中，我们把这类攻击称为 **Waves**。让我们学习如何制作一些吧！
+
+</Box>
+
+<Box>
+## Waves 基础 [basics-of-waves]
+
+敌人在战斗中可以使用的每种攻击，都是一个 [Wave](/wiki/api/Wave)。
+
+每回合，每个敌人都会随机选择自己的一个 wave 使用。这也意味着，当战斗中有多个敌人时，可以同时发生多个 wave。
+
+每当我们想创建一个新的 wave，就要在项目的 `scripts/battle/waves` 文件夹中添加一个文件。
+
+现在就让我们创建一个名为 `example_wave.lua` 的新文件。打开文件，把下面的模板代码粘贴进去：
+
+```lua
+local ExampleWave, super = Class(Wave)
+
+function ExampleWave:init()
+    super.init(self)
+
+    -- wave 的持续时间，单位为秒。（默认为 `5`）
+    self.time = 5
+end
+
+function ExampleWave:onStart()
+    -- 这里的代码会在 wave 开始时调用
+end
+
+function ExampleWave:update()
+    -- 这里的代码会在每一帧调用
+
+    super.update(self)
+end
+
+return ExampleWave
+```
+
+我们的模板并没有做太多事情，但它展示了创建 wave 时最有可能修改的几个函数：
+- `Wave:init()` - 在这里，我们会初始化一些基础变量，例如 `self.time`。wave 在这里还没有完全准备好，所以**有些函数还不可用。**
+- `Wave:onStart()` - 这里的代码会在 wave 开始时运行一次。由于 `Wave:init()` 中有许多内容不可用，大部分时候我们会在这里编写 wave 的逻辑。
+- `Wave:update()` - 这里的代码会在 wave 激活期间每帧运行；如果需要，也可以用这个函数编写 wave 逻辑。
+
+这个新 wave 的 wave id 是 `example_wave`，也就是我们给文件取的名字。之后真正使用 wave 时会用到它。
+</Box>
+
+<Box>
+## 生成一个子弹 [spawning-a-bullet]
+
+现在，我们已经*从技术上来说*创建了一个新的 wave，但它还没有任何代码。这意味着我们的 wave 什么也不会做！
+
+让我们通过添加一个 [Bullet](/wiki/api/Bullet) 来改变这一点。最适合进行这项操作的地方，就是我们的 `onStart()` 函数：
+
+```lua
+function ExampleWave:onStart()
+    -- 这里的代码会在 wave 开始时调用
+
+    -- 在屏幕中央创建一个子弹
+    local x = SCREEN_WIDTH / 2
+    local y = SCREEN_HEIGHT / 2
+    local bullet = self:spawnBullet("bullets/example_bullet", x, y)
+    -- 将子弹的速度设置为 4（每 1/30 秒移动的像素数）
+    bullet.physics.speed = 4
+end
+```
+
+这就有点意思了！让我们拆解刚才做的事情，然后看看实际运行的效果。
+
+回到我们放进 `onStart()` 的代码：
+```lua
+local bullet = self:spawnBullet("bullets/example_bullet", x, y)
+```
+
+Wave 类中的这个函数会帮我们创建子弹，但它是如何工作的呢？
+
+我们可以查阅文档来了解！文档可以通过 [Wave 的 API 页面](/wiki/api/Wave#spawnBullet) 查看；如果安装了 Kristal 扩展，也会自动在编辑器中获取。
+
+为了方便本指南阅读，下面也附上了这部分文档：
+
+```lua
+--- 为此 wave 生成一个新子弹，并将其设置为 Game.battle 的子对象。
+---@param bullet    string|Bullet   作为字符串时，这个参数可以是精灵路径（会用该精灵创建基础子弹），也可以是自定义子弹的 id。作为 Bullet 时，会直接将该实例生成到 wave 中。
+---@param ...       any             传递给新创建子弹的 init() 函数的额外参数。基础子弹在这里接收 x 和 y 坐标。
+---@return Bullet bullet            新添加的子弹实例。
+function Wave:spawnBullet(bullet, ...)
+```
+
+先关注第一个参数 `bullet`：它说明这个参数可以是**精灵路径**，也可以是**自定义子弹的 id**。
+
+在我们的例子中，我们填入了 `bullets/example_bullet`。由于我们还没有创建自己的自定义子弹，所以这必定是一个精灵路径。
+
+不过……我们还没有为示例子弹准备精灵。现在就创建一个来解决这个问题吧！
+
+<ScaledSprite src="/wiki/example_bullet.png" name="example_bullet.png" width={11} height={7} scale={4}/>
+
+将这张图片以 `example_bullet.png` 的名称保存到 `assets/sprites/bullets` 中。它会成为我们的精灵！它的路径应该和之前填入的一致，即 `bullets/example_bullet`。
+
+这意味着我们创建的是一个“基础子弹”，也就是一个标准的 [`Bullet`](/wiki/api/Bullet) 对象。
+
+`Bullet` 对象会为我们处理子弹所需的一切，例如碰撞和伤害。
+
+我们也可以自己定制这些内容，但那是之后才会讲到的话题。
+
+至于 `x` 和 `y` 的值，我们可以从 `...` 的说明中看到，它们用于基础子弹，也就是子弹生成时的坐标。
+
+我们使用的值是 `SCREEN_WIDTH / 2` 和 `SCREEN_HEIGHT / 2`，它们代表游戏窗口的中心。
+
+最后，我们可以看到这个函数还会把它创建的 Bullet **返回**给我们：
+
+```lua
+local bullet = self:spawnBullet("bullets/example_bullet", x, y)
+-- 将子弹的速度设置为 4（每 1/30 秒移动的像素数）
+bullet.physics.speed = 4
+```
+
+我们在函数前写上 `local bullet = `，用来**保存子弹的引用**，这里保存到名为 `bullet` 的局部变量中。之后就可以使用这个引用让子弹做各种事情！
+
+在这个例子中，我们通过修改子弹的 `physics.speed` 值让它移动；子弹会沿着它所朝向的角度移动，这个角度由 `physics.direction` 设置：
+
+由于我们没有设置方向，它默认为 `0`，这会让子弹向右移动。
+
+现在，让我们试着运行这个 wave！通过 Kristal 的 Debug Menu 可以快速做到这一点。
+
+首先需要开始一场 encounter。你可能已经熟悉如何做到这一点了，不过这里还有一种在测试时快速开始 encounter 的方法。
+
+加载项目后，同时按下 **Shift+\`** 键。这应该会打开 Debug Menu。
+
+向下滚动，直到看到 **Start Encounter**，选择这个选项，然后从下一个列表中选择想要的 encounter。
+
+在接下来的指南中，我会使用项目模板自带的默认 `dummy` encounter。我建议你也使用它，因为这样更容易理解后面的步骤。
+
+Encounter 应该会立即开始。现在，再次打开 Debug Menu。
+
+此时在菜单靠下的位置应该能看到 **Start Wave** 选项。选择它，然后在出现的列表中选择 **example_wave**。
+
+<video controls preload="none">
+    <source src="/wiki/first_bullet.mp4" type="video/mp4" />
+    你的浏览器不支持此视频。抱歉！
+</video>
+
+呃……效果有点令人失望……
+
+不过，我们确实有了一个子弹！现在我们也知道如何生成子弹了，可以开始试验我们的 wave。
+
+现在可以尝试修改子弹的 `physics.direction`，它接受一个用**弧度**表示的角度值。让我们试着让子弹向左移动。
+
+我们可以把 `bullet.physics.direction` 设置为 `math.pi`，也可以使用 `math.rad()` 函数把角度从度转换为弧度。
+
+只要在 `onStart()` 函数末尾添加这一行：
+```lua
+bullet.physics.direction = math.rad(180)
+```
+如果你不熟悉弧度，那么使用角度并通过 `math.rad()` 函数将其转换为弧度，是处理角度的最佳方式。
+
+如果需要把弧度值（例如 `physics.direction`）转换回角度，可以使用 `math.deg()`。
+
+总之，让我们看看子弹向左移动时是什么样子！
+
+<video controls preload="none">
+    <source src="/wiki/first_bullet_wrong_direction.mp4" type="video/mp4" />
+    你的浏览器不支持此视频。抱歉！
+</video>
+
+咦？它朝错方向了！
+
+这是因为子弹移动的方向默认与它的旋转是分开的。
+
+如果想让子弹朝向它移动的方向，可以改为设置 `bullet.rotation`，然后将 `bullet.physics.match_rotation` 设置为 `true`。
+
+这样会自动让子弹的旋转和方向始终保持相同的值。**不过**，这也有一个需要注意的地方。
+
+之前我们提到过，**所有子弹的默认方向都是 `0`，也就是向右**。
+
+旋转在技术上是任意的，但如果想用这种方法让子弹朝向它移动的方向，就必须把子弹的精灵设计为默认朝右。
+
+这样，旋转为 `0` 和方向为 `0` 时就会彼此对齐。
+
+如果想让子弹的旋转和方向匹配一个默认朝向不是右方的精灵，就需要手动设置二者，从而对旋转进行**偏移**。
+
+要正确偏移旋转，需要减去向右方向与子弹实际朝向之间的顺时针角度。
+
+不过这个例子不需要考虑这些，让我们把 `bullet.physics.direction = math.rad(180)` 这一行替换为：
+
+```lua
+bullet.rotation = math.rad(180)
+bullet.physics.match_rotation = true
+```
+
+再试一次我们的 wave！
+
+<video controls preload="none">
+    <source src="/wiki/first_bullet_left.mp4" type="video/mp4" />
+    你的浏览器不支持此视频。抱歉！
+</video>
+
+好多了！
+
+总结一下：
+- 我们使用 `Wave:spawnBullet(sprite, x, y)` 函数，在指定位置生成一个带有指定精灵的基础子弹。
+- 我们把 `spawnBullet()` 返回的新子弹保存到一个局部变量中。
+- 然后就能通过这个局部变量修改子弹的 `physics` 表，控制子弹的移动。
+</Box>
+
+<Box>
+## 生成更多子弹 [spawning-bullets-cont]
+
+现在我们已经知道如何生成基础子弹，是时候把这些知识用于制作更像真正攻击的 wave 了。
+
+首先，让子弹从 dummy 本身生成，而不是从屏幕中心生成。
+
+我们可以使用 wave 的 `getAttackers()` 函数获取 dummy 的 `EnemyBattler`。在 `onStart()` 开头添加下面这一行：
+```lua
+local dummy = self:getAttackers()[1]
+```
+注意，我们在函数后面加了 `[1]`，这是因为 `getAttackers()` 返回的是一个**表**，毕竟可能有多个敌人使用这个 wave。
+
+目前我们只关注一个 dummy，所以只需要获取这个表的第一个元素。之后我们会讲解如何适配多个敌人。
+
+接下来，我们想让子弹在 dummy 的中心生成，先**删除原来定义 `x` 和 `y` 的代码**。
+
+`getRelativePos()` 函数可以帮助我们找到 dummy 的中心，它会找出 dummy 相对于另一个点的位置。
+
+将 dummy 宽度和高度的一半作为另一个点传入，就能得到 dummy 中心相对于 `(0, 0)` 的位置。
+```lua
+local x, y = dummy:getRelativePos(dummy.width/2, dummy.height/2)
+```
+
+不过现在我们仍然只有一枚直接向左发射的子弹。再添加一些吧。
+
+我们当然可以在代码中再添加很多个 `spawnBullet()`，但这样很快就会失控，变得难以管理。
+
+更合理的做法，是循环执行已经写好的代码。
+
+使用 `for` 循环，可以让之前的生成子弹代码重复运行多次。六枚子弹看起来是个不错的数量，就这么做：
+```lua
+-- 将这段代码循环六次，每次将 `i` 增加 1（这里不会使用 `i`）
+for i = 1, 6 do
+    local bullet = self:spawnBullet("bullets/example_bullet", x, y)
+    bullet.physics.speed = 4
+    bullet.rotation = math.rad(180)
+    bullet.physics.match_rotation = true
+end
+```
+
+最后，我们要改变子弹的发射方向，让它们瞄准玩家：
+```lua
+local target_angle = MathUtils.angle(x, y, Game.battle.soul.x, Game.battle.soul.y)
+bullet.rotation = target_angle + math.rad(MathUtils.random(-20, 20))
+```
+
+### “哇！这里发生了什么？”
+没错。和之前的修改不同，我们刚才做的事情可以分成几个层次：
+
+首先，我们创建了一个新的 `target_angle` 变量，用来保存从 dummy 的位置 `(x, y)` 到玩家灵魂位置 `(Game.battle.soul.x, Game.battle.soul.y)` 的角度。
+
+`MathUtils.angle(x1, y1, x2, y2)` 函数会帮我们找出两点之间的角度。（和往常一样，这个角度以**弧度**表示。）
+
+不过，我们不希望所有子弹都沿着完全相同的路径移动，所以在设置 `rotation` 时加入了一些**随机性**。（如果不使用 `physics.match_rotation`，这里设置的就会是 `physics.direction`。）
+
+```lua
+bullet.rotation = target_angle + math.rad(MathUtils.random(-20, 20))
+```
+
+`MathUtils.random(lower, upper)` 函数会生成我们输入的两个数之间的随机小数，这里的两个数是 `-20` 和 `20`。
+
+这样，子弹就会以目标角度为中心，形成 40 度的散布范围。
+
+我们已经对 wave 做了几处修改，现在该再次测试了！
+
+<video controls preload="none">
+    <source src="/wiki/wave_more_bullets.mp4" type="video/mp4" />
+    你的浏览器不支持此视频。抱歉！
+</video>
+
+这就像样多了！
+
+现在，我们的 wave 文件应该是这样的：
+
+```lua
+local ExampleWave, super = Class(Wave)
+
+function ExampleWave:init()
+    super.init(self)
+
+    -- wave 的持续时间，单位为秒。（默认为 `5`）
+    self.time = 5
+end
+
+function ExampleWave:onStart()
+    -- 这里的代码会在 wave 开始时调用
+    local dummy = self:getAttackers()[1]
+
+    -- 在 dummy 的中心创建一个子弹
+    local x, y = dummy:getRelativePos(dummy.width/2, dummy.height/2)
+    for i = 1, 6 do
+        local bullet = self:spawnBullet("bullets/example_bullet", x, y)
+        bullet.physics.speed = 4
+        local target_angle = MathUtils.angle(x, y, Game.battle.soul.x, Game.battle.soul.y)
+        bullet.rotation = target_angle + math.rad(MathUtils.random(-20, 20))
+        bullet.physics.match_rotation = true
+    end
+end
+
+function ExampleWave:update()
+    -- 这里的代码会在每一帧调用
+
+    super.update(self)
+end
+
+return ExampleWave
+```
+
+如果遇到了问题，可以对照上面的文件检查哪里出了问题！
+</Box>
+
+<Box>
+## 计时器
+
+我们的新 wave 已经逐渐成形了，但目前只能在一开始生成子弹。
+
+在 Kristal 中，有一种叫做 [Timers](/wiki/api/Timer) 的对象可以帮助我们改变这一点。
+
+`Timer` 对象允许我们安排特定代码块（函数）的执行时间。
+
+Kristal 使用 hump.timer 库实现这些计时器。如果你感兴趣，可以阅读它的[文档](https://hump.readthedocs.io/en/latest/timer.html)。（理解本教程中的计时器用法**不需要**阅读文档。）
+
+我们可以使用各种计时器函数，以不同方式安排函数的执行！
+
+下面是一些可用的 `Timer` 函数示例：
+- `Timer:every(delay, func, count)` - 每隔 `delay` 秒运行函数 `func` 中的代码。如果指定了 `count`，运行 `count` 次后就会停止。
+- `Timer:during(delay, func, after)` - 在 `delay` 秒内每帧运行函数 `func` 中的代码，之后运行一次函数 `after`。
+- `Timer:after(delay, func)` - 在经过 `delay` 秒后运行函数 `func` 中的代码。
+- `Timer:script(func)` - 将函数 `func` 作为协程运行，并向它传入一个 `wait(delay)` 函数。调用 `wait(delay)` 可以暂停函数的执行 `delay` 秒。
+
+本指南无法探索所有计时器函数及其用法，因为一次讲完的内容太多了。
+
+如果你想了解本指南未覆盖的 Timer 函数，可以查看 [Timer](/wiki/api/Timer) 文档，了解有哪些函数以及它们的工作方式。
+
+### 使用 Timer
+那么，如何在 wave 中使用这些 Timer 呢？
+
+每个 `Wave` 都会自动为我们准备一个 `Timer`，存放在 `timer` 变量中，这意味着在 wave 代码中要通过 `self.timer` 访问它。
+
+之后就可以调用计时器上的函数，例如前面提到的那些函数，开始安排 wave 的执行！
+
+例如，如果想每秒运行一次代码，可以使用 `Timer:every(delay, func)`。所有要运行的代码都放在计时器内部的另一个函数中，就像这样：
+```lua
+self.timer:every(1, function() 
+    -- 代码写在这里
+end)
+```
+如果把这个计时器放进 wave，它就会每秒运行一次！不过现在里面没有代码，所以什么也不会发生……:(
+
+回到我们的示例 wave，看看如何在其中实现 `every` 函数。
+
+目前所有重要代码都在 `onStart()` 函数中，这个函数应该是这样的：
+```lua
+function ExampleWave:onStart()
+    -- 这里的代码会在 wave 开始时调用
+    local dummy = self:getAttackers()[1]
+
+    -- 在 dummy 的中心创建一个子弹
+    local x, y = dummy:getRelativePos(dummy.width/2, dummy.height/2)
+    for i = 1, 6 do
+        local bullet = self:spawnBullet("bullets/example_bullet", x, y)
+        bullet.physics.speed = 4
+        local target_angle = MathUtils.angle(x, y, Game.battle.soul.x, Game.battle.soul.y)
+        bullet.rotation = target_angle + math.rad(MathUtils.random(-20, 20))
+        bullet.physics.match_rotation = true
+    end
+end
+```
+`every()` 函数可以让我们重复之前制作的子弹散射，这对我们很有帮助！
+
+要使用 `every()` 函数，我们需要在 `onStart()` 中加入它，并设置延迟间隔。我们继续使用 1 秒，然后把所有要重复的代码移到函数里面。
+
+对我们来说，几乎整个 wave 都需要重复，唯一不放进去的是 `getAttackers()` 函数：
+```lua
+function ExampleWave:onStart()
+    -- 这里的代码会在 wave 开始时调用
+    local dummy = self:getAttackers()[1]
+
+    -- 告诉计时器每隔一秒安排运行一次这个函数。
+    self.timer:every(1, function()
+        -- 在 dummy 的中心创建一个子弹
+        local x, y = dummy:getRelativePos(dummy.width/2, dummy.height/2)
+        for i = 1, 6 do
+            local bullet = self:spawnBullet("bullets/example_bullet", x, y)
+            bullet.physics.speed = 4
+            local target_angle = MathUtils.angle(x, y, Game.battle.soul.x, Game.battle.soul.y)
+            bullet.rotation = target_angle + math.rad(MathUtils.random(-20, 20))
+            bullet.physics.match_rotation = true
+        end
+    end)
+end
+```
+
+让我们看看实际效果！
+
+<video controls preload="none">
+    <source src="/wiki/wave_with_timer.mp4" type="video/mp4" />
+    你的浏览器不支持此视频。抱歉！
+</video>
+
+你可能注意到了，wave 开始时现在会有一段延迟，这是因为 `every()` **必须先等待一次延迟时间**，之后才会首次调用我们的函数。
+
+我们可以让它同时立即运行一次，更快地开始攻击。只要把 `every` 替换成 `everyInstant` 即可。
+
+`Timer:everyInstant()` 是另一个计时器函数，除了会立即运行一次我们的函数以外，它在各方面都与 `every` 相同。
+
+如果使用 `everyInstant()` 再次运行 wave，就会看到第一轮子弹立即生成。
+
+---
+### Timer:after() 函数 [timer-after-function]
+
+再来看看另一种 Timer 函数，这次是 `after` 函数：
+```lua
+self.timer:after(3, function()
+    -- 代码写在这里
+end)
+```
+这个函数会让代码在经过指定时间后运行。让我们用它在 wave 后段生成一枚更大、移动更快的子弹。
+
+我们会使用下面的设置来实现这一点。这个计时器应该放进下面的 `onStart()`，位于当前的 `everyInstant` 计时器之后：
+```lua
+-- 三秒经过后……
+self.timer:after(3, function()
+    -- 子弹发射时播放声音
+    Assets.playSound("grab")
+
+    local x, y = dummy:getRelativePos(dummy.width/2, dummy.height/2)
+
+    local bullet = self:spawnBullet("bullets/example_bullet", x, y)
+    -- 让这枚子弹变为普通子弹的两倍大小（默认缩放为 2 倍）
+    bullet:setScale(4)
+    bullet.physics.speed = 16
+    bullet.rotation = MathUtils.angle(x, y, Game.battle.soul.x, Game.battle.soul.y)
+    bullet.physics.match_rotation = true
+end)
+```
+这段代码应该很熟悉：它和我们之前生成子弹的方式基本相同。
+
+我们还使用了 `Assets.playSound()` 播放声音，Kristal 自带 `grab` 音效。（可以在 Debug Menu 的“Sound Test”中找到所有可用的声音。）
+
+我们还可以使用 `after` 计时器为这枚大子弹添加一点预警：
+```lua
+-- 预警持续 24 帧（30FPS 下），所以在子弹生成前 24 帧开始
+self.timer:after(3 - 24/30, function()
+    dummy:alert()
+end)
+```
+这里我们使用 [`EnemyBattler:alert()`](/wiki/api/EnemyBattler#alert)，让 dummy 显示警觉的（！气泡）效果作为攻击预警。
+
+现在，再次看看我们的 wave 运行起来是什么样子！
+
+<video controls preload="none">
+    <source src="/wiki/wave_with_delay.mp4" type="video/mp4" />
+    你的浏览器不支持此视频。抱歉！
+</video>
+
+在你自己的 wave 中，可能会想使用比这个基础警报更独特、更有信息量的预警，但仍然会需要这样的计时器来帮助实现它！
+
+---
+### 计时器中的计时器
+除了使用一个计时器，我们还可以把一些计时器嵌套在其他计时器中，从而组合使用它们！
+
+为了展示这一点，让我们给大子弹添加残影效果！
+
+残影效果本身可以使用 `every` 计时器制作。
+
+我们可以在函数中创建 [`AfterImage`](/wiki/api/AfterImage) 的副本，这样就能得到想要的效果。
+
+不过，计时器放置的位置也很重要：我们只想让残影计时器在大子弹存活期间运行，并且生成残影时还需要引用大子弹。
+
+这意味着我们需要把这个计时器放在之前的 `after` 计时器*内部*。
+
+在此之前，先写好新计时器的代码。除了已经讨论过的内容，还有一部分需要加入：
+```lua
+-- 每 1/15 秒……
+self.timer:every(1/15, function()
+    -- 如果子弹被移除，就取消计时器
+    if bullet:isRemoved() then
+        return false
+    end
+
+    -- 以 0.4 的初始透明度生成新的残影
+    local after_image = AfterImage(bullet.sprite, 0.4)
+    bullet:addChild(after_image)
+end)
+```
+这个计时器的第一部分是新的：它会检查 `bullet`（也就是我们的大子弹）是否已经被移除。
+
+如果条件成立（子弹已经被移除），计时器函数就会返回 `false`，从而完全取消这个计时器函数。
+
+#### 但是为什么？
+
+正如之前所说，我们需要把这个计时器放在 `after` 函数中，部分原因是为了**引用大子弹**；当子弹不再存在时，取消计时器则负责处理时间线的另一端。
+
+这是因为所有子弹在离开屏幕后都会被**自动移除**，除非它们的 `remove_offscreen` 字段被设置为 `false`。
+
+现在回到嵌套计时器本身！
+
+回到之前设置好的 `after` 函数，把计时器插入到函数最后一行（`bullet.physics.match_rotation = true`）之后。
+
+如果计时器放在了正确的位置，残影就应该生效了！看看它在游戏中的效果：
+
+<video controls preload="none">
+    <source src="/wiki/wave_with_nested_timers.mp4" type="video/mp4" />
+    你的浏览器不支持此视频。抱歉！
+</video>
+
+我们还可以研究如何嵌套其他相关的计时器，比如用于预警大子弹和发射大子弹的两个独立计时器。
+
+不过，不应该为了这个目的嵌套计时器，因为另一个计时器函数可以更简洁地独立完成这件事！
+
+---
+
+### `Timer:script()` 函数
+
+这个函数和之前的差别相当大！
+```lua
+self.timer:script(function(wait)
+    -- 代码写在这里
+end)
+```
+你会立刻注意到，使用 `Timer:script()` 时没有任何形式的 `delay`，这个函数会立即运行。
+
+那么，这次计时器中的*时间*在哪里呢？
+
+答案就在 `wait` 参数中。
+
+简单来说，脚本会把函数作为“协程”运行。如果你已经在 Kristal 中制作过过场动画，那么它们的脚本也使用了相同的机制。
+
+协程允许我们在函数内部暂停函数。要做到这一点，就要使用函数中的新 `wait` 参数。
+
+`wait` 是一个可以调用的函数，传入任意延迟时间后，就能让函数等待这段时间再继续。
+
+它和其他计时器一样，以秒为单位表示时间：
+```lua
+wait(5/2) -- 等待两秒半
+```
+
+当 wave 中有一系列事件要依次发生时，脚本就很有价值。
+
+之前为大子弹编写的两个独立 `after` 函数，就可以很容易地改用一个脚本：
+```lua
+self.timer:script(function(wait)
+    wait(3 - 24/30)
+    dummy:alert()
+
+    wait(24/30)
+    -- 子弹发射时播放声音
+    Assets.playSound("grab")
+
+    local x, y = dummy:getRelativePos(dummy.width/2, dummy.height/2)
+
+    local bullet = self:spawnBullet("bullets/example_bullet", x, y)
+    -- 让这枚子弹变为普通子弹的两倍大小
+    bullet:setScale(4)
+    bullet.physics.speed = 16
+    bullet.rotation = MathUtils.angle(x, y, Game.battle.soul.x, Game.battle.soul.y)
+    bullet.physics.match_rotation = true-- 每 1/15 秒……
+
+    self.timer:every(1/15, function()
+        -- 如果子弹被移除，就取消计时器
+        if not bullet then
+            return false
+        end
+
+        -- 以 0.4 的初始透明度生成新的残影
+        local after_image = AfterImage(bullet.sprite, 0.4)
+        bullet:addChild(after_image)
+    end)
+end)
+```
+这段代码在功能上与之前的代码完全相同，只是现在都放在了一个函数中。
+
+脚本还有一个特点：它允许我们在一些“不寻常”的位置暂停函数，例如循环内部。
+
+我们不会在这个 wave 中使用这个效果，但了解这一点可能会对你在自己的 wave 中使用脚本有所帮助：
+```lua
+self.timer:script(function(wait)
+    wait(1)
+    for i = 1, 3 do
+        self:spawnBullet("bullets/example_bullet", 240 + 80*(i-1), 280)
+
+        wait(6/30)
+    end
+end)
+```
+上面的计时器脚本会在 wave 开始一秒后，在 arena 下方生成三枚子弹，每枚子弹之间间隔 1/5 秒。
+
+你可以暂时把它放进示例 wave，看看它的效果。
+
+这就是本 wave 中关于计时器的全部内容！这里介绍的是最重要的计时器，但还有许多其他计时器可以在之后通过 [Timer API Reference](/wiki/api/Timer) 了解。
+
+现在，让我们进入下一个主题。
+</Box>
+
+<Box>
+## 将 Waves 添加到敌人 [waves-on-enemies]
+
+到目前为止，我们一直通过 Debug menu 在战斗中测试 wave。它在测试阶段非常好用，但现在我们需要让敌人自然地使用它。
+
+为此，是时候访问敌人的 `EnemyBattler` 文件了。dummy 的文件位于 `scripts/battle/enemies/dummy.lua`。
+
+其实这次要做的事情很简单。在文件中找到 `self.waves` 表，它应该类似于这样：
+```lua
+self.waves = {
+    "basic",
+    "aiming",
+    "movingarena"
+}
+```
+这些都是 wave id。我们需要把自己的 wave id 添加到这个列表中，这样它也会被选中。
+
+正如之前所说，这个 id 就是 wave 的文件名 `example_wave`。
+
+不过，为了更快看到它运行，我们会移除 dummy 的其他 wave，让它必定选择新 wave：
+```lua
+self.waves = {
+    "example_wave",
+}
+```
+我们需要做的就这些！当然，有些情况下我们需要对这个过程进行更细致的控制，例如 boss 战，但那些内容之后再讲。
+
+（你可以在 [Wavemaking Tricks](/wiki/wavemaking-reference#selecting-waves) 文章中了解相关内容。）
+</Box>
+
+<Box>
+## 多个攻击者的 Waves [multiple-attackers]
+
+我们已经完成了给这个 wave 添加新内容，但 wave 本身还没有讲完。
+
+这是因为我们应该谈谈如何处理多个攻击者，也就是之前简单提到过的内容。
+
+首先需要第二个敌人。让我们快速打开 encounter 文件。除非你一直在使用自己的文件，否则它就是 `scripts/battle/encounters/dummy.lua`。
+
+我们只需要复制添加第一个敌人的那一行。
+
+在 dummy encounter 文件中更简单，因为这行代码已经以注释的形式写好了。只需取消注释：
+```lua
+-- 将 dummy 敌人添加到 encounter
+self:addEnemy("dummy")
+```
+
+现在，让我们在场上有多个敌人副本的情况下开始一个 wave。**确保它们目前都只能选择 `example_wave`。**
+
+<video controls preload="none">
+    <source src="/wiki/multiple_enemies_broken.mp4" type="video/mp4" />
+    你的浏览器不支持此视频。抱歉！
+</video>
+
+正如预期，只有一个 dummy 在发射投射物。部分原因是我们之前为了处理 dummy 写了这段代码：
+```lua
+local dummy = self:getAttackers()[1]
+```
+我们之前的写法不一定是错的：**当只有一个攻击者使用这个 wave 时**，这样获取敌人完全有效。
+
+但是，就像我们现在遇到的情况一样，如果可能有多个敌人同时使用 wave，就必须让 wave 能处理这种情况。
+
+幸运的是，让 wave 支持多个敌人并不麻烦，而且不会改变单个 dummy 独自使用 wave 时的行为。
+
+一般的解决办法，是为每个敌人运行一次这段代码。
+
+我们可以使用一个**迭代器**来做到这一点。它是一种循环，写法如下：
+```lua
+for _, dummy in ipairs(self:getAttackers()) do
+    -- 想要运行的代码写在这里
+end
+```
+这会为当前存在的每个攻击者运行一次循环中的代码。
+
+每次运行时，`dummy` 都会变成表中的下一个攻击者。
+
+另一个变量 `_` 也会变化，它表示当前 dummy 在列表中的索引，因此会从 1 开始，然后变为 2，以此类推。
+
+这个变量通常写成 `i`，但我们把它写成 `_`，因为不需要在其他地方使用它，这样就能把 `i` 留给其他用途。
+
+现在谈谈具体实现。最简单、也适用于我们这个 wave 的解决办法，就是循环整个 wave。
+
+也就是说，把 **`onStart()` 中的所有代码**放进这个循环，并删除之前定义 `dummy` 的那一行。
+
+完成后，再次运行 wave。
+
+如果一切顺利，效果应该是这样的：
+
+<video controls preload="none">
+    <source src="/wiki/multiple_enemies.mp4" type="video/mp4" />
+    你的浏览器不支持此视频。抱歉！
+</video>
+
+看，我们的第二个 dummy 也在使用这个攻击！
+
+如果你看到的效果不同，那么可能是迭代器实现有误。
+
+既然我们已经到了这个 wave 的结尾，可以对照下面的完整 wave 代码，检查迭代器在遇到问题时应该如何实现。
+
+请记住，这会对**每个攻击者**运行**整个函数**。
+
+如果想为一个 wave 制作独特的多攻击者行为，或者有些内容不希望重复，可以尝试只在较小的代码片段上使用多个迭代器。
+
+归根结底，这只是 wave 的试验过程中的一部分。如果想实现某种特定效果，就不断调整代码，直到它按照你的期望运行。你甚至可能完全不需要使用迭代器！
+</Box>
+
+<Box>
+## 一个完整的 Wave！ [completed-wave]
+
+没错！我们的第一个 wave 已经完成了！
+
+这个例子的最终代码如下：
+
+```lua
+local ExampleWave, super = Class(Wave)
+
+function ExampleWave:init()
+    super.init(self)
+
+    -- wave 的持续时间，单位为秒。（默认为 `5`）
+    self.time = 5
+end
+
+function ExampleWave:onStart()
+    for _, dummy in ipairs(self:getAttackers()) do
+        self.timer:everyInstant(1, function()
+            -- 在 dummy 的中心创建一个子弹
+            local x, y = dummy:getRelativePos(dummy.width/2, dummy.height/2)
+            for i = 1, 6 do
+                local bullet = self:spawnBullet("bullets/example_bullet", x, y)
+                bullet.physics.speed = 4
+                local target_angle = MathUtils.angle(x, y, Game.battle.soul.x, Game.battle.soul.y)
+                bullet.rotation = target_angle + math.rad(MathUtils.random(-20, 20))
+                bullet.physics.match_rotation = true
+            end
+        end)
+
+        self.timer:script(function(wait)
+            wait(3 - 24/30)
+            dummy:alert()
+
+            wait(24/30)
+            -- 子弹发射时播放声音
+            Assets.playSound("grab")
+
+            local x, y = dummy:getRelativePos(dummy.width/2, dummy.height/2)
+
+            local bullet = self:spawnBullet("bullets/example_bullet", x, y)
+            -- 让这枚子弹变为普通子弹的两倍大小
+            bullet:setScale(4)
+            bullet.physics.speed = 16
+            bullet.rotation = MathUtils.angle(x, y, Game.battle.soul.x, Game.battle.soul.y)
+            bullet.physics.match_rotation = true-- 每 1/15 秒……
+
+            self.timer:every(1/15, function()
+                -- 如果子弹被移除，就取消计时器
+                if not bullet then
+                    return false
+                end
+
+                -- 以 0.4 的初始透明度生成新的残影
+                local after_image = AfterImage(bullet.sprite, 0.4)
+                bullet:addChild(after_image)
+            end)
+        end)
+    end
+end
+
+function ExampleWave:update()
+    -- 这里的代码会在每一帧调用
+
+    super.update(self)
+end
+
+return ExampleWave
+```
+
+关于 wave 还有很多内容可以学习，但在继续之前，最好快速回顾一下目前学到的内容：
+
+- 最重要的是，我们了解了 wave 是什么，以及应该把它们放进 `scripts/battle/waves`。
+- 我们还学习了如何生成子弹，至少是**基础子弹**，以及如何使用 `physics` 表轻松地让这些子弹移动。
+- 我们了解了如何通过 `Wave:getAttackers()` 函数获取与攻击相关的敌人，并在 wave 中使用它们。
+- 我们弄清楚了如何通过修改敌人的 `waves` 表，让敌人能够使用 wave。
+- 当然，我们还了解了 **Timer** 在制作 wave 时的重要性，并介绍了 `every`、`after` 和 `script` 函数的一些用法。
+
+下一个例子中，我们会学习**自定义子弹**、**Arena**、**碰撞**，并进一步了解**wave 选择**。
+
+不过在那之前，试验是 wave 的核心。既然这个例子已经完成，不妨花些时间随意修改它，看看能做出什么效果！
+
+准备好后，继续阅读本指南的下一部分。
+</Box>
+
+<Box>
+## Wave 制作 2：电光 Boogaloo [wave-making-custom-bullet]
+
+之前使用 `spawnBullet()` 函数时，我们提到过**自定义子弹**。现在该学习它们是什么，以及如何使用它们了。
+
+接下来我们会从一个全新的 wave 开始，先把准备工作完成。
+
+像之前一样创建一个新的 wave 文件，这次命名为 `example_wave_2.lua`。然后再次插入模板代码：
+
+```lua
+local ExampleWave2, super = Class(Wave)
+
+function ExampleWave2:init()
+    super.init(self)
+
+    -- wave 的持续时间，单位为秒。（默认为 `5`）
+    self.time = 5
+end
+
+function ExampleWave2:onStart()
+    -- 这里的代码会在 wave 开始时调用
+end
+
+function ExampleWave2:update()
+    -- 这里的代码会在每一帧调用
+    super.update(self)
+end
+
+return ExampleWave2
+```
+
+现在也可以让 dummy 选择这个 wave，顺手把这件事解决掉。跳转到 `enemies/dummy.lua`，再次编辑 wave 表：
+```lua
+self.waves = {
+    "example_wave_2",
+}
+```
+
+这一次，测试时专门使用 dummy 会更加重要，所以一定要通过 dummy 测试这个 wave！（稍后会解释原因。）
+
+准备工作就这些！现在开始学习**自定义子弹**吧！
+</Box>
+
+<Box>
+## 自定义子弹 [custom-bullets]
+
+到目前为止，我们在 wave 中只研究了标准的 `Bullet` 对象。
+
+Kristal 也让我们很容易创建自己的 **Bullet** **自定义**类型。
+
+两者最主要的区别在于：我们把自定义子弹定义为独立文件，并可以从那个文件中控制它们。
+
+这并不妨碍我们在 wave 中修改它们，不过对于自定义子弹来说，通常没有必要这样做。
+
+如果你发现自己需要重复大量代码，或者想在多个 wave 中使用同一种子弹，那么自定义子弹就能帮上忙。
+
+使用自定义子弹还有一个**重要得多**的理由，它让自定义子弹的区别不再只是组织方式上的区别。
+
+创建自定义子弹时，它会从普通的 `Bullet` 类**继承**。这让我们能够**修改子弹的默认行为**。
+
+这为子弹的制作打开了许多新的可能性。
+
+不要再耽搁了，来看看如何创建一个自定义子弹。
+
+### 创建自定义子弹
+
+正如你可能猜到的，自定义子弹的文件应该放在 `scripts/battle/bullets` 中。
+
+子弹名称/id 会和文件名对应，就像之前创建 wave 文件时一样。之后我们会使用这个 id 调用 `spawnBullet()`。
+
+现在添加一个文件吧！这次命名为 `example_wiggly_bullet.lua`。先从下面的代码开始：
+
+```lua
+local ExampleWigglyBullet, super = Class(Bullet)
+
+function ExampleWigglyBullet:init(x, y)
+    super.init(self, x, y, "bullets/donut")
+
+    -- 子弹之后会在屏幕外生成，所以必须关闭这个选项
+    self.remove_offscreen = false
+    -- 子弹默认缩放为 2 倍，这次我们想让它更大一些
+    self:setScale(3)
+end
+
+function ExampleWigglyBullet:update()
+    super.update(self)
+end
+
+return ExampleWigglyBullet
+```
+
+在这个文件的第一行，我们让新子弹继承原始的 `Bullet` 类。
+
+对于自定义子弹，还要特别注意 `init` 和 `super.init` 的参数。
+
+`super.init` 通常要求传入生成坐标以及一个精灵。
+
+不过，我们放在 `init` 函数 `ExampleWigglyBullet:init()` 中的参数不需要相同。
+
+我们可以把**任何想要的内容**作为 `init()` 的参数，而 `spawnBullet()` 中的 `...` 允许传入任意数量的额外参数，它们都会一路传递给 `Bullet:init()`！
+
+之后会更深入地讲解这一点，现在只需要知道我们仍然会使用 `x` 和 `y`。
+
+至于子弹纹理，我在 `super.init` 中将它设置为 `bullets/donut`。自然，我们需要准备对应的精灵：
+
+<ScaledSprite src="/wiki/donut.png" name="example_donut.png" width={8} height={8} scale={4}/>
+
+这张图片应该保存到 `assets/sprites/bullets/donut.png`。
+
+### 子弹行为
+
+现在来看看我们希望这个子弹具有什么行为！
+
+我们要让这个 wave 中的子弹从屏幕底部向上移动，同时以随机的波浪轨迹摇摆。
+
+（如果这听起来不太直观，很快就能看到实际效果，所以不用担心！）
+
+稍后我们还会给 wave 添加一种额外变体：**绿色**子弹，它们只会在特定条件下出现。
+
+先从简单的部分开始，也就是使用 `physics` 让子弹沿 y 轴移动。
+
+之前已经使用过一次 `physics` 表。这次我们只需要让子弹直直地向上移动，可以在 `init()` 中设置 `speed_y`：
+```lua
+self.physics.speed_y = - love.math.random(5, 10)
+```
+这样每枚子弹的 y 轴速度会在 `-5` 到 `-10` 之间。如果想让子弹向下移动，只需移除 `-`。
+
+至于摇摆效果，事情会稍微复杂一些。我们要使用多个函数来帮助实现这种运动。
+
+第一步是在 `bullet:init()` 中定义一个新变量 `self.orig_x`。
+
+这个变量会记住子弹生成时的原始 x 值，稍后可以用它让子弹摇摆。
+
+我们还要定义一些与正弦波有关的变量：
+```lua
+-- 子弹波浪运动的原点（波浪中心所在的 x 值）
+self.orig_x = x
+-- 波浪的幅度（子弹可以偏离原点多少像素）
+self.wave_magnitude = 24
+-- 乘以子弹摇摆的速度
+self.wave_speed = love.math.random(5, 8)
+-- 为这枚子弹生成一个随机数，用来偏移它的波浪位置
+self.random_offset = love.math.random()
+```
+`wave_magnitude` 和 `wave_speed` 会改变子弹沿着移动的波浪形状。
+
+我设置了一些数值，你可以保留它们，也可以修改。不过请**等 wave 运行起来之后**再修改，这样才能比较不同数字如何影响子弹的摇摆程度。
+
+`init()` 中的变量就设置完了，现在可以继续处理 `update()`。
+
+由于 `update()` 每帧运行，我们会根据正弦波不同位置的值，不断改变子弹的 x 坐标。
+
+这听起来可能有点复杂，但其实只需要使用 `Utils.wave(val, min, max)` 函数，所有正弦波计算都会由它处理。
+
+`Utils.wave()` 函数返回的数字，就是这一帧子弹应该偏离基准线（`orig_x` 值）的距离。
+
+下面看看代码是什么样子。我给每一行都写了注释，解释它们的作用：
+```lua
+-- Kristal.getTime() 返回自 Kristal 启动以来经过的时间（单位为秒）
+-- 加上“随机偏移”，让每枚子弹的时间值略有不同（从而产生不同的摇摆）
+local time_value = Kristal.getTime() + self.random_offset
+
+-- 实际的位移计算在这里进行
+-- 使用 Utils.wave() 时，先传入乘以波浪速度的“时间值”，它决定选取正弦波上的哪个位置（不需要过多关注具体细节）
+-- 接下来两个值是摇摆的下限和上限，这些参数意味着子弹可以向生成位置的两侧各移动一个幅度。
+-- 函数返回的值就是这一帧使用的 x 轴位移，范围在 `-self.wave_magnitude` 和 `self.wave_magnitude` 之间。
+-- 根据之前设置的 `wave_magnitude`，也就是 `-24` 到 `24`。
+local disp_x = Utils.wave(time_value * self.wave_speed, -self.wave_magnitude, self.wave_magnitude)
+
+-- 得到位移值后，只需要真正移动子弹即可！这里会用到原点值。
+self.x = self.orig_x + disp_x
+```
+
+现在，我们的自定义子弹就已经完成了！
+
+在回到 wave 生成子弹之前，先快速检查一下代码位置是否正确。
+
+你的子弹文件应该位于 `scripts/battle/bullets`，文件名为 `example_wiggly_bullet.lua`。
+
+子弹文件的内容应该类似下面这样：
+```lua
+local ExampleWigglyBullet, super = Class(Bullet)
+
+function ExampleWigglyBullet:init(x, y)
+    super.init(self, x, y, "bullets/donut")
+
+    self.remove_offscreen = false
+    self:setScale(3)
+
+    self.physics.speed_y = - love.math.random(5, 10)
+
+    self.orig_x = x
+    self.wave_magnitude = 24
+    self.wave_speed = love.math.random(5, 8)
+    self.random_offset = love.math.random()
+end
+
+function ExampleWigglyBullet:update()
+    super.update(self)
+    local time_value = Kristal.getTime() + self.random_offset
+
+    local disp_x = Utils.wave(time_value * self.wave_speed, -self.wave_magnitude, self.wave_magnitude)
+
+    self.x = self.orig_x + disp_x
+end
+
+return ExampleWigglyBullet
+```
+
+如果发现有任何地方不对，**现在就改正**，然后我们就可以继续生成子弹了！
+
+---
+### 生成自定义子弹
+
+学习如何使用第一个自定义子弹的最后一步，就是亲眼看看它运行起来的效果！
+
+正如之前提到的，我们仍然使用 `Wave:spawnBullet()`，不过这次传入的是 id，而不是精灵。
+
+对于自定义子弹，我们会使用 `self:spawnBullet("example_wiggly_bullet", 320, SCREEN_HEIGHT)`，在屏幕底部中央生成一枚子弹。
+
+现在把这一行放进 `ExampleWave2:onStart()`，然后运行 wave。这样可以先看到一枚子弹，确认它正常工作。
+
+<video controls preload="none">
+    <source src="/wiki/wiggly_bullet.mp4" type="video/mp4" />
+    你的浏览器不支持此视频。抱歉！
+</video>
+
+太棒了！子弹看起来正是我们预期的样子。现在用 `Timer` 让它更有变化吧。
+
+我们要做的就是生成很多子弹：
+```lua
+self.timer:everyInstant(1/8, function ()
+    self:spawnBullet("example_wiggly_bullet", love.math.random(120, SCREEN_WIDTH - 120), SCREEN_HEIGHT + 20)
+end)
+```
+我们之前已经使用过 `everyInstant`，所以这里应该没有什么意外。
+
+现在再次运行 wave，看看同时出现很多子弹时的效果：
+
+<video controls preload="none">
+    <source src="/wiki/many_wiggly_bullets.mp4" type="video/mp4" />
+    你的浏览器不支持此视频。抱歉！
+</video>
+
+看起来不错！
+</Box>
+
+<Box>
+## 子弹碰撞
+
+现在我们的自定义子弹已经设置好并运行起来了，是时候谈谈战斗中的**碰撞**是如何工作的。
+
+战斗中有三类主要对象会发生碰撞：玩家灵魂、arena 和子弹。
+
+Arena 的碰撞与子弹无关。
+
+另一方面，**灵魂与子弹的碰撞**则与我们有关。
+
+在 Debug Menu 中**启用 Debug Rendering**，可以看到屏幕上所有对象的碰撞范围。
+
+先看看 Debug Rendering 中灵魂的样子：
+
+<>![](/wiki/soul_collision.png)</>
+
+如你所见，开启 debug rendering 后，圆形周围会显示**两个**圆。
+
+这两者都是 [`Collider`](/wiki/api/Collider) 对象的类型，Kristal 中所有对象的碰撞都由 `Collider` 的子类处理。
+
+内部的绿色圆是灵魂的实际 hitbox，使用名为 [`CircleCollider`](/wiki/api/CircleCollider) 的碰撞器。
+
+外部的灰色圆是**擦弹** hitbox，同样使用 `CircleCollider`。
+
+我们不会对它们进行任何操作，但知道子弹碰撞就是与这些对象进行比较还是很有帮助的。
+
+真正需要关注的是子弹碰撞！
+
+如果在启用 debug rendering 的情况下运行 wave，就能看到 hitbox 的样子：
+
+<>![](/wiki/wiggly_collision.png)</>
+
+这里子弹使用的碰撞对象是 [`Hitbox`](/wiki/api/Hitbox) 对象。
+
+如果不手动设置碰撞，子弹默认就会使用这种碰撞。Kristal 会执行下面的代码来创建这些 hitbox：
+
+```lua
+-- 来自 src/engine/game/battle/bullet.lua
+
+-- 默认将碰撞器设置为此对象大小的一半
+self.collider = Hitbox(self, self.width/4, self.height/4, self.width/2, self.height/2)
+```
+
+这会让子弹的碰撞矩形变为**子弹所使用纹理的一半大小**。
+
+如果子弹没有通过 `Bullet:setSprite()` 或 `super.init()` 设置纹理，那么它不会获得默认碰撞。
+
+我们的 wigglybullet 碰撞没有问题，不过展示一下如何为它设置自定义碰撞也没有坏处。
+
+让它们使用 `CircleCollider` 吧，毕竟它们是甜甜圈形状的。
+
+在 `ExampleWigglyBullet:init()` 内添加下面这一行：
+
+```lua
+self.collider = CircleCollider(self, self.width/2, self.height/2, self.width/2 - 2)
+```
+
+这会把子弹的碰撞对象（[`Bullet.collider`](/wiki/api/Object#collider)）改为一个新的 `CircleCollider` 实例。
+
+CircleCollider 接受四个参数：`self`、`self.width/2`、`self.height/2` 和 `self.width/2 - 2`，它们分别对应 `parent`、`x`、`y` 和 `radius` 参数。
+
+第一个变量 `parent` 的含义应该很直观：这是子弹的碰撞器，因此它应该始终以子弹（`self`）为父对象。
+
+接下来的 `x` 和 `y` 是圆心的位置，它们相对于子弹的原点。
+
+`self.width/2` 和 `self.height/2` 会让圆与子弹中心对齐，因为我们的子弹原点位于左上角。
+
+最后，我们把 `radius` 设置为 `self.width/2 - 2`，也就是子弹宽度一半再少两个像素。
+
+如果直接使用 `self.width/2` 作为半径，就会产生沿着子弹外边缘分布的碰撞范围。
+
+我使用 `- 2`，确保圆形碰撞范围比子弹本身**更小**。
+
+理由与子弹 hitbox 只有对象大小一半相同：碰撞范围比它代表的对象略小会更好，因为成功命中时能产生更可信的接触效果。
+
+现在，再次看看带有新碰撞范围的子弹在 Debug Rendering 中是什么样子！
+
+<>![](/wiki/wiggly_collision_2.png)</>
+
+如果发现默认碰撞不适合你的子弹，可以尝试使用其他碰撞器，制作更合适的形状！
+
+如果需要特别奇怪的碰撞形状，也可以使用 [`ColliderGroup`](/wiki/api/ColliderGroup) 将多个碰撞器组合在一起。
+
+所有可用碰撞器的列表，可以在 [Wavemaking Reference](/wiki/wavemaking-reference#colliders) 中找到。
+</Box>
+
+<Box>
+## 使用 Arena
+
+DELTARUNE 的许多攻击设计都很重视对 arena 的操控。
+
+Kristal 的 [Arena](/wiki/api/Arena) 对象负责处理 arena。它可以用多种方式修改 arena。
+
+战斗中使用的 arena 存在时会保存在 `Game.battle.arena` 中，这就是我们用来修改它的变量。
+
+`Wave` 中也有一些可以控制 arena 的函数。我们主要想在 `Wave:init()` 中使用它们，因为这个函数会在 **arena 创建之前**调用。
+
+先从简单的内容开始，演示一些可以在 `Wave:init()` 中设置的基础变换。它们都会影响 arena 的**初始状态**，包括过渡动画。
+
+使用 `Wave:setArenaSize(width, height)` 可以改变 arena 的大小。作为参考，默认 arena 大小是 142x142。
+
+可以使用 `Wave:setArenaRotation(angle)` 设置 arena 的初始旋转。
+
+如果想移动 arena，可以使用 `Wave:setArenaOffset(x, y)` 或 `Wave:setArenaPosition(x, y)`。
+
+前者将 arena 的位置设置为相对于标准起始位置的位移，后者则将 arena 的位置设置为相对于屏幕左上角的位置。
+
+下面是一组可以尝试的变换：
+```lua
+-- 将这些代码放进 Wave:init()
+
+self:setArenaSize(100, 142) -- 让 arena 变窄
+self:setArenaRotation(math.rad(45)) -- 将它旋转 45 度
+self:setArenaOffset(-60, 40) -- 相对于正常起始位置向左移动 60 像素，向下移动 40 像素
+```
+
+这三项组合在一起，在你的 wave 中会呈现出这样的效果：
+<>![](/wiki/arena_transformations_basic.png)</>
+
+试着填入一些你自己的数值吧！
+
+我们还可以在 `Wave:init()` 中使用另一个函数 `Wave:setArenaShape(...)`。
+
+这个函数更复杂，因为你需要用一系列顶点指定形状。下面是一个形状示例：
+```lua
+self:setArenaShape({0, 0}, {-40, 0}, {100, -80}, {240, 0}, {200, 0}, {200, 84}, {0, 84})
+```
+你在这里看到的所有表，都是表示每个形状顶点的坐标对。
+
+这些坐标相对于 arena 所处的位置。
+
+如果把这个函数放入 wave……
+
+<>![](/wiki/house_like_arena.png)</>
+
+看看效果吧！
+
+随意尝试这些函数一会儿。反正我们马上就会**把它们全部移除**。
+
+### 动态效果
+有时，我们会希望 arena 在 wave 过程中动态变化。
+
+正如之前所说，wave 开始时 arena 创建完成后，可以通过 `Game.battle.arena` 访问它。
+
+那么，拿到 Arena 对象后能做什么呢？
+
+实际上，它就是另一个 Object！这意味着我们拥有与操作子弹时相同的工具。
+
+当然，我们还有 `Arena:setSize(width, height)` 和 `Arena:setShape(...)`，可以在 wave 过程中改变 arena 的大小/形状。
+
+它们的工作方式与之前看到的 `Wave` 对应函数相同。
+
+让我们通过让 arena 左右摇摆，演示一些动态移动。不过首先，确保**移除上一步中的所有变换**。
+
+我们要借用 wiggly bullet 的 wave 效果，让 arena 在这里摇摆。
+
+不过需要做几处修改，所以**留意它们的不同之处**！
+
+在 `Wave:init()` 中，需要设置几个变量，其中有些可能看起来很熟悉：
+```lua
+self.siner = 0
+self.wave_magnitude = 80
+self.wave_speed = 2
+```
+
+然后在 `Wave:update()` 中添加让 arena 摇摆的代码。代码注释会解释这里的代码与子弹代码之间的区别。
+```lua    
+local arena = Game.battle.arena
+-- arena 在 `Wave:init()` 中还不存在，所以这里是获取其原始/中心 x 的最佳位置。这个条件确保只设置一次该值。
+if not self.orig_x then
+    self.orig_x = arena.x
+end
+
+-- 不使用 Kristal.getTime()，而是在这里使用 `siner` 变量计时。
+-- 这是因为对于 arena 来说，起始值为 0 很重要，这样 arena 就不会在 wave 的第一帧突然跳到另一个位置。
+-- 这里使用的全局变量 DT，是自上一帧以来经过的时间（单位为秒），
+-- 它也会让 siner 以与 Kristal.getTime() 相同的速度递增。
+self.siner = self.siner + DT
+
+local disp_x = self.orig_x + Utils.wave(self.siner * self.wave_speed, -self.wave_magnitude, self.wave_magnitude)
+
+arena:setPosition(disp_x, arena.y)
+```
+为了确认它有效，运行我们的 wave 看看实际效果吧！
+
+<video controls preload="none">
+    <source src="/wiki/arena_movement.mp4" type="video/mp4" />
+    你的浏览器不支持此视频。抱歉！
+</video>
+
+接下来指南的其余部分我都会保留这个效果，你也可以随意设置自己想要的变换。
+</Box>
+
+<Box>
+## 制作绿色子弹 [green-bullets]
+
+之前提到过，要给 wiggly bullet 添加绿色（治疗）变体。现在就借助额外的子弹参数来实现它。
+
+它们只会在我们对 dummy 使用特定 ACT 时出现。
+
+先来制作绿色子弹效果！
+
+回到 `example_wiggly_bullet.lua`，先在 `init()` 中添加一些新变量，以及把子弹设置为绿色的部分：
+```lua
+self.green = false
+self.heal_amount = 8
+
+if self.green then
+    self:setColor(COLORS.lime)
+end
+```
+目前 `green` 始终为 `false`，但稍后我们会修改这一点。
+
+要实现绿色子弹的治疗逻辑，需要研究如何覆盖子弹行为。
+
+### 覆盖子弹行为
+
+这是**自定义子弹的独有功能**。我们要覆盖 wiggly bullet 继承的一个函数，从而修改部分默认子弹行为。
+
+这里要处理的函数是 `Bullet:onCollide(soul)`。它负责处理子弹与灵魂发生碰撞时的行为，包括造成伤害和检查无敌时间。
+
+覆盖函数非常简单，只需像这样在自定义子弹文件中重新定义它：
+```lua
+function ExampleWigglyBullet:onCollide(soul)
+    super.onCollide(self, soul)
+end
+```
+
+这里的覆盖函数只是调用从 `Bullet` 继承来的原始 `onCollide` 函数，因此和完全不定义它没有区别。让我们看看需要怎样修改，才能制作治疗子弹。
+
+当子弹为绿色时，我们会使用 `heal_amount` 治疗整个队伍。
+
+我们可以通过 `Game.battle.party` 访问队伍成员，循环遍历每个成员并调用 `heal()` 治疗他们。所有人都治疗完毕后，就可以移除子弹：
+```lua
+for _, party in ipairs(Game.battle.party) do
+    party:heal(self.heal_amount)
+end
+self:remove()
+```
+
+如果子弹不是绿色，就调用 `super.onCollide(soul)`，确保它们继续像普通子弹一样造成伤害。
+
+我们可以使用之前创建的子弹 `green` 字段来判断它是否为绿色，并据此运行对应子弹类型的行为！
+```lua
+function ExampleWigglyBullet:onCollide(soul)
+    if self.green then
+        for _, party in ipairs(Game.battle.party) do
+            party:heal(self.heal_amount)
+        end
+        self:remove()
+    else
+        super.onCollide(self, soul)
+    end
+end
+```
+
+现在来实现让子弹变绿的方法！
+
+为此，我们可以在创建自定义子弹时使用额外参数。
+
+### 自定义子弹参数
+
+在前面两个例子中，我们都使用 `Wave:spawnBullet(bullet, ...)` 生成子弹。虽然这里实际上只有两个参数 `bullet` 和 `...`，但我们每次都传入了三个值。
+
+这是怎么回事？
+
+这里的 `...` 叫作变长参数（vararg），你可能已经熟悉，也可能还不熟悉。它可以让函数接收数量不固定、事先未知的参数。
+
+对于 `spawnBullet()`，`...` 实际上代替了生成子弹构造函数的参数。
+
+如果你不熟悉“构造函数”这个术语，它指的就是每个类实例创建时都会运行的函数。你已经知道它的名字了，就是 `init()` 函数。
+
+目前 wigglybullet 的构造函数只接收生成坐标 `x` 和 `y`。让我们给它添加一个名为 `try_green` 的新参数：
+
+```lua
+function ExampleWigglyBullet:init(x, y, try_green)
+```
+
+当 `try_green` 为 `true` 时，可以使用这个新参数让子弹有机会变成绿色。
+
+将 `ExampleWigglyBullet:init()` 中之前的 `self.green = false` 行替换为：
+```lua
+self.green = try_green and love.math.random() < 0.3 or false
+```
+
+当 `try_green` 为 true 时，这会让子弹有 30% 的概率以绿色子弹生成。
+
+现在回到 wave，为 `try_green` 传入一个值！
+
+当然，我们希望子弹有机会变绿，所以传入 `true`！在 `spawnBullet` 中把它作为一个新参数加上：
+```lua
+function ExampleWave2:onStart()
+    -- 这里的代码会在 wave 开始时调用
+
+    self.timer:everyInstant(1/8, function ()
+        -- 把 x 和 y 移到这里，方便我们更清楚地看到参数数量
+        local x = love.math.random(120, SCREEN_WIDTH - 120)
+        local y = SCREEN_HEIGHT + 20
+        self:spawnBullet("example_wiggly_bullet", x, y, true)
+    end)
+end
+```
+
+绿色子弹现在应该会开始出现在 wave 中。来看看效果！
+
+<video controls preload="none">
+    <source src="/wiki/green_wiggly.mp4" type="video/mp4" />
+    你的浏览器不支持此视频。抱歉！
+</video>
+
+当然，如果我们一直把 `try_green` 设置为 `true`，那这个检查就没有任何意义了。所以给它找个用途吧！
+
+让我们试着让绿色子弹**只在对 dummy 使用 `Smile` ACT 时出现**。先重新打开 `scripts/enemies/dummy.lua`。
+
+首先，我们想给 dummy 添加一个新字段，用来记录这一回合是否对它使用过微笑。就叫它 `self.smiled_at`。
+
+将 `self.smiled_at = false` 添加到 `Dummy:init()` 中。
+
+接下来，在 `Dummy:onAct()` 中找到使用 `Smile` 时运行的代码。
+
+我们要找的是这一段：
+
+```lua
+if name == "Smile" then
+    -- 给予敌人 100% 的仁慈度
+    self:addMercy(100)
+    -- 改变这个敌人一回合的对话
+    self.dialogue_override = "... ^^"
+    -- ACT 文本（因为是列表，所以会有多个文本框）
+    return {
+        "* You smile.[wait:5]\n* The dummy smiles back.",
+        "* It seems the dummy just wanted\nto see you happy."
+    }
+```
+
+将 `self.smiled_at = true` 插入这段代码中，位置在 `return` 语句**之前**即可。
+
+最后要做的是使用 `EnemyBattler:onTurnEnd()` 回调，在**每回合结束时重置**它的微笑状态。
+
+这和之前覆盖函数的方式相同：
+```lua
+function Dummy:onTurnEnd()
+    self.smiled_at = false
+end
+```
+
+这里没有调用 `super`，因为 `onTurnEnd` 通常不会运行自己的代码。
+
+回到 wave，使用这个新变量控制子弹何时进行绿色判定。
+
+应该在 `ExampleWave2:onStart()` 的开头添加：
+```lua
+local attackers = self:getAttackers()
+
+local smiled_at = false
+for _, attacker in ipairs(attackers) do
+    if attacker.smiled_at then
+        smiled_at = true
+        break
+    end
+end
+```
+这段代码会检查所有攻击者的 `smiled_at` 字段，只要至少有一个攻击者被微笑过，就把同名局部变量设置为 `true`。
+
+我们还**需要把 smiled_at 传入 spawnBullet 函数**。将之前传入的 `true` 参数替换为它即可：
+
+```lua
+self:spawnBullet("example_wiggly_bullet", x, y, smiled_at)
+```
+
+完成后，只有在对 dummy 微笑的回合中才会生成绿色子弹。
+
+来测试一下！
+
+<video controls preload="none">
+    <source src="/wiki/conditional_green_bullets.mp4" type="video/mp4" />
+    Your browser does not support this video. Sorry!
+</video>
+</Box>
+
+<Box>
+## 敌人 Wave 覆盖
+
+说到让子弹在使用 Smile ACT 时变绿，我们当前的解决方案在真实的敌人场景中存在**潜在问题**。
+
+如果把 wave 的行为绑定到特定 ACT 上，通常会希望这个 wave 也在使用 ACT 的回合发生。
+
+如果一个敌人拥有多个 wave，就不一定总能选中我们想要的 wave！幸运的是，我们可以修复这个问题。
+
+所有敌人（`EnemyBattler`）都有一个 `wave_override` 变量，作用正如它的名字所说：覆盖本回合选中的 wave。
+
+让我们在示例中设置一个 dummy 可以从多个 wave 中选择的场景。
+
+可以把内容添加到它的 `waves` 表中，把所有默认 wave 和之前的示例 wave 加回来：
+```lua
+self.waves = {
+    "example_wave",
+    "example_wave_2",
+    "basic",
+    "movingarena",
+    "aiming",
+}
+```
+
+现在使用 `wave_override`。回到前面提到的 `Smile` ACT 代码。
+
+在 `self.smiled_at = true` 这一行下面添加：
+```lua
+self.wave_override = "example_wave_2"
+```
+
+就这么简单！
+
+不用担心像之前的 `smiled_at` 变量一样手动重置 wave override，`wave_override` 会在每回合结束后自动清除。
+</Box>
+
+<Box>
+## 结语 [completed-wave-2]
+
+本指南到这里就全部结束了！我们学习了很多关于 wave 及其相关对象的内容。
+
+制作 wave 需要考虑很多事情，其中还有一些内容我们没有在这里讲到！
+
+把攻击从想法变成代码是一个解决问题的过程。你需要根据自己的目标，思考哪些功能和函数可以帮助你实现想要的效果。
+
+这并不总是最容易的过程，但了解 wave 的工作方式以及可用功能，应该能让这个过程更轻松。祝你制作出精彩的攻击，让它们真正活起来！
+
+啊，不过在你离开之前，还有一件事！
+
+关于制作 wave，还有最后一点需要提到……
+
+*咳咳。*
+
+现在你已经*乘风破浪*地学完了 wave 的基础知识，掌握了所有重要知识，可以开始制作完全属于自己的 wave 了。
+
+但 wave 制作的*海域*波涛汹涌，一场信息的*海啸*还在地平线上向你袭来……
+
+……好了好了！我不再玩水的双关了。
+
+总之，除了这些指南之外，还有一篇 [Wavemaking Tricks and References](/wiki/wavemaking-reference)，其中提供了许多相关函数的快速参考，以及一些关于如何在 wave 中完成特定任务的简短指南。
+
+你应该查看它的[目录](/wiki/wavemaking-reference#table-of-contents)，了解其中涵盖了哪些内容。
+</Box>
+
+--- 取消注释下面这一行以添加另一个敌人！
+self:addEnemy("dummy")
