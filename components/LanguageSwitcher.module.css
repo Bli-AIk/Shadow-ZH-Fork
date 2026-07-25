@@ -17,6 +17,18 @@
     text-shadow: 2px 2px #000;
 }
 
+.icon {
+    display: block;
+    width: 1.5rem;
+    height: 1.5rem;
+    margin: auto;
+    fill: none;
+    stroke: currentColor;
+    stroke-width: 1.7;
+    stroke-linecap: square;
+    stroke-linejoin: miter;
+}
+
 .trigger:hover,
 .trigger:focus-visible {
     border-color: yellow;

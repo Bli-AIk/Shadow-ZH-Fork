@@ -64,7 +64,16 @@ export default function LanguageSwitcher() {
                 title={t('language')}
                 onClick={() => setOpen((current) => !current)}
             >
-                <span aria-hidden="true">文/A</span>
+                <svg
+                    className={styles.icon}
+                    viewBox="0 0 24 24"
+                    aria-hidden="true"
+                    focusable="false"
+                >
+                    <circle cx="12" cy="12" r="9" />
+                    <path d="M3 12h18M4.3 7.5h15.4M4.3 16.5h15.4" />
+                    <path d="M12 3c2.4 2.5 3.7 5.5 3.7 9S14.4 18.5 12 21M12 3c-2.4 2.5-3.7 5.5-3.7 9s1.3 6.5 3.7 9" />
+                </svg>
             </button>
             {open && (
                 <div className={styles.menu} role="menu" aria-label={t('language')}>

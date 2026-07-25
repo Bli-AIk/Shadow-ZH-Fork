@@ -14,7 +14,13 @@
 
 :global([data-display-mode="both"] .bilingualInline > [data-language="zh"]),
 :global(html[data-display-mode="both"] .bilingualInline > [data-language="zh"]) {
-    margin-left: 0.75ch;
+    display: block;
+    margin-left: 0;
+}
+
+:global([data-display-mode="both"] .bilingualInline > [data-language="en"]),
+:global(html[data-display-mode="both"] .bilingualInline > [data-language="en"]) {
+    display: block;
 }
 
 :global([data-display-mode="en"] .bilingualInline > [data-language="zh"]),
