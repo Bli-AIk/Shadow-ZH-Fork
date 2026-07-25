@@ -56,7 +56,7 @@ return ExampleWave
 </Box>
 
 <Box>
-## 生成一个子弹 [spawning-a-bullet]
+## 生成一个弹幕 [spawning-a-bullet]
 
 现在，我们已经*从技术上来说*创建了一个新的波次，但它还没有任何代码。这意味着我们的波次什么也不会做！
 
@@ -66,11 +66,11 @@ return ExampleWave
 function ExampleWave:onStart()
     -- 这里的代码会在 wave 开始时调用
 
-    -- 在屏幕中央创建一个子弹
+    -- 在屏幕中央创建一个弹幕
     local x = SCREEN_WIDTH / 2
     local y = SCREEN_HEIGHT / 2
     local bullet = self:spawnBullet("bullets/example_bullet", x, y)
-    -- 将子弹的速度设置为 4（每 1/30 秒移动的像素数）
+    -- 将弹幕的速度设置为 4（每 1/30 秒移动的像素数）
     bullet.physics.speed = 4
 end
 ```
@@ -82,37 +82,37 @@ end
 local bullet = self:spawnBullet("bullets/example_bullet", x, y)
 ```
 
-Wave 类中的这个函数会帮我们创建子弹，但它是如何工作的呢？
+Wave 类中的这个函数会帮我们创建弹幕，但它是如何工作的呢？
 
 我们可以查阅文档来了解！文档可以通过 [Wave 的 API 页面](/wiki/api/Wave#spawnBullet) 查看；如果安装了 Kristal 扩展，也会自动在编辑器中获取。
 
 为了方便本指南阅读，下面也附上了这部分文档：
 
 ```lua
---- 为此 wave 生成一个新子弹，并将其设置为 Game.battle 的子对象。
----@param bullet    string|Bullet   作为字符串时，这个参数可以是精灵路径（会用该精灵创建基础子弹），也可以是自定义子弹的 id。作为 Bullet 时，会直接将该实例生成到 wave 中。
----@param ...       any             传递给新创建子弹的 init() 函数的额外参数。基础子弹在这里接收 x 和 y 坐标。
----@return Bullet bullet            新添加的子弹实例。
+--- 为此 wave 生成一个新弹幕，并将其设置为 Game.battle 的子对象。
+---@param bullet    string|Bullet   作为字符串时，这个参数可以是精灵路径（会用该精灵创建基础弹幕），也可以是自定义弹幕的 id。作为 Bullet 时，会直接将该实例生成到 wave 中。
+---@param ...       any             传递给新创建弹幕的 init() 函数的额外参数。基础弹幕在这里接收 x 和 y 坐标。
+---@return Bullet bullet            新添加的弹幕实例。
 function Wave:spawnBullet(bullet, ...)
 ```
 
-先关注第一个参数 `bullet`：它说明这个参数可以是**精灵路径**，也可以是**自定义子弹的 id**。
+先关注第一个参数 `bullet`：它说明这个参数可以是**精灵路径**，也可以是**自定义弹幕的 id**。
 
-在我们的例子中，我们填入了 `bullets/example_bullet`。由于我们还没有创建自己的自定义子弹，所以这必定是一个精灵路径。
+在我们的例子中，我们填入了 `bullets/example_bullet`。由于我们还没有创建自己的自定义弹幕，所以这必定是一个精灵路径。
 
-不过……我们还没有为示例子弹准备精灵。现在就创建一个来解决这个问题吧！
+不过……我们还没有为示例弹幕准备精灵。现在就创建一个来解决这个问题吧！
 
 <ScaledSprite src="/wiki/example_bullet.png" name="example_bullet.png" width={11} height={7} scale={4}/>
 
 将这张图片以 `example_bullet.png` 的名称保存到 `assets/sprites/bullets` 中。它会成为我们的精灵！它的路径应该和之前填入的一致，即 `bullets/example_bullet`。
 
-这意味着我们创建的是一个“基础子弹”，也就是一个标准的 [`Bullet`](/wiki/api/Bullet) 对象。
+这意味着我们创建的是一个“基础弹幕”，也就是一个标准的 [`Bullet`](/wiki/api/Bullet) 对象。
 
-`Bullet` 对象会为我们处理子弹所需的一切，例如碰撞和伤害。
+`Bullet` 对象会为我们处理弹幕所需的一切，例如碰撞和伤害。
 
 我们也可以自己定制这些内容，但那是之后才会讲到的话题。
 
-至于 `x` 和 `y` 的值，我们可以从 `...` 的说明中看到，它们用于基础子弹，也就是子弹生成时的坐标。
+至于 `x` 和 `y` 的值，我们可以从 `...` 的说明中看到，它们用于基础弹幕，也就是弹幕生成时的坐标。
 
 我们使用的值是 `SCREEN_WIDTH / 2` 和 `SCREEN_HEIGHT / 2`，它们代表游戏窗口的中心。
 
@@ -120,15 +120,15 @@ function Wave:spawnBullet(bullet, ...)
 
 ```lua
 local bullet = self:spawnBullet("bullets/example_bullet", x, y)
--- 将子弹的速度设置为 4（每 1/30 秒移动的像素数）
+-- 将弹幕的速度设置为 4（每 1/30 秒移动的像素数）
 bullet.physics.speed = 4
 ```
 
-我们在函数前写上 `local bullet = `，用来**保存子弹的引用**，这里保存到名为 `bullet` 的局部变量中。之后就可以使用这个引用让子弹做各种事情！
+我们在函数前写上 `local bullet = `，用来**保存弹幕的引用**，这里保存到名为 `bullet` 的局部变量中。之后就可以使用这个引用让弹幕做各种事情！
 
-在这个例子中，我们通过修改子弹的 `physics.speed` 值让它移动；子弹会沿着它所朝向的角度移动，这个角度由 `physics.direction` 设置：
+在这个例子中，我们通过修改弹幕的 `physics.speed` 值让它移动；弹幕会沿着它所朝向的角度移动，这个角度由 `physics.direction` 设置：
 
-由于我们没有设置方向，它默认为 `0`，这会让子弹向右移动。
+由于我们没有设置方向，它默认为 `0`，这会让弹幕向右移动。
 
 现在，让我们试着运行这个波次！通过 Kristal 的调试菜单可以快速做到这一点。
 
@@ -151,9 +151,9 @@ bullet.physics.speed = 4
 
 呃……效果有点令人失望……
 
-不过，我们确实有了一个子弹！现在我们也知道如何生成子弹了，可以开始试验我们的波次。
+不过，我们确实有了一个弹幕！现在我们也知道如何生成弹幕了，可以开始试验我们的波次。
 
-现在可以尝试修改子弹的 `physics.direction`，它接受一个用**弧度**表示的角度值。让我们试着让子弹向左移动。
+现在可以尝试修改弹幕的 `physics.direction`，它接受一个用**弧度**表示的角度值。让我们试着让弹幕向左移动。
 
 我们可以把 `bullet.physics.direction` 设置为 `math.pi`，也可以使用 `math.rad()` 函数把角度从度转换为弧度。
 
@@ -165,7 +165,7 @@ bullet.physics.direction = math.rad(180)
 
 如果需要把弧度值（例如 `physics.direction`）转换回角度，可以使用 `math.deg()`。
 
-总之，让我们看看子弹向左移动时是什么样子！
+总之，让我们看看弹幕向左移动时是什么样子！
 
 <video controls preload="none">
     <source src="/wiki/first_bullet_wrong_direction.mp4" type="video/mp4" />
@@ -174,21 +174,21 @@ bullet.physics.direction = math.rad(180)
 
 咦？它朝错方向了！
 
-这是因为子弹移动的方向默认与它的旋转是分开的。
+这是因为弹幕移动的方向默认与它的旋转是分开的。
 
-如果想让子弹朝向它移动的方向，可以改为设置 `bullet.rotation`，然后将 `bullet.physics.match_rotation` 设置为 `true`。
+如果想让弹幕朝向它移动的方向，可以改为设置 `bullet.rotation`，然后将 `bullet.physics.match_rotation` 设置为 `true`。
 
-这样会自动让子弹的旋转和方向始终保持相同的值。**不过**，这也有一个需要注意的地方。
+这样会自动让弹幕的旋转和方向始终保持相同的值。**不过**，这也有一个需要注意的地方。
 
-之前我们提到过，**所有子弹的默认方向都是 `0`，也就是向右**。
+之前我们提到过，**所有弹幕的默认方向都是 `0`，也就是向右**。
 
-旋转在技术上是任意的，但如果想用这种方法让子弹朝向它移动的方向，就必须把子弹的精灵设计为默认朝右。
+旋转在技术上是任意的，但如果想用这种方法让弹幕朝向它移动的方向，就必须把弹幕的精灵设计为默认朝右。
 
 这样，旋转为 `0` 和方向为 `0` 时就会彼此对齐。
 
-如果想让子弹的旋转和方向匹配一个默认朝向不是右方的精灵，就需要手动设置二者，从而对旋转进行**偏移**。
+如果想让弹幕的旋转和方向匹配一个默认朝向不是右方的精灵，就需要手动设置二者，从而对旋转进行**偏移**。
 
-要正确偏移旋转，需要减去向右方向与子弹实际朝向之间的顺时针角度。
+要正确偏移旋转，需要减去向右方向与弹幕实际朝向之间的顺时针角度。
 
 不过这个例子不需要考虑这些，让我们把 `bullet.physics.direction = math.rad(180)` 这一行替换为：
 
@@ -207,17 +207,17 @@ bullet.physics.match_rotation = true
 好多了！
 
 总结一下：
-- 我们使用 `Wave:spawnBullet(sprite, x, y)` 函数，在指定位置生成一个带有指定精灵的基础子弹。
-- 我们把 `spawnBullet()` 返回的新子弹保存到一个局部变量中。
-- 然后就能通过这个局部变量修改子弹的 `physics` 表，控制子弹的移动。
+- 我们使用 `Wave:spawnBullet(sprite, x, y)` 函数，在指定位置生成一个带有指定精灵的基础弹幕。
+- 我们把 `spawnBullet()` 返回的新弹幕保存到一个局部变量中。
+- 然后就能通过这个局部变量修改弹幕的 `physics` 表，控制弹幕的移动。
 </Box>
 
 <Box>
-## 生成更多子弹 [spawning-bullets-cont]
+## 生成更多弹幕 [spawning-bullets-cont]
 
-现在我们已经知道如何生成基础子弹，是时候把这些知识用于制作更像真正攻击的波次了。
+现在我们已经知道如何生成基础弹幕，是时候把这些知识用于制作更像真正攻击的波次了。
 
-首先，让子弹从 dummy 本身生成，而不是从屏幕中心生成。
+首先，让弹幕从 dummy 本身生成，而不是从屏幕中心生成。
 
 我们可以使用波次的 `getAttackers()` 函数获取 dummy 的 `EnemyBattler`。在 `onStart()` 开头添加下面这一行：
 ```lua
@@ -227,7 +227,7 @@ local dummy = self:getAttackers()[1]
 
 目前我们只关注一个 dummy，所以只需要获取这个表的第一个元素。之后我们会讲解如何适配多个敌人。
 
-接下来，我们想让子弹在 dummy 的中心生成，先**删除原来定义 `x` 和 `y` 的代码**。
+接下来，我们想让弹幕在 dummy 的中心生成，先**删除原来定义 `x` 和 `y` 的代码**。
 
 `getRelativePos()` 函数可以帮助我们找到 dummy 的中心，它会找出 dummy 相对于另一个点的位置。
 
@@ -236,13 +236,13 @@ local dummy = self:getAttackers()[1]
 local x, y = dummy:getRelativePos(dummy.width/2, dummy.height/2)
 ```
 
-不过现在我们仍然只有一枚直接向左发射的子弹。再添加一些吧。
+不过现在我们仍然只有一枚直接向左发射的弹幕。再添加一些吧。
 
 我们当然可以在代码中再添加很多个 `spawnBullet()`，但这样很快就会失控，变得难以管理。
 
 更合理的做法，是循环执行已经写好的代码。
 
-使用 `for` 循环，可以让之前的生成子弹代码重复运行多次。六枚子弹看起来是个不错的数量，就这么做：
+使用 `for` 循环，可以让之前的生成弹幕代码重复运行多次。六枚弹幕看起来是个不错的数量，就这么做：
 ```lua
 -- 将这段代码循环六次，每次将 `i` 增加 1（这里不会使用 `i`）
 for i = 1, 6 do
@@ -253,7 +253,7 @@ for i = 1, 6 do
 end
 ```
 
-最后，我们要改变子弹的发射方向，让它们瞄准玩家：
+最后，我们要改变弹幕的发射方向，让它们瞄准玩家：
 ```lua
 local target_angle = MathUtils.angle(x, y, Game.battle.soul.x, Game.battle.soul.y)
 bullet.rotation = target_angle + math.rad(MathUtils.random(-20, 20))
@@ -266,7 +266,7 @@ bullet.rotation = target_angle + math.rad(MathUtils.random(-20, 20))
 
 `MathUtils.angle(x1, y1, x2, y2)` 函数会帮我们找出两点之间的角度。（和往常一样，这个角度以**弧度**表示。）
 
-不过，我们不希望所有子弹都沿着完全相同的路径移动，所以在设置 `rotation` 时加入了一些**随机性**。（如果不使用 `physics.match_rotation`，这里设置的就会是 `physics.direction`。）
+不过，我们不希望所有弹幕都沿着完全相同的路径移动，所以在设置 `rotation` 时加入了一些**随机性**。（如果不使用 `physics.match_rotation`，这里设置的就会是 `physics.direction`。）
 
 ```lua
 bullet.rotation = target_angle + math.rad(MathUtils.random(-20, 20))
@@ -274,7 +274,7 @@ bullet.rotation = target_angle + math.rad(MathUtils.random(-20, 20))
 
 `MathUtils.random(lower, upper)` 函数会生成我们输入的两个数之间的随机小数，这里的两个数是 `-20` 和 `20`。
 
-这样，子弹就会以目标角度为中心，形成 40 度的散布范围。
+这样，弹幕就会以目标角度为中心，形成 40 度的散布范围。
 
 我们已经对波次做了几处修改，现在该再次测试了！
 
@@ -301,7 +301,7 @@ function ExampleWave:onStart()
     -- 这里的代码会在 wave 开始时调用
     local dummy = self:getAttackers()[1]
 
-    -- 在 dummy 的中心创建一个子弹
+    -- 在 dummy 的中心创建一个弹幕
     local x, y = dummy:getRelativePos(dummy.width/2, dummy.height/2)
     for i = 1, 6 do
         local bullet = self:spawnBullet("bullets/example_bullet", x, y)
@@ -327,7 +327,7 @@ return ExampleWave
 <Box>
 ## 计时器
 
-我们的新波次已经逐渐成形了，但目前只能在一开始生成子弹。
+我们的新波次已经逐渐成形了，但目前只能在一开始生成弹幕。
 
 在 Kristal 中，有一种叫做 [Timers](/wiki/api/Timer) 的对象可以帮助我们改变这一点。
 
@@ -370,7 +370,7 @@ function ExampleWave:onStart()
     -- 这里的代码会在 wave 开始时调用
     local dummy = self:getAttackers()[1]
 
-    -- 在 dummy 的中心创建一个子弹
+    -- 在 dummy 的中心创建一个弹幕
     local x, y = dummy:getRelativePos(dummy.width/2, dummy.height/2)
     for i = 1, 6 do
         local bullet = self:spawnBullet("bullets/example_bullet", x, y)
@@ -381,7 +381,7 @@ function ExampleWave:onStart()
     end
 end
 ```
-`every()` 函数可以让我们重复之前制作的子弹散射，这对我们很有帮助！
+`every()` 函数可以让我们重复之前制作的弹幕散射，这对我们很有帮助！
 
 要使用 `every()` 函数，我们需要在 `onStart()` 中加入它，并设置延迟间隔。我们继续使用 1 秒，然后把所有要重复的代码移到函数里面。
 
@@ -393,7 +393,7 @@ function ExampleWave:onStart()
 
     -- 告诉计时器每隔一秒安排运行一次这个函数。
     self.timer:every(1, function()
-        -- 在 dummy 的中心创建一个子弹
+        -- 在 dummy 的中心创建一个弹幕
         local x, y = dummy:getRelativePos(dummy.width/2, dummy.height/2)
         for i = 1, 6 do
             local bullet = self:spawnBullet("bullets/example_bullet", x, y)
@@ -419,7 +419,7 @@ end
 
 `Timer:everyInstant()` 是另一个计时器函数，除了会立即运行一次我们的函数以外，它在各方面都与 `every` 相同。
 
-如果使用 `everyInstant()` 再次运行波次，就会看到第一轮子弹立即生成。
+如果使用 `everyInstant()` 再次运行波次，就会看到第一轮弹幕立即生成。
 
 ---
 ### Timer:after() 函数 [timer-after-function]
@@ -430,32 +430,32 @@ self.timer:after(3, function()
     -- 代码写在这里
 end)
 ```
-这个函数会让代码在经过指定时间后运行。让我们用它在波次后段生成一枚更大、移动更快的子弹。
+这个函数会让代码在经过指定时间后运行。让我们用它在波次后段生成一枚更大、移动更快的弹幕。
 
 我们会使用下面的设置来实现这一点。这个计时器应该放进下面的 `onStart()`，位于当前的 `everyInstant` 计时器之后：
 ```lua
 -- 三秒经过后……
 self.timer:after(3, function()
-    -- 子弹发射时播放声音
+    -- 弹幕发射时播放声音
     Assets.playSound("grab")
 
     local x, y = dummy:getRelativePos(dummy.width/2, dummy.height/2)
 
     local bullet = self:spawnBullet("bullets/example_bullet", x, y)
-    -- 让这枚子弹变为普通子弹的两倍大小（默认缩放为 2 倍）
+    -- 让这枚弹幕变为普通弹幕的两倍大小（默认缩放为 2 倍）
     bullet:setScale(4)
     bullet.physics.speed = 16
     bullet.rotation = MathUtils.angle(x, y, Game.battle.soul.x, Game.battle.soul.y)
     bullet.physics.match_rotation = true
 end)
 ```
-这段代码应该很熟悉：它和我们之前生成子弹的方式基本相同。
+这段代码应该很熟悉：它和我们之前生成弹幕的方式基本相同。
 
 我们还使用了 `Assets.playSound()` 播放声音，Kristal 自带 `grab` 音效。（可以在调试菜单的“Sound Test”中找到所有可用的声音。）
 
-我们还可以使用 `after` 计时器为这枚大子弹添加一点预警：
+我们还可以使用 `after` 计时器为这枚大弹幕添加一点预警：
 ```lua
--- 预警持续 24 帧（30FPS 下），所以在子弹生成前 24 帧开始
+-- 预警持续 24 帧（30FPS 下），所以在弹幕生成前 24 帧开始
 self.timer:after(3 - 24/30, function()
     dummy:alert()
 end)
@@ -475,13 +475,13 @@ end)
 ### 计时器中的计时器
 除了使用一个计时器，我们还可以把一些计时器嵌套在其他计时器中，从而组合使用它们！
 
-为了展示这一点，让我们给大子弹添加残影效果！
+为了展示这一点，让我们给大弹幕添加残影效果！
 
 残影效果本身可以使用 `every` 计时器制作。
 
 我们可以在函数中创建 [`AfterImage`](/wiki/api/AfterImage) 的副本，这样就能得到想要的效果。
 
-不过，计时器放置的位置也很重要：我们只想让残影计时器在大子弹存活期间运行，并且生成残影时还需要引用大子弹。
+不过，计时器放置的位置也很重要：我们只想让残影计时器在大弹幕存活期间运行，并且生成残影时还需要引用大弹幕。
 
 这意味着我们需要把这个计时器放在之前的 `after` 计时器*内部*。
 
@@ -489,7 +489,7 @@ end)
 ```lua
 -- 每 1/15 秒……
 self.timer:every(1/15, function()
-    -- 如果子弹被移除，就取消计时器
+    -- 如果弹幕被移除，就取消计时器
     if bullet:isRemoved() then
         return false
     end
@@ -499,15 +499,15 @@ self.timer:every(1/15, function()
     bullet:addChild(after_image)
 end)
 ```
-这个计时器的第一部分是新的：它会检查 `bullet`（也就是我们的大子弹）是否已经被移除。
+这个计时器的第一部分是新的：它会检查 `bullet`（也就是我们的大弹幕）是否已经被移除。
 
-如果条件成立（子弹已经被移除），计时器函数就会返回 `false`，从而完全取消这个计时器函数。
+如果条件成立（弹幕已经被移除），计时器函数就会返回 `false`，从而完全取消这个计时器函数。
 
 #### 但是为什么？
 
-正如之前所说，我们需要把这个计时器放在 `after` 函数中，部分原因是为了**引用大子弹**；当子弹不再存在时，取消计时器则负责处理时间线的另一端。
+正如之前所说，我们需要把这个计时器放在 `after` 函数中，部分原因是为了**引用大弹幕**；当弹幕不再存在时，取消计时器则负责处理时间线的另一端。
 
-这是因为所有子弹在离开屏幕后都会被**自动移除**，除非它们的 `remove_offscreen` 字段被设置为 `false`。
+这是因为所有弹幕在离开屏幕后都会被**自动移除**，除非它们的 `remove_offscreen` 字段被设置为 `false`。
 
 现在回到嵌套计时器本身！
 
@@ -520,7 +520,7 @@ end)
     你的浏览器不支持此视频。抱歉！
 </video>
 
-我们还可以研究如何嵌套其他相关的计时器，比如用于预警大子弹和发射大子弹的两个独立计时器。
+我们还可以研究如何嵌套其他相关的计时器，比如用于预警大弹幕和发射大弹幕的两个独立计时器。
 
 不过，不应该为了这个目的嵌套计时器，因为另一个计时器函数可以更简洁地独立完成这件事！
 
@@ -553,27 +553,27 @@ wait(5/2) -- 等待两秒半
 
 当波次中有一系列事件要依次发生时，脚本就很有价值。
 
-之前为大子弹编写的两个独立 `after` 函数，就可以很容易地改用一个脚本：
+之前为大弹幕编写的两个独立 `after` 函数，就可以很容易地改用一个脚本：
 ```lua
 self.timer:script(function(wait)
     wait(3 - 24/30)
     dummy:alert()
 
     wait(24/30)
-    -- 子弹发射时播放声音
+    -- 弹幕发射时播放声音
     Assets.playSound("grab")
 
     local x, y = dummy:getRelativePos(dummy.width/2, dummy.height/2)
 
     local bullet = self:spawnBullet("bullets/example_bullet", x, y)
-    -- 让这枚子弹变为普通子弹的两倍大小
+    -- 让这枚弹幕变为普通弹幕的两倍大小
     bullet:setScale(4)
     bullet.physics.speed = 16
     bullet.rotation = MathUtils.angle(x, y, Game.battle.soul.x, Game.battle.soul.y)
     bullet.physics.match_rotation = true-- 每 1/15 秒……
 
     self.timer:every(1/15, function()
-        -- 如果子弹被移除，就取消计时器
+        -- 如果弹幕被移除，就取消计时器
         if not bullet then
             return false
         end
@@ -599,7 +599,7 @@ self.timer:script(function(wait)
     end
 end)
 ```
-上面的计时器脚本会在波次开始一秒后，在战斗框下方生成三枚子弹，每枚子弹之间间隔 1/5 秒。
+上面的计时器脚本会在波次开始一秒后，在战斗框下方生成三枚弹幕，每枚弹幕之间间隔 1/5 秒。
 
 你可以暂时把它放进示例波次，看看它的效果。
 
@@ -734,7 +734,7 @@ end
 function ExampleWave:onStart()
     for _, dummy in ipairs(self:getAttackers()) do
         self.timer:everyInstant(1, function()
-            -- 在 dummy 的中心创建一个子弹
+            -- 在 dummy 的中心创建一个弹幕
             local x, y = dummy:getRelativePos(dummy.width/2, dummy.height/2)
             for i = 1, 6 do
                 local bullet = self:spawnBullet("bullets/example_bullet", x, y)
@@ -750,20 +750,20 @@ function ExampleWave:onStart()
             dummy:alert()
 
             wait(24/30)
-            -- 子弹发射时播放声音
+            -- 弹幕发射时播放声音
             Assets.playSound("grab")
 
             local x, y = dummy:getRelativePos(dummy.width/2, dummy.height/2)
 
             local bullet = self:spawnBullet("bullets/example_bullet", x, y)
-            -- 让这枚子弹变为普通子弹的两倍大小
+            -- 让这枚弹幕变为普通弹幕的两倍大小
             bullet:setScale(4)
             bullet.physics.speed = 16
             bullet.rotation = MathUtils.angle(x, y, Game.battle.soul.x, Game.battle.soul.y)
             bullet.physics.match_rotation = true-- 每 1/15 秒……
 
             self.timer:every(1/15, function()
-                -- 如果子弹被移除，就取消计时器
+                -- 如果弹幕被移除，就取消计时器
                 if not bullet then
                     return false
                 end
@@ -788,12 +788,12 @@ return ExampleWave
 关于波次还有很多内容可以学习，但在继续之前，最好快速回顾一下目前学到的内容：
 
 - 最重要的是，我们了解了波次是什么，以及应该把它们放进 `scripts/battle/waves`。
-- 我们还学习了如何生成子弹，至少是**基础子弹**，以及如何使用 `physics` 表轻松地让这些子弹移动。
+- 我们还学习了如何生成弹幕，至少是**基础弹幕**，以及如何使用 `physics` 表轻松地让这些弹幕移动。
 - 我们了解了如何通过 `Wave:getAttackers()` 函数获取与攻击相关的敌人，并在波次中使用它们。
 - 我们弄清楚了如何通过修改敌人的 `waves` 表，让敌人能够使用波次。
 - 当然，我们还了解了 **Timer** 在制作波次时的重要性，并介绍了 `every`、`after` 和 `script` 函数的一些用法。
 
-下一个例子中，我们会学习**自定义子弹**、**Arena**、**碰撞**，并进一步了解**波次选择**。
+下一个例子中，我们会学习**自定义弹幕**、**Arena**、**碰撞**，并进一步了解**波次选择**。
 
 不过在那之前，试验是波次的核心。既然这个例子已经完成，不妨花些时间随意修改它，看看能做出什么效果！
 
@@ -803,7 +803,7 @@ return ExampleWave
 <Box>
 ## 波次制作 2：电光 Boogaloo [wave-making-custom-bullet]
 
-之前使用 `spawnBullet()` 函数时，我们提到过**自定义子弹**。现在该学习它们是什么，以及如何使用它们了。
+之前使用 `spawnBullet()` 函数时，我们提到过**自定义弹幕**。现在该学习它们是什么，以及如何使用它们了。
 
 接下来我们会从一个全新的波次开始，先把准备工作完成。
 
@@ -840,35 +840,35 @@ self.waves = {
 
 这一次，测试时专门使用 dummy 会更加重要，所以一定要通过 dummy 测试这个波次！（稍后会解释原因。）
 
-准备工作就这些！现在开始学习**自定义子弹**吧！
+准备工作就这些！现在开始学习**自定义弹幕**吧！
 </Box>
 
 <Box>
-## 自定义子弹 [custom-bullets]
+## 自定义弹幕 [custom-bullets]
 
 到目前为止，我们在波次中只研究了标准的 `Bullet` 对象。
 
 Kristal 也让我们很容易创建自己的 **Bullet** **自定义**类型。
 
-两者最主要的区别在于：我们把自定义子弹定义为独立文件，并可以从那个文件中控制它们。
+两者最主要的区别在于：我们把自定义弹幕定义为独立文件，并可以从那个文件中控制它们。
 
-这并不妨碍我们在波次中修改它们，不过对于自定义子弹来说，通常没有必要这样做。
+这并不妨碍我们在波次中修改它们，不过对于自定义弹幕来说，通常没有必要这样做。
 
-如果你发现自己需要重复大量代码，或者想在多个波次中使用同一种子弹，那么自定义子弹就能帮上忙。
+如果你发现自己需要重复大量代码，或者想在多个波次中使用同一种弹幕，那么自定义弹幕就能帮上忙。
 
-使用自定义子弹还有一个**重要得多**的理由，它让自定义子弹的区别不再只是组织方式上的区别。
+使用自定义弹幕还有一个**重要得多**的理由，它让自定义弹幕的区别不再只是组织方式上的区别。
 
-创建自定义子弹时，它会从普通的 `Bullet` 类**继承**。这让我们能够**修改子弹的默认行为**。
+创建自定义弹幕时，它会从普通的 `Bullet` 类**继承**。这让我们能够**修改弹幕的默认行为**。
 
-这为子弹的制作打开了许多新的可能性。
+这为弹幕的制作打开了许多新的可能性。
 
-不要再耽搁了，来看看如何创建一个自定义子弹。
+不要再耽搁了，来看看如何创建一个自定义弹幕。
 
-### 创建自定义子弹
+### 创建自定义弹幕
 
-正如你可能猜到的，自定义子弹的文件应该放在 `scripts/battle/bullets` 中。
+正如你可能猜到的，自定义弹幕的文件应该放在 `scripts/battle/bullets` 中。
 
-子弹名称/id 会和文件名对应，就像之前创建波次文件时一样。之后我们会使用这个 id 调用 `spawnBullet()`。
+弹幕名称/id 会和文件名对应，就像之前创建波次文件时一样。之后我们会使用这个 id 调用 `spawnBullet()`。
 
 现在添加一个文件吧！这次命名为 `example_wiggly_bullet.lua`。先从下面的代码开始：
 
@@ -878,9 +878,9 @@ local ExampleWigglyBullet, super = Class(Bullet)
 function ExampleWigglyBullet:init(x, y)
     super.init(self, x, y, "bullets/donut")
 
-    -- 子弹之后会在屏幕外生成，所以必须关闭这个选项
+    -- 弹幕之后会在屏幕外生成，所以必须关闭这个选项
     self.remove_offscreen = false
-    -- 子弹默认缩放为 2 倍，这次我们想让它更大一些
+    -- 弹幕默认缩放为 2 倍，这次我们想让它更大一些
     self:setScale(3)
 end
 
@@ -891,9 +891,9 @@ end
 return ExampleWigglyBullet
 ```
 
-在这个文件的第一行，我们让新子弹继承原始的 `Bullet` 类。
+在这个文件的第一行，我们让新弹幕继承原始的 `Bullet` 类。
 
-对于自定义子弹，还要特别注意 `init` 和 `super.init` 的参数。
+对于自定义弹幕，还要特别注意 `init` 和 `super.init` 的参数。
 
 `super.init` 通常要求传入生成坐标以及一个精灵。
 
@@ -903,83 +903,83 @@ return ExampleWigglyBullet
 
 之后会更深入地讲解这一点，现在只需要知道我们仍然会使用 `x` 和 `y`。
 
-至于子弹纹理，我在 `super.init` 中将它设置为 `bullets/donut`。自然，我们需要准备对应的精灵：
+至于弹幕纹理，我在 `super.init` 中将它设置为 `bullets/donut`。自然，我们需要准备对应的精灵：
 
 <ScaledSprite src="/wiki/donut.png" name="example_donut.png" width={8} height={8} scale={4}/>
 
 这张图片应该保存到 `assets/sprites/bullets/donut.png`。
 
-### 子弹行为
+### 弹幕行为
 
-现在来看看我们希望这个子弹具有什么行为！
+现在来看看我们希望这个弹幕具有什么行为！
 
-我们要让这个波次中的子弹从屏幕底部向上移动，同时以随机的波浪轨迹摇摆。
+我们要让这个波次中的弹幕从屏幕底部向上移动，同时以随机的波浪轨迹摇摆。
 
 （如果这听起来不太直观，很快就能看到实际效果，所以不用担心！）
 
-稍后我们还会给波次添加一种额外变体：**绿色**子弹，它们只会在特定条件下出现。
+稍后我们还会给波次添加一种额外变体：**绿色**弹幕，它们只会在特定条件下出现。
 
-先从简单的部分开始，也就是使用 `physics` 让子弹沿 y 轴移动。
+先从简单的部分开始，也就是使用 `physics` 让弹幕沿 y 轴移动。
 
-之前已经使用过一次 `physics` 表。这次我们只需要让子弹直直地向上移动，可以在 `init()` 中设置 `speed_y`：
+之前已经使用过一次 `physics` 表。这次我们只需要让弹幕直直地向上移动，可以在 `init()` 中设置 `speed_y`：
 ```lua
 self.physics.speed_y = - love.math.random(5, 10)
 ```
-这样每枚子弹的 y 轴速度会在 `-5` 到 `-10` 之间。如果想让子弹向下移动，只需移除 `-`。
+这样每枚弹幕的 y 轴速度会在 `-5` 到 `-10` 之间。如果想让弹幕向下移动，只需移除 `-`。
 
 至于摇摆效果，事情会稍微复杂一些。我们要使用多个函数来帮助实现这种运动。
 
 第一步是在 `bullet:init()` 中定义一个新变量 `self.orig_x`。
 
-这个变量会记住子弹生成时的原始 x 值，稍后可以用它让子弹摇摆。
+这个变量会记住弹幕生成时的原始 x 值，稍后可以用它让弹幕摇摆。
 
 我们还要定义一些与正弦波有关的变量：
 ```lua
--- 子弹波浪运动的原点（波浪中心所在的 x 值）
+-- 弹幕波浪运动的原点（波浪中心所在的 x 值）
 self.orig_x = x
--- 波浪的幅度（子弹可以偏离原点多少像素）
+-- 波浪的幅度（弹幕可以偏离原点多少像素）
 self.wave_magnitude = 24
--- 乘以子弹摇摆的速度
+-- 乘以弹幕摇摆的速度
 self.wave_speed = love.math.random(5, 8)
--- 为这枚子弹生成一个随机数，用来偏移它的波浪位置
+-- 为这枚弹幕生成一个随机数，用来偏移它的波浪位置
 self.random_offset = love.math.random()
 ```
-`wave_magnitude` 和 `wave_speed` 会改变子弹沿着移动的波浪形状。
+`wave_magnitude` 和 `wave_speed` 会改变弹幕沿着移动的波浪形状。
 
-我设置了一些数值，你可以保留它们，也可以修改。不过请**等波次运行起来之后**再修改，这样才能比较不同数字如何影响子弹的摇摆程度。
+我设置了一些数值，你可以保留它们，也可以修改。不过请**等波次运行起来之后**再修改，这样才能比较不同数字如何影响弹幕的摇摆程度。
 
 `init()` 中的变量就设置完了，现在可以继续处理 `update()`。
 
-由于 `update()` 每帧运行，我们会根据正弦波不同位置的值，不断改变子弹的 x 坐标。
+由于 `update()` 每帧运行，我们会根据正弦波不同位置的值，不断改变弹幕的 x 坐标。
 
 这听起来可能有点复杂，但其实只需要使用 `Utils.波次(val, min, max)` 函数，所有正弦波计算都会由它处理。
 
-`Utils.波次()` 函数返回的数字，就是这一帧子弹应该偏离基准线（`orig_x` 值）的距离。
+`Utils.波次()` 函数返回的数字，就是这一帧弹幕应该偏离基准线（`orig_x` 值）的距离。
 
 下面看看代码是什么样子。我给每一行都写了注释，解释它们的作用：
 ```lua
 -- Kristal.getTime() 返回自 Kristal 启动以来经过的时间（单位为秒）
--- 加上“随机偏移”，让每枚子弹的时间值略有不同（从而产生不同的摇摆）
+-- 加上“随机偏移”，让每枚弹幕的时间值略有不同（从而产生不同的摇摆）
 local time_value = Kristal.getTime() + self.random_offset
 
 -- 实际的位移计算在这里进行
 -- 使用 Utils.wave() 时，先传入乘以波浪速度的“时间值”，它决定选取正弦波上的哪个位置（不需要过多关注具体细节）
--- 接下来两个值是摇摆的下限和上限，这些参数意味着子弹可以向生成位置的两侧各移动一个幅度。
+-- 接下来两个值是摇摆的下限和上限，这些参数意味着弹幕可以向生成位置的两侧各移动一个幅度。
 -- 函数返回的值就是这一帧使用的 x 轴位移，范围在 `-self.wave_magnitude` 和 `self.wave_magnitude` 之间。
 -- 根据之前设置的 `wave_magnitude`，也就是 `-24` 到 `24`。
 local disp_x = Utils.wave(time_value * self.wave_speed, -self.wave_magnitude, self.wave_magnitude)
 
--- 得到位移值后，只需要真正移动子弹即可！这里会用到原点值。
+-- 得到位移值后，只需要真正移动弹幕即可！这里会用到原点值。
 self.x = self.orig_x + disp_x
 ```
 
-现在，我们的自定义子弹就已经完成了！
+现在，我们的自定义弹幕就已经完成了！
 
-在回到波次生成子弹之前，先快速检查一下代码位置是否正确。
+在回到波次生成弹幕之前，先快速检查一下代码位置是否正确。
 
-你的子弹文件应该位于 `scripts/battle/bullets`，文件名为 `example_wiggly_bullet.lua`。
+你的弹幕文件应该位于 `scripts/battle/bullets`，文件名为 `example_wiggly_bullet.lua`。
 
-子弹文件的内容应该类似下面这样：
+弹幕文件的内容应该类似下面这样：
 ```lua
 local ExampleWigglyBullet, super = Class(Bullet)
 
@@ -1009,27 +1009,27 @@ end
 return ExampleWigglyBullet
 ```
 
-如果发现有任何地方不对，**现在就改正**，然后我们就可以继续生成子弹了！
+如果发现有任何地方不对，**现在就改正**，然后我们就可以继续生成弹幕了！
 
 ---
-### 生成自定义子弹
+### 生成自定义弹幕
 
-学习如何使用第一个自定义子弹的最后一步，就是亲眼看看它运行起来的效果！
+学习如何使用第一个自定义弹幕的最后一步，就是亲眼看看它运行起来的效果！
 
 正如之前提到的，我们仍然使用 `Wave:spawnBullet()`，不过这次传入的是 id，而不是精灵。
 
-对于自定义子弹，我们会使用 `self:spawnBullet("example_wiggly_bullet", 320, SCREEN_HEIGHT)`，在屏幕底部中央生成一枚子弹。
+对于自定义弹幕，我们会使用 `self:spawnBullet("example_wiggly_bullet", 320, SCREEN_HEIGHT)`，在屏幕底部中央生成一枚弹幕。
 
-现在把这一行放进 `ExampleWave2:onStart()`，然后运行波次。这样可以先看到一枚子弹，确认它正常工作。
+现在把这一行放进 `ExampleWave2:onStart()`，然后运行波次。这样可以先看到一枚弹幕，确认它正常工作。
 
 <video controls preload="none">
     <source src="/wiki/wiggly_bullet.mp4" type="video/mp4" />
     你的浏览器不支持此视频。抱歉！
 </video>
 
-太棒了！子弹看起来正是我们预期的样子。现在用 `Timer` 让它更有变化吧。
+太棒了！弹幕看起来正是我们预期的样子。现在用 `Timer` 让它更有变化吧。
 
-我们要做的就是生成很多子弹：
+我们要做的就是生成很多弹幕：
 ```lua
 self.timer:everyInstant(1/8, function ()
     self:spawnBullet("example_wiggly_bullet", love.math.random(120, SCREEN_WIDTH - 120), SCREEN_HEIGHT + 20)
@@ -1037,7 +1037,7 @@ end)
 ```
 我们之前已经使用过 `everyInstant`，所以这里应该没有什么意外。
 
-现在再次运行波次，看看同时出现很多子弹时的效果：
+现在再次运行波次，看看同时出现很多弹幕时的效果：
 
 <video controls preload="none">
     <source src="/wiki/many_wiggly_bullets.mp4" type="video/mp4" />
@@ -1048,15 +1048,15 @@ end)
 </Box>
 
 <Box>
-## 子弹碰撞
+## 弹幕碰撞
 
-现在我们的自定义子弹已经设置好并运行起来了，是时候谈谈战斗中的**碰撞**是如何工作的。
+现在我们的自定义弹幕已经设置好并运行起来了，是时候谈谈战斗中的**碰撞**是如何工作的。
 
-战斗中有三类主要对象会发生碰撞：玩家灵魂、战斗框和子弹。
+战斗中有三类主要对象会发生碰撞：玩家灵魂、战斗框和弹幕。
 
-Arena 的碰撞与子弹无关。
+Arena 的碰撞与弹幕无关。
 
-另一方面，**灵魂与子弹的碰撞**则与我们有关。
+另一方面，**灵魂与弹幕的碰撞**则与我们有关。
 
 在调试菜单中**启用 调试渲染**，可以看到屏幕上所有对象的碰撞范围。
 
@@ -1072,17 +1072,17 @@ Arena 的碰撞与子弹无关。
 
 外部的灰色圆是**擦弹** hitbox，同样使用 `CircleCollider`。
 
-我们不会对它们进行任何操作，但知道子弹碰撞就是与这些对象进行比较还是很有帮助的。
+我们不会对它们进行任何操作，但知道弹幕碰撞就是与这些对象进行比较还是很有帮助的。
 
-真正需要关注的是子弹碰撞！
+真正需要关注的是弹幕碰撞！
 
 如果在启用 调试渲染 的情况下运行波次，就能看到 hitbox 的样子：
 
 <>![](/wiki/wiggly_collision.png)</>
 
-这里子弹使用的碰撞对象是 [`Hitbox`](/wiki/api/Hitbox) 对象。
+这里弹幕使用的碰撞对象是 [`Hitbox`](/wiki/api/Hitbox) 对象。
 
-如果不手动设置碰撞，子弹默认就会使用这种碰撞。Kristal 会执行下面的代码来创建这些 hitbox：
+如果不手动设置碰撞，弹幕默认就会使用这种碰撞。Kristal 会执行下面的代码来创建这些 hitbox：
 
 ```lua
 -- 来自 src/engine/game/battle/bullet.lua
@@ -1091,9 +1091,9 @@ Arena 的碰撞与子弹无关。
 self.collider = Hitbox(self, self.width/4, self.height/4, self.width/2, self.height/2)
 ```
 
-这会让子弹的碰撞矩形变为**子弹所使用纹理的一半大小**。
+这会让弹幕的碰撞矩形变为**弹幕所使用纹理的一半大小**。
 
-如果子弹没有通过 `Bullet:setSprite()` 或 `super.init()` 设置纹理，那么它不会获得默认碰撞。
+如果弹幕没有通过 `Bullet:setSprite()` 或 `super.init()` 设置纹理，那么它不会获得默认碰撞。
 
 我们的 wigglybullet 碰撞没有问题，不过展示一下如何为它设置自定义碰撞也没有坏处。
 
@@ -1105,29 +1105,29 @@ self.collider = Hitbox(self, self.width/4, self.height/4, self.width/2, self.hei
 self.collider = CircleCollider(self, self.width/2, self.height/2, self.width/2 - 2)
 ```
 
-这会把子弹的碰撞对象（[`Bullet.collider`](/wiki/api/Object#collider)）改为一个新的 `CircleCollider` 实例。
+这会把弹幕的碰撞对象（[`Bullet.collider`](/wiki/api/Object#collider)）改为一个新的 `CircleCollider` 实例。
 
 CircleCollider 接受四个参数：`self`、`self.width/2`、`self.height/2` 和 `self.width/2 - 2`，它们分别对应 `parent`、`x`、`y` 和 `radius` 参数。
 
-第一个变量 `parent` 的含义应该很直观：这是子弹的碰撞器，因此它应该始终以子弹（`self`）为父对象。
+第一个变量 `parent` 的含义应该很直观：这是弹幕的碰撞器，因此它应该始终以弹幕（`self`）为父对象。
 
-接下来的 `x` 和 `y` 是圆心的位置，它们相对于子弹的原点。
+接下来的 `x` 和 `y` 是圆心的位置，它们相对于弹幕的原点。
 
-`self.width/2` 和 `self.height/2` 会让圆与子弹中心对齐，因为我们的子弹原点位于左上角。
+`self.width/2` 和 `self.height/2` 会让圆与弹幕中心对齐，因为我们的弹幕原点位于左上角。
 
-最后，我们把 `radius` 设置为 `self.width/2 - 2`，也就是子弹宽度一半再少两个像素。
+最后，我们把 `radius` 设置为 `self.width/2 - 2`，也就是弹幕宽度一半再少两个像素。
 
-如果直接使用 `self.width/2` 作为半径，就会产生沿着子弹外边缘分布的碰撞范围。
+如果直接使用 `self.width/2` 作为半径，就会产生沿着弹幕外边缘分布的碰撞范围。
 
-我使用 `- 2`，确保圆形碰撞范围比子弹本身**更小**。
+我使用 `- 2`，确保圆形碰撞范围比弹幕本身**更小**。
 
-理由与子弹 hitbox 只有对象大小一半相同：碰撞范围比它代表的对象略小会更好，因为成功命中时能产生更可信的接触效果。
+理由与弹幕 hitbox 只有对象大小一半相同：碰撞范围比它代表的对象略小会更好，因为成功命中时能产生更可信的接触效果。
 
-现在，再次看看带有新碰撞范围的子弹在 调试渲染 中是什么样子！
+现在，再次看看带有新碰撞范围的弹幕在 调试渲染 中是什么样子！
 
 <>![](/wiki/wiggly_collision_2.png)</>
 
-如果发现默认碰撞不适合你的子弹，可以尝试使用其他碰撞器，制作更合适的形状！
+如果发现默认碰撞不适合你的弹幕，可以尝试使用其他碰撞器，制作更合适的形状！
 
 如果需要特别奇怪的碰撞形状，也可以使用 [`ColliderGroup`](/wiki/api/ColliderGroup) 将多个碰撞器组合在一起。
 
@@ -1194,7 +1194,7 @@ self:setArenaShape({0, 0}, {-40, 0}, {100, -80}, {240, 0}, {200, 0}, {200, 84}, 
 
 那么，拿到 Arena 对象后能做什么呢？
 
-实际上，它就是另一个 Object！这意味着我们拥有与操作子弹时相同的工具。
+实际上，它就是另一个 Object！这意味着我们拥有与操作弹幕时相同的工具。
 
 当然，我们还有 `Arena:setSize(width, height)` 和 `Arena:setShape(...)`，可以在波次过程中改变战斗框的大小/形状。
 
@@ -1213,7 +1213,7 @@ self.wave_magnitude = 80
 self.wave_speed = 2
 ```
 
-然后在 `Wave:update()` 中添加让战斗框摇摆的代码。代码注释会解释这里的代码与子弹代码之间的区别。
+然后在 `Wave:update()` 中添加让战斗框摇摆的代码。代码注释会解释这里的代码与弹幕代码之间的区别。
 ```lua    
 local arena = Game.battle.arena
 -- arena 在 `Wave:init()` 中还不存在，所以这里是获取其原始/中心 x 的最佳位置。这个条件确保只设置一次该值。
@@ -1242,15 +1242,15 @@ arena:setPosition(disp_x, arena.y)
 </Box>
 
 <Box>
-## 制作绿色子弹 [green-bullets]
+## 制作绿色弹幕 [green-bullets]
 
-之前提到过，要给 wiggly bullet 添加绿色（治疗）变体。现在就借助额外的子弹参数来实现它。
+之前提到过，要给 wiggly bullet 添加绿色（治疗）变体。现在就借助额外的弹幕参数来实现它。
 
 它们只会在我们对 dummy 使用特定 ACT 时出现。
 
-先来制作绿色子弹效果！
+先来制作绿色弹幕效果！
 
-回到 `example_wiggly_bullet.lua`，先在 `init()` 中添加一些新变量，以及把子弹设置为绿色的部分：
+回到 `example_wiggly_bullet.lua`，先在 `init()` 中添加一些新变量，以及把弹幕设置为绿色的部分：
 ```lua
 self.green = false
 self.heal_amount = 8
@@ -1261,26 +1261,26 @@ end
 ```
 目前 `green` 始终为 `false`，但稍后我们会修改这一点。
 
-要实现绿色子弹的治疗逻辑，需要研究如何覆盖子弹行为。
+要实现绿色弹幕的治疗逻辑，需要研究如何覆盖弹幕行为。
 
-### 覆盖子弹行为
+### 覆盖弹幕行为
 
-这是**自定义子弹的独有功能**。我们要覆盖 wiggly bullet 继承的一个函数，从而修改部分默认子弹行为。
+这是**自定义弹幕的独有功能**。我们要覆盖 wiggly bullet 继承的一个函数，从而修改部分默认弹幕行为。
 
-这里要处理的函数是 `Bullet:onCollide(soul)`。它负责处理子弹与灵魂发生碰撞时的行为，包括造成伤害和检查无敌时间。
+这里要处理的函数是 `Bullet:onCollide(soul)`。它负责处理弹幕与灵魂发生碰撞时的行为，包括造成伤害和检查无敌时间。
 
-覆盖函数非常简单，只需像这样在自定义子弹文件中重新定义它：
+覆盖函数非常简单，只需像这样在自定义弹幕文件中重新定义它：
 ```lua
 function ExampleWigglyBullet:onCollide(soul)
     super.onCollide(self, soul)
 end
 ```
 
-这里的覆盖函数只是调用从 `Bullet` 继承来的原始 `onCollide` 函数，因此和完全不定义它没有区别。让我们看看需要怎样修改，才能制作治疗子弹。
+这里的覆盖函数只是调用从 `Bullet` 继承来的原始 `onCollide` 函数，因此和完全不定义它没有区别。让我们看看需要怎样修改，才能制作治疗弹幕。
 
-当子弹为绿色时，我们会使用 `heal_amount` 治疗整个队伍。
+当弹幕为绿色时，我们会使用 `heal_amount` 治疗整个队伍。
 
-我们可以通过 `Game.battle.party` 访问队伍成员，循环遍历每个成员并调用 `heal()` 治疗他们。所有人都治疗完毕后，就可以移除子弹：
+我们可以通过 `Game.battle.party` 访问队伍成员，循环遍历每个成员并调用 `heal()` 治疗他们。所有人都治疗完毕后，就可以移除弹幕：
 ```lua
 for _, party in ipairs(Game.battle.party) do
     party:heal(self.heal_amount)
@@ -1288,9 +1288,9 @@ end
 self:remove()
 ```
 
-如果子弹不是绿色，就调用 `super.onCollide(soul)`，确保它们继续像普通子弹一样造成伤害。
+如果弹幕不是绿色，就调用 `super.onCollide(soul)`，确保它们继续像普通弹幕一样造成伤害。
 
-我们可以使用之前创建的子弹 `green` 字段来判断它是否为绿色，并据此运行对应子弹类型的行为！
+我们可以使用之前创建的弹幕 `green` 字段来判断它是否为绿色，并据此运行对应弹幕类型的行为！
 ```lua
 function ExampleWigglyBullet:onCollide(soul)
     if self.green then
@@ -1304,19 +1304,19 @@ function ExampleWigglyBullet:onCollide(soul)
 end
 ```
 
-现在来实现让子弹变绿的方法！
+现在来实现让弹幕变绿的方法！
 
-为此，我们可以在创建自定义子弹时使用额外参数。
+为此，我们可以在创建自定义弹幕时使用额外参数。
 
-### 自定义子弹参数
+### 自定义弹幕参数
 
-在前面两个例子中，我们都使用 `Wave:spawnBullet(bullet, ...)` 生成子弹。虽然这里实际上只有两个参数 `bullet` 和 `...`，但我们每次都传入了三个值。
+在前面两个例子中，我们都使用 `Wave:spawnBullet(bullet, ...)` 生成弹幕。虽然这里实际上只有两个参数 `bullet` 和 `...`，但我们每次都传入了三个值。
 
 这是怎么回事？
 
 这里的 `...` 叫作变长参数（vararg），你可能已经熟悉，也可能还不熟悉。它可以让函数接收数量不固定、事先未知的参数。
 
-对于 `spawnBullet()`，`...` 实际上代替了生成子弹构造函数的参数。
+对于 `spawnBullet()`，`...` 实际上代替了生成弹幕构造函数的参数。
 
 如果你不熟悉“构造函数”这个术语，它指的就是每个类实例创建时都会运行的函数。你已经知道它的名字了，就是 `init()` 函数。
 
@@ -1326,18 +1326,18 @@ end
 function ExampleWigglyBullet:init(x, y, try_green)
 ```
 
-当 `try_green` 为 `true` 时，可以使用这个新参数让子弹有机会变成绿色。
+当 `try_green` 为 `true` 时，可以使用这个新参数让弹幕有机会变成绿色。
 
 将 `ExampleWigglyBullet:init()` 中之前的 `self.green = false` 行替换为：
 ```lua
 self.green = try_green and love.math.random() < 0.3 or false
 ```
 
-当 `try_green` 为 true 时，这会让子弹有 30% 的概率以绿色子弹生成。
+当 `try_green` 为 true 时，这会让弹幕有 30% 的概率以绿色弹幕生成。
 
 现在回到波次，为 `try_green` 传入一个值！
 
-当然，我们希望子弹有机会变绿，所以传入 `true`！在 `spawnBullet` 中把它作为一个新参数加上：
+当然，我们希望弹幕有机会变绿，所以传入 `true`！在 `spawnBullet` 中把它作为一个新参数加上：
 ```lua
 function ExampleWave2:onStart()
     -- 这里的代码会在 wave 开始时调用
@@ -1351,7 +1351,7 @@ function ExampleWave2:onStart()
 end
 ```
 
-绿色子弹现在应该会开始出现在波次中。来看看效果！
+绿色弹幕现在应该会开始出现在波次中。来看看效果！
 
 <video controls preload="none">
     <source src="/wiki/green_wiggly.mp4" type="video/mp4" />
@@ -1360,7 +1360,7 @@ end
 
 当然，如果我们一直把 `try_green` 设置为 `true`，那这个检查就没有任何意义了。所以给它找个用途吧！
 
-让我们试着让绿色子弹**只在对 dummy 使用 `Smile` ACT 时出现**。先重新打开 `scripts/enemies/dummy.lua`。
+让我们试着让绿色弹幕**只在对 dummy 使用 `Smile` ACT 时出现**。先重新打开 `scripts/enemies/dummy.lua`。
 
 首先，我们想给 dummy 添加一个新字段，用来记录这一回合是否对它使用过微笑。就叫它 `self.smiled_at`。
 
@@ -1396,7 +1396,7 @@ end
 
 这里没有调用 `super`，因为 `onTurnEnd` 通常不会运行自己的代码。
 
-回到波次，使用这个新变量控制子弹何时进行绿色判定。
+回到波次，使用这个新变量控制弹幕何时进行绿色判定。
 
 应该在 `ExampleWave2:onStart()` 的开头添加：
 ```lua
@@ -1418,7 +1418,7 @@ end
 self:spawnBullet("example_wiggly_bullet", x, y, smiled_at)
 ```
 
-完成后，只有在对 dummy 微笑的回合中才会生成绿色子弹。
+完成后，只有在对 dummy 微笑的回合中才会生成绿色弹幕。
 
 来测试一下！
 
@@ -1431,7 +1431,7 @@ self:spawnBullet("example_wiggly_bullet", x, y, smiled_at)
 <Box>
 ## 敌人波次覆盖
 
-说到让子弹在使用 Smile ACT 时变绿，我们当前的解决方案在实际的敌人场景中存在**潜在问题**。
+说到让弹幕在使用 Smile ACT 时变绿，我们当前的解决方案在实际的敌人场景中存在**潜在问题**。
 
 如果把波次的行为绑定到特定 ACT 上，通常会希望这个波次也在使用 ACT 的回合发生。
 
