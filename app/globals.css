@@ -1,10 +1,3 @@
-@font-face { font-family: '8bitOperatorPlus-Bold'; src: url("/8bitOperatorPlus-Bold.eot?#iefix") format("embedded-opentype"), url("/8bitOperatorPlus-Bold.woff") format("woff"), url("/8bitOperatorPlus-Bold.ttf") format("truetype"), url("/8bitOperatorPlus-Bold.svg#8bitOperatorPlus-Bold") format("svg"); font-weight: normal; font-style: normal; }
-
-@font-face { font-family: '8bitOperatorPlus-Regular'; src: url("/8bitOperatorPlus-Regular.eot?#iefix") format("embedded-opentype"), url("/8bitOperatorPlus-Regular.woff") format("woff"), url("/8bitOperatorPlus-Regular.ttf") format("truetype"), url("/8bitOperatorPlus-Regular.svg#8bitOperatorPlus-Bold") format("svg"); font-weight: normal; font-style: normal; }
-
-@font-face { font-family: 'KristalZhMain'; src: url("/kristal-main-zh.ttf") format("truetype"); font-weight: normal; font-style: normal; }
-@font-face { font-family: 'KristalZhFallback'; src: url("/kristal-zh-main-fallback.ttf") format("truetype"); font-weight: normal; font-style: normal; }
-
 * {
   box-sizing: border-box;
   padding: 0;
@@ -25,9 +18,6 @@ body {
 
   width: 100%;
   height: 100%;
-
-  background: no-repeat center / auto 100% url("/background.apng"), linear-gradient(to bottom, black 94.2%, #00328e 94.2%);
-  background-attachment: fixed;
 
   image-rendering: pixelated;
   font-family: var(--font-regular);

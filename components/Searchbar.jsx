@@ -2,6 +2,7 @@
 import { useTopLoader } from "nextjs-toploader";
 //from https://www.emgoto.com/react-search-bar/
 import styles from "./Searchbar.module.css";
+import { sitePath } from "src/site-path";
 
 export default function Searchbar(props) {
     const placeholder = props.placeholder || "Search"
@@ -12,7 +13,7 @@ export default function Searchbar(props) {
     const loader = useTopLoader();
 
     return (
-        <form action="/" method="get" className={styles.form} onSubmit={() => loader.start()}>
+        <form action={sitePath('/')} method="get" className={styles.form} onSubmit={() => loader.start()}>
             {/* Header, for screen readers: */}
             <label htmlFor={id}>
                 <span className={styles.hidden}>{placeholder}</span> 
@@ -28,7 +29,7 @@ export default function Searchbar(props) {
             />
             <button
                 type="submit"
-                formAction="/wiki/search"
+                formAction={sitePath('/wiki/search')}
                 className={styles.button}
             >
                 {submit}

@@ -3,10 +3,11 @@ import { Link } from 'src/i18n/navigation';
 import NewTab from 'components/NewTab';
 import LanguageSwitcher from 'components/LanguageSwitcher';
 import { useTranslations } from 'next-intl';
+import { sitePath } from 'src/site-path';
 
 export function Item({ href, newTab, text, icon }) {
     const Component = newTab ? NewTab : Link;
-    const url = `url("/navbar/${icon}.png")`;
+    const url = `url("${sitePath(`/navbar/${icon}.png`)}")`;
     return <Component href={href} className={styles.item} title={text}>
         <div className={styles.item_text}>{text}</div>
         <div className={styles.item_icon} style={{ WebkitMaskImage: url, maskImage: url }}></div>

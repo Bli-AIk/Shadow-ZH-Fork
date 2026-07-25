@@ -3,6 +3,7 @@ import path from 'node:path';
 import { remark } from 'remark';
 import remarkGfm from 'remark-gfm';
 import mdx from 'remark-mdx';
+import { sitePath } from './site-path.js';
 
 function attribute(name, value) {
     return {
@@ -87,6 +88,28 @@ function localizeChineseAnchors(node) {
     return output;
 }
 
+function localizeAssetUrls(node) {
+    if (!node || typeof node !== 'object') return node;
+
+    const output = {...node};
+    if (output.type === 'image') output.url = sitePath(output.url);
+    if (output.type === 'html' && typeof output.value === 'string') {
+        output.value = output.value.replace(
+            /(\b(?:src|poster)=(["']))([^"']+)(\2)/gi,
+            (match, prefix, quote, value, suffix) => `${prefix}${sitePath(value)}${suffix}`
+        );
+    }
+    if (Array.isArray(output.attributes)) {
+        output.attributes = output.attributes.map((attribute) => (
+            ['src', 'poster'].includes(attribute.name) && typeof attribute.value === 'string'
+                ? {...attribute, value: sitePath(attribute.value)}
+                : attribute
+        ));
+    }
+    if (output.children) output.children = output.children.map(localizeAssetUrls);
+    return output;
+}
+
 function part(language, node, key, missing = false) {
     return {
         type: 'mdxJsxFlowElement',
@@ -163,10 +186,13 @@ export default function remarkBilingual() {
         const zhPath = translationPath(file.path);
         let chineseTree = null;
         if (fs.existsSync(zhPath)) {
-            chineseTree = localizeChineseAnchors(
+            chineseTree = localizeAssetUrls(localizeChineseAnchors(
                 remark().use(mdx).use(remarkGfm).parse(fs.readFileSync(zhPath, 'utf8'))
-            );
+            ));
         }
+
+        const localizedTree = localizeAssetUrls(tree);
+        tree.children = localizedTree.children;
 
         const chineseNodes = chineseTree?.children.filter((node) => node.type !== 'mdxjsEsm') || [];
         let chineseIndex = 0;

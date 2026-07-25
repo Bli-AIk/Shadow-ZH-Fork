@@ -4,6 +4,7 @@ import { Link } from 'src/i18n/navigation'
 import NewTab from "components/NewTab"
 import { getTranslations } from 'next-intl/server'
 import { BilingualBlock, BilingualPart } from 'components/BilingualBlock'
+import { sitePath } from 'src/site-path'
 
 export default async function Page({ params }) {
     const { locale } = await params
@@ -13,7 +14,7 @@ export default async function Page({ params }) {
     return <>
         <h1 className={styles.logo}>
             <picture className={styles.logo}>
-                <img src="title_logo_shadow.png" alt="Kristal" />
+                <img src={sitePath('/title_logo_shadow.png')} alt="Kristal" />
             </picture>
         </h1>
 

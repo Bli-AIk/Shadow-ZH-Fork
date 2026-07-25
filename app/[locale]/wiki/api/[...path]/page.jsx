@@ -13,7 +13,7 @@ export async function generateStaticParams() {
     // return all keys
     return types.map((type) => {
         return {
-            slug: type.name
+            path: [type.name]
         }
     });
 }

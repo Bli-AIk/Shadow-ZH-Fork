@@ -7,6 +7,7 @@ import ScaledSprite from "components/ScaledSprite"
 import NewTab from "components/NewTab"
 import CollapseBox from 'components/CollapseBox'
 import { BilingualBlock, BilingualPart } from 'components/BilingualBlock'
+import { sitePath } from 'src/site-path'
 
 export function useMDXComponents(components) {
     return {
@@ -33,6 +34,12 @@ export function useMDXComponents(components) {
         ),
         img: (props) => (
             <MarkdownImage {...props} />
+        ),
+        source: ({ src, ...props }) => (
+            <source {...props} src={sitePath(src)} />
+        ),
+        video: ({ src, ...props }) => (
+            <video {...props} src={sitePath(src)} />
         ),
         Box,
         ScaledSprite,

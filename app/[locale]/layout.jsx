@@ -9,6 +9,7 @@ import { getMessages, getTranslations, setRequestLocale } from 'next-intl/server
 import { notFound } from 'next/navigation';
 import { Suspense } from 'react';
 import { routing } from 'src/i18n/routing';
+import { sitePath } from 'src/site-path';
 
 export function generateStaticParams() {
   return routing.locales.map((locale) => ({ locale }));
@@ -43,13 +44,24 @@ export default async function RootLayout({ children, params }) {
   setRequestLocale(locale);
   const messages = await getMessages();
   const t = await getTranslations('Common');
+  const fontFaceCss = `
+    @font-face { font-family: '8bitOperatorPlus-Bold'; src: url("${sitePath('/8bitOperatorPlus-Bold.woff')}") format("woff"); font-weight: normal; font-style: normal; }
+    @font-face { font-family: '8bitOperatorPlus-Regular'; src: url("${sitePath('/8bitOperatorPlus-Regular.woff')}") format("woff"); font-weight: normal; font-style: normal; }
+    @font-face { font-family: 'KristalZhMain'; src: url("${sitePath('/kristal-main-zh.ttf')}") format("truetype"); font-weight: normal; font-style: normal; }
+    @font-face { font-family: 'KristalZhFallback'; src: url("${sitePath('/kristal-zh-main-fallback.ttf')}") format("truetype"); font-weight: normal; font-style: normal; }
+  `;
+  const bodyStyle = {
+    background: `no-repeat center / auto 100% url("${sitePath('/background.apng')}"), linear-gradient(to bottom, black 94.2%, #00328e 94.2%)`,
+    backgroundAttachment: 'fixed',
+  };
 
   return (
     <html lang={locale} suppressHydrationWarning>
       <head>
+        <style>{fontFaceCss}</style>
         <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.8.0/styles/github-dark.min.css" />
       </head>
-      <body>
+      <body style={bodyStyle}>
         <NextIntlClientProvider locale={locale} messages={messages}>
           <Suspense fallback={null}>
             <DisplayModeProvider locale={locale}>
