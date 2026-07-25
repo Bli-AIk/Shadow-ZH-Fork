@@ -1,15 +1,15 @@
 export const metadata = {
     title: 'Hook',
-    description: '实现完全模组自由的关键！',
+    description: '实现高度自由的项目定制！',
 }
 
 # Hook [hooks]
 
 <Box>
 
-Hook 是一种强大的模组制作工具，你可以用它自定义 Kristal 中几乎所有内容。
+Hook 是一种强大的项目修改工具，你可以用它自定义 Kristal 中几乎所有内容。
 
-让我们了解它们是什么，以及如何使用它们！
+下面介绍它是什么，以及如何使用它！
 
 </Box>
 
@@ -20,11 +20,11 @@ Hook 是我们对这样一段代码的称呼：它将自己附加到一个已有
 
 严格来说，Hook 实际上会**替换**代码——但我们仍然可以（也经常会）同时运行原始代码和自己的 Hook。
 
-Hook 可以应用于 Kristal 中**几乎任何内容**，让你能够与引擎的**几乎所有部分交互或进行修改**！
+Hook 可以应用于 Kristal 中**几乎任何内容**，让你几乎可以与引擎的**任何部分交互或修改它们**！
 
-Hook 能让你达到修改和添加引擎源代码的相同效果，**同时不会改动项目之外的任何内容**。
+Hook 可以达到直接修改或扩展引擎源代码的效果，**同时不会影响项目之外的内容**。
 
-而且，与直接修改源代码不同，**Hook 不会妨碍你之后升级到新的 Kristal 版本**。这是双赢的方案！
+而且，与直接修改源代码不同，**Hook 不会妨碍你之后升级到新的 Kristal 版本**。这样既能修改引擎，又不影响后续升级！
 </Box>
 
 <Box>
@@ -36,7 +36,7 @@ Hook 能让你达到修改和添加引擎源代码的相同效果，**同时不�
 
 或者，你也可以[从 GitHub 查看源代码](https://github.com/KristalTeam/Kristal/tree/main)。（但我们真的更推荐下载它！）
 
-准备工作完成后，让我们来制作一些 Hook 吧！
+准备好之后，开始制作 Hook 吧！
 
 ---
 
@@ -280,15 +280,15 @@ end
 </Box>
 
 <Box>
-## Registry Hook [registry-hooks]
+## 注册表（Registry）的 Hook [registry-hooks]
 
-还记得我们之前说所有 Hook 都放进 `scripts/hooks/` 吗？其实那是一个**谎言**。
+还记得我们之前说所有 Hook 都放进 `scripts/hooks/` 吗？其实那句话并不完全准确。
 
-正如章节标题很可能已经暗示的那样，Registry 管理的内容必须使用不同的方式进行 Hook。这包括引擎源代码 `data/` 文件夹中的任何文件，例如 Actor、队伍成员和物品。
+正如标题所暗示的那样，注册表中的内容必须使用不同的方式进行 Hook。这包括引擎源代码 `data/` 文件夹中的文件，例如 Actor、队伍成员和物品。
 
-Registry 的 Hook 文件必须放进 `scripts/data/` 内对应的 data 子文件夹，而不是 hooks 文件夹。
+注册表的 Hook 文件必须放进 `scripts/data/` 内对应的 data 子文件夹，而不是 hooks 文件夹。
 
-让我们以 Hook 黑暗糖果（或深暗糖果）物品为例，完整走一遍流程。
+下面以给黑暗糖果添加 Hook 为例，完整走一遍流程。
 
 ---
 黑暗糖果是一个物品，所以你应该进入的文件夹是 `scripts/data/items`。在其中创建一个与原始文件**同名**的新文件——在本例中就是 `dark_candy.lua`。
@@ -309,7 +309,7 @@ return item
 
 唯一的区别是，我们现在在 `HookSystem.hookScript()` 中使用了包含目标 ID 的字符串。（点击[这里](/wiki/creating-a-mod#script-ids)查看引擎如何确定 Script ID。）
 
-这样，我们的 Registry Hook 就设置完成，可以正常使用了！
+这样，注册表的 Hook 就设置好了，可以正常使用了！
 </Box>
 
 <Box>

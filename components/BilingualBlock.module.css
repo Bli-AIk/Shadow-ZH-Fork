@@ -6,12 +6,12 @@
     display: contents;
 }
 
-:global([data-language="zh"]) {
+.part :global([data-language="zh"]) {
     line-height: 1.5;
 }
 
-:global([data-language="zh"]) pre,
-:global([data-language="zh"]) code {
+.part :global([data-language="zh"]) pre,
+.part :global([data-language="zh"]) code {
     line-height: normal;
 }
 
@@ -32,9 +32,9 @@
     font-size: 0.8em;
 }
 
-:global([data-display-mode="en"] [data-language="zh"]),
-:global(html[data-display-mode="en"] [data-language="zh"]),
-:global([data-display-mode="zh"] [data-language="en"]),
-:global(html[data-display-mode="zh"] [data-language="en"]) {
+:global([data-display-mode="en"]) .part :global([data-language="zh"]),
+:global(html[data-display-mode="en"]) .part :global([data-language="zh"]),
+:global([data-display-mode="zh"]) .part :global([data-language="en"]),
+:global(html[data-display-mode="zh"]) .part :global([data-language="en"]) {
     display: none;
 }

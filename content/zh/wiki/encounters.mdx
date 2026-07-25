@@ -7,7 +7,7 @@ export const metadata = {
 
 <Box>
 
-每场战斗都是一次**遭遇战（Encounter）**。每一组不同的怪物、每一个不同的 Boss、每一个单独的怪物，它们全都是**遭遇战**。Undertale 使用了这一系统，Deltarune 也使用了，我们也会如此。
+每场战斗都对应一次**遭遇战（Encounter）**。无论是一组怪物、一个 Boss，还是单个怪物，都可以组成一次遭遇战。Undertale 和 Deltarune 都使用这一系统，我们也会如此。
 
 </Box>
 
@@ -15,7 +15,7 @@ export const metadata = {
 ## 遭遇战基础
 ---
 
-要开始创建遭遇战，你需要在 `encounters` 文件夹中新建一个文件。让我们制作一个只有单个怪物的遭遇战，使用之前制作的 Dummy 敌人。
+要开始创建遭遇战，你需要在 `encounters` 文件夹中新建一个文件。下面来制作一个只包含单个怪物的遭遇战，使用之前制作的 Dummy 敌人。
 
 ```lua
 local Dummy, super = Class(Encounter)
@@ -41,7 +41,7 @@ end
 return Dummy
 ```
 
-好啦，就这样完成了。
+好那么好——我们搞定啦。
 
 </Box>
 
@@ -49,8 +49,8 @@ return Dummy
 ## 高级遭遇战
 ---
 
-好吧，好吧，有些遭遇战会比这更复杂。例如，如果你想在没有背景时也隐藏世界，可以将 `self.hide_world` 设置为 true。战斗也可以通过设置 `self.no_end_message = true` 来跳过“YOU WON!”文本。
+不过，有些遭遇战会复杂一些。例如，如果你想在没有背景时也隐藏世界，可以将 `self.hide_world` 设置为 true。战斗也可以通过设置 `self.no_end_message = true` 来跳过“YOU WON!”提示。
 
-遭遇战还拥有大量回调函数，你可以[在这里](/wiki/api/Encounter)阅读相关内容。
+遭遇战还拥有很多回调函数，你可以[在这里](/wiki/api/Encounter)阅读相关内容。
 
 </Box>

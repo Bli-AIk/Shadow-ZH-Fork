@@ -3,8 +3,9 @@
   "version": "0.1.0",
   "private": true,
   "scripts": {
-    "dev": "next dev",
+    "dev": "next dev --webpack",
     "build": "npm run docs-make && npm run wiki-index && next build ",
+    "build-fast": "next build",
     "build-no-wiki-index": "next build ",
     "start": "next start",
     "lint": "next lint",

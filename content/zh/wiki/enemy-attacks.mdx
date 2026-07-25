@@ -9,7 +9,7 @@ export const metadata = {
 
 在战斗中，敌人需要拥有可以用来攻击玩家的攻击方式。没有攻击的话，就根本算不上什么战斗！
 
-在 Kristal 中，我们把这类攻击称为 **波次（Waves）**。让我们学习如何制作一些吧！
+在 Kristal 中，我们把这类攻击称为 **波次（Wave）**。下面来学习如何制作波次！
 
 </Box>
 
@@ -18,9 +18,9 @@ export const metadata = {
 
 敌人在战斗中可以使用的每种攻击，都是一个 [Wave](/wiki/api/Wave)。
 
-每回合，每个敌人都会随机选择自己的一个 wave 使用。这也意味着，当战斗中有多个敌人时，可以同时发生多个 wave。
+每回合，每个敌人都会随机选择自己的一个波次使用。这也意味着，当战斗中有多个敌人时，可以同时发生多个波次。
 
-每当我们想创建一个新的 wave，就要在项目的 `scripts/battle/waves` 文件夹中添加一个文件。
+每当我们想创建一个新的波次，就要在项目的 `scripts/battle/waves` 文件夹中添加一个文件。
 
 现在就让我们创建一个名为 `example_wave.lua` 的新文件。打开文件，把下面的模板代码粘贴进去：
 
@@ -47,18 +47,18 @@ end
 return ExampleWave
 ```
 
-我们的模板并没有做太多事情，但它展示了创建 wave 时最有可能修改的几个函数：
-- `Wave:init()` - 在这里，我们会初始化一些基础变量，例如 `self.time`。wave 在这里还没有完全准备好，所以**有些函数还不可用。**
-- `Wave:onStart()` - 这里的代码会在 wave 开始时运行一次。由于 `Wave:init()` 中有许多内容不可用，大部分时候我们会在这里编写 wave 的逻辑。
-- `Wave:update()` - 这里的代码会在 wave 激活期间每帧运行；如果需要，也可以用这个函数编写 wave 逻辑。
+我们的模板并没有做太多事情，但它展示了创建波次时最有可能修改的几个函数：
+- `Wave:init()` - 在这里，我们会初始化一些基础变量，例如 `self.time`。波次在这里还没有完全准备好，所以**有些函数还不可用。**
+- `Wave:onStart()` - 这里的代码会在波次开始时运行一次。由于 `Wave:init()` 中有许多内容不可用，大部分时候我们会在这里编写波次的逻辑。
+- `Wave:update()` - 这里的代码会在波次激活期间每帧运行；如果需要，也可以用这个函数编写波次逻辑。
 
-这个新 wave 的 wave id 是 `example_wave`，也就是我们给文件取的名字。之后真正使用 wave 时会用到它。
+这个新波次的波次 ID 是 `example_wave`，也就是我们给文件取的名字。之后真正使用波次时会用到它。
 </Box>
 
 <Box>
 ## 生成一个子弹 [spawning-a-bullet]
 
-现在，我们已经*从技术上来说*创建了一个新的 wave，但它还没有任何代码。这意味着我们的 wave 什么也不会做！
+现在，我们已经*从技术上来说*创建了一个新的波次，但它还没有任何代码。这意味着我们的波次什么也不会做！
 
 让我们通过添加一个 [Bullet](/wiki/api/Bullet) 来改变这一点。最适合进行这项操作的地方，就是我们的 `onStart()` 函数：
 
@@ -130,17 +130,17 @@ bullet.physics.speed = 4
 
 由于我们没有设置方向，它默认为 `0`，这会让子弹向右移动。
 
-现在，让我们试着运行这个 wave！通过 Kristal 的 Debug Menu 可以快速做到这一点。
+现在，让我们试着运行这个波次！通过 Kristal 的调试菜单可以快速做到这一点。
 
 首先需要开始一场遭遇战（Encounter）。你可能已经熟悉如何做到这一点了，不过这里还有一种在测试时快速开始遭遇战的方法。
 
-加载项目后，同时按下 **Shift+\`** 键。这应该会打开 Debug Menu。
+加载项目后，同时按下 **Shift+\`** 键。这应该会打开调试菜单。
 
 向下滚动，直到看到 **Start Encounter**，选择这个选项，然后从下一个列表中选择想要的遭遇战。
 
 在接下来的指南中，我会使用项目模板自带的默认 `dummy` 遭遇战。我建议你也使用它，因为这样更容易理解后面的步骤。
 
-遭遇战应该会立即开始。现在，再次打开 Debug Menu。
+遭遇战应该会立即开始。现在，再次打开调试菜单。
 
 此时在菜单靠下的位置应该能看到 **Start Wave** 选项。选择它，然后在出现的列表中选择 **example_wave**。
 
@@ -151,7 +151,7 @@ bullet.physics.speed = 4
 
 呃……效果有点令人失望……
 
-不过，我们确实有了一个子弹！现在我们也知道如何生成子弹了，可以开始试验我们的 wave。
+不过，我们确实有了一个子弹！现在我们也知道如何生成子弹了，可以开始试验我们的波次。
 
 现在可以尝试修改子弹的 `physics.direction`，它接受一个用**弧度**表示的角度值。让我们试着让子弹向左移动。
 
@@ -197,7 +197,7 @@ bullet.rotation = math.rad(180)
 bullet.physics.match_rotation = true
 ```
 
-再试一次我们的 wave！
+再试一次我们的波次！
 
 <video controls preload="none">
     <source src="/wiki/first_bullet_left.mp4" type="video/mp4" />
@@ -215,15 +215,15 @@ bullet.physics.match_rotation = true
 <Box>
 ## 生成更多子弹 [spawning-bullets-cont]
 
-现在我们已经知道如何生成基础子弹，是时候把这些知识用于制作更像真正攻击的 wave 了。
+现在我们已经知道如何生成基础子弹，是时候把这些知识用于制作更像真正攻击的波次了。
 
 首先，让子弹从 dummy 本身生成，而不是从屏幕中心生成。
 
-我们可以使用 wave 的 `getAttackers()` 函数获取 dummy 的 `EnemyBattler`。在 `onStart()` 开头添加下面这一行：
+我们可以使用波次的 `getAttackers()` 函数获取 dummy 的 `EnemyBattler`。在 `onStart()` 开头添加下面这一行：
 ```lua
 local dummy = self:getAttackers()[1]
 ```
-注意，我们在函数后面加了 `[1]`，这是因为 `getAttackers()` 返回的是一个**表**，毕竟可能有多个敌人使用这个 wave。
+注意，我们在函数后面加了 `[1]`，这是因为 `getAttackers()` 返回的是一个**表**，毕竟可能有多个敌人使用这个波次。
 
 目前我们只关注一个 dummy，所以只需要获取这个表的第一个元素。之后我们会讲解如何适配多个敌人。
 
@@ -276,7 +276,7 @@ bullet.rotation = target_angle + math.rad(MathUtils.random(-20, 20))
 
 这样，子弹就会以目标角度为中心，形成 40 度的散布范围。
 
-我们已经对 wave 做了几处修改，现在该再次测试了！
+我们已经对波次做了几处修改，现在该再次测试了！
 
 <video controls preload="none">
     <source src="/wiki/wave_more_bullets.mp4" type="video/mp4" />
@@ -285,7 +285,7 @@ bullet.rotation = target_angle + math.rad(MathUtils.random(-20, 20))
 
 这就像样多了！
 
-现在，我们的 wave 文件应该是这样的：
+现在，我们的波次文件应该是这样的：
 
 ```lua
 local ExampleWave, super = Class(Wave)
@@ -327,7 +327,7 @@ return ExampleWave
 <Box>
 ## 计时器
 
-我们的新 wave 已经逐渐成形了，但目前只能在一开始生成子弹。
+我们的新波次已经逐渐成形了，但目前只能在一开始生成子弹。
 
 在 Kristal 中，有一种叫做 [Timers](/wiki/api/Timer) 的对象可以帮助我们改变这一点。
 
@@ -348,11 +348,11 @@ Kristal 使用 hump.timer 库实现这些计时器。如果你感兴趣，可以
 如果你想了解本指南未覆盖的 Timer 函数，可以查看 [Timer](/wiki/api/Timer) 文档，了解有哪些函数以及它们的工作方式。
 
 ### 使用 Timer
-那么，如何在 wave 中使用这些 Timer 呢？
+那么，如何在波次中使用这些 Timer 呢？
 
-每个 `Wave` 都会自动为我们准备一个 `Timer`，存放在 `timer` 变量中，这意味着在 wave 代码中要通过 `self.timer` 访问它。
+每个 `Wave` 都会自动为我们准备一个 `Timer`，存放在 `timer` 变量中，这意味着在波次代码中要通过 `self.timer` 访问它。
 
-之后就可以调用计时器上的函数，例如前面提到的那些函数，开始安排 wave 的执行！
+之后就可以调用计时器上的函数，例如前面提到的那些函数，开始安排波次的执行！
 
 例如，如果想每秒运行一次代码，可以使用 `Timer:every(delay, func)`。所有要运行的代码都放在计时器内部的另一个函数中，就像这样：
 ```lua
@@ -360,9 +360,9 @@ self.timer:every(1, function()
     -- 代码写在这里
 end)
 ```
-如果把这个计时器放进 wave，它就会每秒运行一次！不过现在里面没有代码，所以什么也不会发生……:(
+如果把这个计时器放进波次，它就会每秒运行一次！不过现在里面没有代码，所以什么也不会发生……:(
 
-回到我们的示例 wave，看看如何在其中实现 `every` 函数。
+回到我们的示例波次，看看如何在其中实现 `every` 函数。
 
 目前所有重要代码都在 `onStart()` 函数中，这个函数应该是这样的：
 ```lua
@@ -385,7 +385,7 @@ end
 
 要使用 `every()` 函数，我们需要在 `onStart()` 中加入它，并设置延迟间隔。我们继续使用 1 秒，然后把所有要重复的代码移到函数里面。
 
-对我们来说，几乎整个 wave 都需要重复，唯一不放进去的是 `getAttackers()` 函数：
+对我们来说，几乎整个波次都需要重复，唯一不放进去的是 `getAttackers()` 函数：
 ```lua
 function ExampleWave:onStart()
     -- 这里的代码会在 wave 开始时调用
@@ -413,13 +413,13 @@ end
     你的浏览器不支持此视频。抱歉！
 </video>
 
-你可能注意到了，wave 开始时现在会有一段延迟，这是因为 `every()` **必须先等待一次延迟时间**，之后才会首次调用我们的函数。
+你可能注意到了，波次开始时现在会有一段延迟，这是因为 `every()` **必须先等待一次延迟时间**，之后才会首次调用我们的函数。
 
 我们可以让它同时立即运行一次，更快地开始攻击。只要把 `every` 替换成 `everyInstant` 即可。
 
 `Timer:everyInstant()` 是另一个计时器函数，除了会立即运行一次我们的函数以外，它在各方面都与 `every` 相同。
 
-如果使用 `everyInstant()` 再次运行 wave，就会看到第一轮子弹立即生成。
+如果使用 `everyInstant()` 再次运行波次，就会看到第一轮子弹立即生成。
 
 ---
 ### Timer:after() 函数 [timer-after-function]
@@ -430,7 +430,7 @@ self.timer:after(3, function()
     -- 代码写在这里
 end)
 ```
-这个函数会让代码在经过指定时间后运行。让我们用它在 wave 后段生成一枚更大、移动更快的子弹。
+这个函数会让代码在经过指定时间后运行。让我们用它在波次后段生成一枚更大、移动更快的子弹。
 
 我们会使用下面的设置来实现这一点。这个计时器应该放进下面的 `onStart()`，位于当前的 `everyInstant` 计时器之后：
 ```lua
@@ -451,7 +451,7 @@ end)
 ```
 这段代码应该很熟悉：它和我们之前生成子弹的方式基本相同。
 
-我们还使用了 `Assets.playSound()` 播放声音，Kristal 自带 `grab` 音效。（可以在 Debug Menu 的“Sound Test”中找到所有可用的声音。）
+我们还使用了 `Assets.playSound()` 播放声音，Kristal 自带 `grab` 音效。（可以在调试菜单的“Sound Test”中找到所有可用的声音。）
 
 我们还可以使用 `after` 计时器为这枚大子弹添加一点预警：
 ```lua
@@ -462,14 +462,14 @@ end)
 ```
 这里我们使用 [`EnemyBattler:alert()`](/wiki/api/EnemyBattler#alert)，让 dummy 显示警觉的（！气泡）效果作为攻击预警。
 
-现在，再次看看我们的 wave 运行起来是什么样子！
+现在，再次看看我们的波次运行起来是什么样子！
 
 <video controls preload="none">
     <source src="/wiki/wave_with_delay.mp4" type="video/mp4" />
     你的浏览器不支持此视频。抱歉！
 </video>
 
-在你自己的 wave 中，可能会想使用比这个基础警报更独特、更有信息量的预警，但仍然会需要这样的计时器来帮助实现它！
+在你自己的波次中，可能会想使用比这个基础警报更独特、更有信息量的预警，但仍然会需要这样的计时器来帮助实现它！
 
 ---
 ### 计时器中的计时器
@@ -551,7 +551,7 @@ end)
 wait(5/2) -- 等待两秒半
 ```
 
-当 wave 中有一系列事件要依次发生时，脚本就很有价值。
+当波次中有一系列事件要依次发生时，脚本就很有价值。
 
 之前为大子弹编写的两个独立 `after` 函数，就可以很容易地改用一个脚本：
 ```lua
@@ -588,7 +588,7 @@ end)
 
 脚本还有一个特点：它允许我们在一些“不寻常”的位置暂停函数，例如循环内部。
 
-我们不会在这个 wave 中使用这个效果，但了解这一点可能会对你在自己的 wave 中使用脚本有所帮助：
+我们不会在这个波次中使用这个效果，但了解这一点可能会对你在自己的波次中使用脚本有所帮助：
 ```lua
 self.timer:script(function(wait)
     wait(1)
@@ -599,11 +599,11 @@ self.timer:script(function(wait)
     end
 end)
 ```
-上面的计时器脚本会在 wave 开始一秒后，在 arena 下方生成三枚子弹，每枚子弹之间间隔 1/5 秒。
+上面的计时器脚本会在波次开始一秒后，在战斗框下方生成三枚子弹，每枚子弹之间间隔 1/5 秒。
 
-你可以暂时把它放进示例 wave，看看它的效果。
+你可以暂时把它放进示例波次，看看它的效果。
 
-这就是本 wave 中关于计时器的全部内容！这里介绍的是最重要的计时器，但还有许多其他计时器可以在之后通过 [Timer API Reference](/wiki/api/Timer) 了解。
+这就是本波次中关于计时器的全部内容！这里介绍的是最重要的计时器，但还有许多其他计时器可以在之后通过 [Timer API 参考（Timer API Reference）](/wiki/api/Timer) 了解。
 
 现在，让我们进入下一个主题。
 </Box>
@@ -611,7 +611,7 @@ end)
 <Box>
 ## 将波次添加到敌人 [waves-on-enemies]
 
-到目前为止，我们一直通过 Debug menu 在战斗中测试 wave。它在测试阶段非常好用，但现在我们需要让敌人自然地使用它。
+到目前为止，我们一直通过调试菜单在战斗中测试波次。它在测试阶段非常好用，但现在我们需要让敌人自然地使用它。
 
 为此，是时候访问敌人的 `EnemyBattler` 文件了。dummy 的文件位于 `scripts/battle/enemies/dummy.lua`。
 
@@ -623,11 +623,11 @@ self.waves = {
     "movingarena"
 }
 ```
-这些都是 wave id。我们需要把自己的 wave id 添加到这个列表中，这样它也会被选中。
+这些都是波次 ID。我们需要把自己的波次 ID 添加到这个列表中，这样它也会被选中。
 
-正如之前所说，这个 id 就是 wave 的文件名 `example_wave`。
+正如之前所说，这个 id 就是波次的文件名 `example_wave`。
 
-不过，为了更快看到它运行，我们会移除 dummy 的其他 wave，让它必定选择新 wave：
+不过，为了更快看到它运行，我们会移除 dummy 的其他波次，让它必定选择新波次：
 ```lua
 self.waves = {
     "example_wave",
@@ -635,13 +635,13 @@ self.waves = {
 ```
 我们需要做的就这些！当然，有些情况下我们需要对这个过程进行更细致的控制，例如 boss 战，但那些内容之后再讲。
 
-（你可以在 [Wavemaking Tricks](/wiki/wavemaking-reference#selecting-waves) 文章中了解相关内容。）
+（你可以在[波次制作技巧（Wavemaking Tricks）](/wiki/wavemaking-reference#selecting-waves)一文中了解相关内容。）
 </Box>
 
 <Box>
-## 多个攻击者的波次 [multiple-attackers]
+## 多个攻击者的波次[multiple-attackers]
 
-我们已经完成了给这个 wave 添加新内容，但 wave 本身还没有讲完。
+我们已经完成了给这个波次添加新内容，但波次本身还没有讲完。
 
 这是因为我们应该谈谈如何处理多个攻击者，也就是之前简单提到过的内容。
 
@@ -655,7 +655,7 @@ self.waves = {
 self:addEnemy("dummy")
 ```
 
-现在，让我们在场上有多个敌人副本的情况下开始一个 wave。**确保它们目前都只能选择 `example_wave`。**
+现在，让我们在场上有多个敌人副本的情况下开始一个波次。**确保它们目前都只能选择 `example_wave`。**
 
 <video controls preload="none">
     <source src="/wiki/multiple_enemies_broken.mp4" type="video/mp4" />
@@ -666,11 +666,11 @@ self:addEnemy("dummy")
 ```lua
 local dummy = self:getAttackers()[1]
 ```
-我们之前的写法不一定是错的：**当只有一个攻击者使用这个 wave 时**，这样获取敌人完全有效。
+我们之前的写法不一定是错的：**当只有一个攻击者使用这个波次时**，这样获取敌人完全有效。
 
-但是，就像我们现在遇到的情况一样，如果可能有多个敌人同时使用 wave，就必须让 wave 能处理这种情况。
+但是，就像我们现在遇到的情况一样，如果可能有多个敌人同时使用波次，就必须让波次能处理这种情况。
 
-幸运的是，让 wave 支持多个敌人并不麻烦，而且不会改变单个 dummy 独自使用 wave 时的行为。
+幸运的是，让波次支持多个敌人并不麻烦，而且不会改变单个 dummy 独自使用波次时的行为。
 
 一般的解决办法，是为每个敌人运行一次这段代码。
 
@@ -688,11 +688,11 @@ end
 
 这个变量通常写成 `i`，但我们把它写成 `_`，因为不需要在其他地方使用它，这样就能把 `i` 留给其他用途。
 
-现在谈谈具体实现。最简单、也适用于我们这个 wave 的解决办法，就是循环整个 wave。
+现在谈谈具体实现。最简单、也适用于我们这个波次的解决办法，就是循环整个波次。
 
 也就是说，把 **`onStart()` 中的所有代码**放进这个循环，并删除之前定义 `dummy` 的那一行。
 
-完成后，再次运行 wave。
+完成后，再次运行波次。
 
 如果一切顺利，效果应该是这样的：
 
@@ -705,19 +705,19 @@ end
 
 如果你看到的效果不同，那么可能是迭代器实现有误。
 
-既然我们已经到了这个 wave 的结尾，可以对照下面的完整 wave 代码，检查迭代器在遇到问题时应该如何实现。
+既然我们已经到了这个波次的结尾，可以对照下面的完整波次代码，检查迭代器在遇到问题时应该如何实现。
 
 请记住，这会对**每个攻击者**运行**整个函数**。
 
-如果想为一个 wave 制作独特的多攻击者行为，或者有些内容不希望重复，可以尝试只在较小的代码片段上使用多个迭代器。
+如果想为一个波次制作独特的多攻击者行为，或者有些内容不希望重复，可以尝试只在较小的代码片段上使用多个迭代器。
 
-归根结底，这只是 wave 的试验过程中的一部分。如果想实现某种特定效果，就不断调整代码，直到它按照你的期望运行。你甚至可能完全不需要使用迭代器！
+归根结底，这只是波次的试验过程中的一部分。如果想实现某种特定效果，就不断调整代码，直到它按照你的期望运行。你甚至可能完全不需要使用迭代器！
 </Box>
 
 <Box>
 ## 一个完整的波次！ [completed-wave]
 
-没错！我们的第一个 wave 已经完成了！
+没错！我们的第一个波次已经完成了！
 
 这个例子的最终代码如下：
 
@@ -785,17 +785,17 @@ end
 return ExampleWave
 ```
 
-关于 wave 还有很多内容可以学习，但在继续之前，最好快速回顾一下目前学到的内容：
+关于波次还有很多内容可以学习，但在继续之前，最好快速回顾一下目前学到的内容：
 
-- 最重要的是，我们了解了 wave 是什么，以及应该把它们放进 `scripts/battle/waves`。
+- 最重要的是，我们了解了波次是什么，以及应该把它们放进 `scripts/battle/waves`。
 - 我们还学习了如何生成子弹，至少是**基础子弹**，以及如何使用 `physics` 表轻松地让这些子弹移动。
-- 我们了解了如何通过 `Wave:getAttackers()` 函数获取与攻击相关的敌人，并在 wave 中使用它们。
-- 我们弄清楚了如何通过修改敌人的 `waves` 表，让敌人能够使用 wave。
-- 当然，我们还了解了 **Timer** 在制作 wave 时的重要性，并介绍了 `every`、`after` 和 `script` 函数的一些用法。
+- 我们了解了如何通过 `Wave:getAttackers()` 函数获取与攻击相关的敌人，并在波次中使用它们。
+- 我们弄清楚了如何通过修改敌人的 `waves` 表，让敌人能够使用波次。
+- 当然，我们还了解了 **Timer** 在制作波次时的重要性，并介绍了 `every`、`after` 和 `script` 函数的一些用法。
 
-下一个例子中，我们会学习**自定义子弹**、**Arena**、**碰撞**，并进一步了解**wave 选择**。
+下一个例子中，我们会学习**自定义子弹**、**Arena**、**碰撞**，并进一步了解**波次选择**。
 
-不过在那之前，试验是 wave 的核心。既然这个例子已经完成，不妨花些时间随意修改它，看看能做出什么效果！
+不过在那之前，试验是波次的核心。既然这个例子已经完成，不妨花些时间随意修改它，看看能做出什么效果！
 
 准备好后，继续阅读本指南的下一部分。
 </Box>
@@ -805,9 +805,9 @@ return ExampleWave
 
 之前使用 `spawnBullet()` 函数时，我们提到过**自定义子弹**。现在该学习它们是什么，以及如何使用它们了。
 
-接下来我们会从一个全新的 wave 开始，先把准备工作完成。
+接下来我们会从一个全新的波次开始，先把准备工作完成。
 
-像之前一样创建一个新的 wave 文件，这次命名为 `example_wave_2.lua`。然后再次插入模板代码：
+像之前一样创建一个新的波次文件，这次命名为 `example_wave_2.lua`。然后再次插入模板代码：
 
 ```lua
 local ExampleWave2, super = Class(Wave)
@@ -831,14 +831,14 @@ end
 return ExampleWave2
 ```
 
-现在也可以让 dummy 选择这个 wave，顺手把这件事解决掉。跳转到 `enemies/dummy.lua`，再次编辑 wave 表：
+现在也可以让 dummy 选择这个波次，顺手把这件事解决掉。跳转到 `enemies/dummy.lua`，再次编辑波次表：
 ```lua
 self.waves = {
     "example_wave_2",
 }
 ```
 
-这一次，测试时专门使用 dummy 会更加重要，所以一定要通过 dummy 测试这个 wave！（稍后会解释原因。）
+这一次，测试时专门使用 dummy 会更加重要，所以一定要通过 dummy 测试这个波次！（稍后会解释原因。）
 
 准备工作就这些！现在开始学习**自定义子弹**吧！
 </Box>
@@ -846,15 +846,15 @@ self.waves = {
 <Box>
 ## 自定义子弹 [custom-bullets]
 
-到目前为止，我们在 wave 中只研究了标准的 `Bullet` 对象。
+到目前为止，我们在波次中只研究了标准的 `Bullet` 对象。
 
 Kristal 也让我们很容易创建自己的 **Bullet** **自定义**类型。
 
 两者最主要的区别在于：我们把自定义子弹定义为独立文件，并可以从那个文件中控制它们。
 
-这并不妨碍我们在 wave 中修改它们，不过对于自定义子弹来说，通常没有必要这样做。
+这并不妨碍我们在波次中修改它们，不过对于自定义子弹来说，通常没有必要这样做。
 
-如果你发现自己需要重复大量代码，或者想在多个 wave 中使用同一种子弹，那么自定义子弹就能帮上忙。
+如果你发现自己需要重复大量代码，或者想在多个波次中使用同一种子弹，那么自定义子弹就能帮上忙。
 
 使用自定义子弹还有一个**重要得多**的理由，它让自定义子弹的区别不再只是组织方式上的区别。
 
@@ -868,7 +868,7 @@ Kristal 也让我们很容易创建自己的 **Bullet** **自定义**类型。
 
 正如你可能猜到的，自定义子弹的文件应该放在 `scripts/battle/bullets` 中。
 
-子弹名称/id 会和文件名对应，就像之前创建 wave 文件时一样。之后我们会使用这个 id 调用 `spawnBullet()`。
+子弹名称/id 会和文件名对应，就像之前创建波次文件时一样。之后我们会使用这个 id 调用 `spawnBullet()`。
 
 现在添加一个文件吧！这次命名为 `example_wiggly_bullet.lua`。先从下面的代码开始：
 
@@ -913,11 +913,11 @@ return ExampleWigglyBullet
 
 现在来看看我们希望这个子弹具有什么行为！
 
-我们要让这个 wave 中的子弹从屏幕底部向上移动，同时以随机的波浪轨迹摇摆。
+我们要让这个波次中的子弹从屏幕底部向上移动，同时以随机的波浪轨迹摇摆。
 
 （如果这听起来不太直观，很快就能看到实际效果，所以不用担心！）
 
-稍后我们还会给 wave 添加一种额外变体：**绿色**子弹，它们只会在特定条件下出现。
+稍后我们还会给波次添加一种额外变体：**绿色**子弹，它们只会在特定条件下出现。
 
 先从简单的部分开始，也就是使用 `physics` 让子弹沿 y 轴移动。
 
@@ -946,15 +946,15 @@ self.random_offset = love.math.random()
 ```
 `wave_magnitude` 和 `wave_speed` 会改变子弹沿着移动的波浪形状。
 
-我设置了一些数值，你可以保留它们，也可以修改。不过请**等 wave 运行起来之后**再修改，这样才能比较不同数字如何影响子弹的摇摆程度。
+我设置了一些数值，你可以保留它们，也可以修改。不过请**等波次运行起来之后**再修改，这样才能比较不同数字如何影响子弹的摇摆程度。
 
 `init()` 中的变量就设置完了，现在可以继续处理 `update()`。
 
 由于 `update()` 每帧运行，我们会根据正弦波不同位置的值，不断改变子弹的 x 坐标。
 
-这听起来可能有点复杂，但其实只需要使用 `Utils.wave(val, min, max)` 函数，所有正弦波计算都会由它处理。
+这听起来可能有点复杂，但其实只需要使用 `Utils.波次(val, min, max)` 函数，所有正弦波计算都会由它处理。
 
-`Utils.wave()` 函数返回的数字，就是这一帧子弹应该偏离基准线（`orig_x` 值）的距离。
+`Utils.波次()` 函数返回的数字，就是这一帧子弹应该偏离基准线（`orig_x` 值）的距离。
 
 下面看看代码是什么样子。我给每一行都写了注释，解释它们的作用：
 ```lua
@@ -975,7 +975,7 @@ self.x = self.orig_x + disp_x
 
 现在，我们的自定义子弹就已经完成了！
 
-在回到 wave 生成子弹之前，先快速检查一下代码位置是否正确。
+在回到波次生成子弹之前，先快速检查一下代码位置是否正确。
 
 你的子弹文件应该位于 `scripts/battle/bullets`，文件名为 `example_wiggly_bullet.lua`。
 
@@ -1020,7 +1020,7 @@ return ExampleWigglyBullet
 
 对于自定义子弹，我们会使用 `self:spawnBullet("example_wiggly_bullet", 320, SCREEN_HEIGHT)`，在屏幕底部中央生成一枚子弹。
 
-现在把这一行放进 `ExampleWave2:onStart()`，然后运行 wave。这样可以先看到一枚子弹，确认它正常工作。
+现在把这一行放进 `ExampleWave2:onStart()`，然后运行波次。这样可以先看到一枚子弹，确认它正常工作。
 
 <video controls preload="none">
     <source src="/wiki/wiggly_bullet.mp4" type="video/mp4" />
@@ -1037,7 +1037,7 @@ end)
 ```
 我们之前已经使用过 `everyInstant`，所以这里应该没有什么意外。
 
-现在再次运行 wave，看看同时出现很多子弹时的效果：
+现在再次运行波次，看看同时出现很多子弹时的效果：
 
 <video controls preload="none">
     <source src="/wiki/many_wiggly_bullets.mp4" type="video/mp4" />
@@ -1052,19 +1052,19 @@ end)
 
 现在我们的自定义子弹已经设置好并运行起来了，是时候谈谈战斗中的**碰撞**是如何工作的。
 
-战斗中有三类主要对象会发生碰撞：玩家灵魂、arena 和子弹。
+战斗中有三类主要对象会发生碰撞：玩家灵魂、战斗框和子弹。
 
 Arena 的碰撞与子弹无关。
 
 另一方面，**灵魂与子弹的碰撞**则与我们有关。
 
-在 Debug Menu 中**启用 Debug Rendering**，可以看到屏幕上所有对象的碰撞范围。
+在调试菜单中**启用 调试渲染**，可以看到屏幕上所有对象的碰撞范围。
 
-先看看 Debug Rendering 中灵魂的样子：
+先看看 调试渲染 中灵魂的样子：
 
 <>![](/wiki/soul_collision.png)</>
 
-如你所见，开启 debug rendering 后，圆形周围会显示**两个**圆。
+如你所见，开启 调试渲染 后，圆形周围会显示**两个**圆。
 
 这两者都是 [`Collider`](/wiki/api/Collider) 对象的类型，Kristal 中所有对象的碰撞都由 `Collider` 的子类处理。
 
@@ -1076,7 +1076,7 @@ Arena 的碰撞与子弹无关。
 
 真正需要关注的是子弹碰撞！
 
-如果在启用 debug rendering 的情况下运行 wave，就能看到 hitbox 的样子：
+如果在启用 调试渲染 的情况下运行波次，就能看到 hitbox 的样子：
 
 <>![](/wiki/wiggly_collision.png)</>
 
@@ -1123,7 +1123,7 @@ CircleCollider 接受四个参数：`self`、`self.width/2`、`self.height/2` �
 
 理由与子弹 hitbox 只有对象大小一半相同：碰撞范围比它代表的对象略小会更好，因为成功命中时能产生更可信的接触效果。
 
-现在，再次看看带有新碰撞范围的子弹在 Debug Rendering 中是什么样子！
+现在，再次看看带有新碰撞范围的子弹在 调试渲染 中是什么样子！
 
 <>![](/wiki/wiggly_collision_2.png)</>
 
@@ -1131,29 +1131,29 @@ CircleCollider 接受四个参数：`self`、`self.width/2`、`self.height/2` �
 
 如果需要特别奇怪的碰撞形状，也可以使用 [`ColliderGroup`](/wiki/api/ColliderGroup) 将多个碰撞器组合在一起。
 
-所有可用碰撞器的列表，可以在 [Wavemaking Reference](/wiki/wavemaking-reference#colliders) 中找到。
+所有可用碰撞器的列表，可以在 [波次制作参考](/wiki/wavemaking-reference#colliders) 中找到。
 </Box>
 
 <Box>
-## 使用 Arena
+## 使用战斗框（Arena）
 
-DELTARUNE 的许多攻击设计都很重视对 arena 的操控。
+DELTARUNE 的许多攻击设计都很重视对战斗框的操控。
 
-Kristal 的 [Arena](/wiki/api/Arena) 对象负责处理 arena。它可以用多种方式修改 arena。
+Kristal 的 [Arena](/wiki/api/Arena) 对象负责处理战斗框。它可以用多种方式修改战斗框。
 
-战斗中使用的 arena 存在时会保存在 `Game.battle.arena` 中，这就是我们用来修改它的变量。
+战斗中使用的战斗框存在时会保存在 `Game.battle.arena` 中，这就是我们用来修改它的变量。
 
-`Wave` 中也有一些可以控制 arena 的函数。我们主要想在 `Wave:init()` 中使用它们，因为这个函数会在 **arena 创建之前**调用。
+`Wave` 中也有一些可以控制战斗框的函数。我们主要想在 `Wave:init()` 中使用它们，因为这个函数会在 **战斗框创建之前**调用。
 
-先从简单的内容开始，演示一些可以在 `Wave:init()` 中设置的基础变换。它们都会影响 arena 的**初始状态**，包括过渡动画。
+先从简单的内容开始，演示一些可以在 `Wave:init()` 中设置的基础变换。它们都会影响战斗框的**初始状态**，包括过渡动画。
 
-使用 `Wave:setArenaSize(width, height)` 可以改变 arena 的大小。作为参考，默认 arena 大小是 142x142。
+使用 `Wave:setArenaSize(width, height)` 可以改变战斗框的大小。作为参考，默认战斗框大小是 142x142。
 
-可以使用 `Wave:setArenaRotation(angle)` 设置 arena 的初始旋转。
+可以使用 `Wave:setArenaRotation(angle)` 设置战斗框的初始旋转。
 
-如果想移动 arena，可以使用 `Wave:setArenaOffset(x, y)` 或 `Wave:setArenaPosition(x, y)`。
+如果想移动战斗框，可以使用 `Wave:setArenaOffset(x, y)` 或 `Wave:setArenaPosition(x, y)`。
 
-前者将 arena 的位置设置为相对于标准起始位置的位移，后者则将 arena 的位置设置为相对于屏幕左上角的位置。
+前者将战斗框的位置设置为相对于标准起始位置的位移，后者则将战斗框的位置设置为相对于屏幕左上角的位置。
 
 下面是一组可以尝试的变换：
 ```lua
@@ -1164,7 +1164,7 @@ self:setArenaRotation(math.rad(45)) -- 将它旋转 45 度
 self:setArenaOffset(-60, 40) -- 相对于正常起始位置向左移动 60 像素，向下移动 40 像素
 ```
 
-这三项组合在一起，在你的 wave 中会呈现出这样的效果：
+这三项组合在一起，在你的波次中会呈现出这样的效果：
 <>![](/wiki/arena_transformations_basic.png)</>
 
 试着填入一些你自己的数值吧！
@@ -1177,9 +1177,9 @@ self:setArenaShape({0, 0}, {-40, 0}, {100, -80}, {240, 0}, {200, 0}, {200, 84}, 
 ```
 你在这里看到的所有表，都是表示每个形状顶点的坐标对。
 
-这些坐标相对于 arena 所处的位置。
+这些坐标相对于战斗框所处的位置。
 
-如果把这个函数放入 wave……
+如果把这个函数放入波次……
 
 <>![](/wiki/house_like_arena.png)</>
 
@@ -1188,21 +1188,21 @@ self:setArenaShape({0, 0}, {-40, 0}, {100, -80}, {240, 0}, {200, 0}, {200, 84}, 
 随意尝试这些函数一会儿。反正我们马上就会**把它们全部移除**。
 
 ### 动态效果
-有时，我们会希望 arena 在 wave 过程中动态变化。
+有时，我们会希望战斗框在波次过程中动态变化。
 
-正如之前所说，wave 开始时 arena 创建完成后，可以通过 `Game.battle.arena` 访问它。
+正如之前所说，波次开始时战斗框创建完成后，可以通过 `Game.battle.arena` 访问它。
 
 那么，拿到 Arena 对象后能做什么呢？
 
 实际上，它就是另一个 Object！这意味着我们拥有与操作子弹时相同的工具。
 
-当然，我们还有 `Arena:setSize(width, height)` 和 `Arena:setShape(...)`，可以在 wave 过程中改变 arena 的大小/形状。
+当然，我们还有 `Arena:setSize(width, height)` 和 `Arena:setShape(...)`，可以在波次过程中改变战斗框的大小/形状。
 
 它们的工作方式与之前看到的 `Wave` 对应函数相同。
 
-让我们通过让 arena 左右摇摆，演示一些动态移动。不过首先，确保**移除上一步中的所有变换**。
+让我们通过让战斗框左右摇摆，演示一些动态移动。不过首先，确保**移除上一步中的所有变换**。
 
-我们要借用 wiggly bullet 的 wave 效果，让 arena 在这里摇摆。
+我们要借用 wiggly bullet 的波次效果，让战斗框在这里摇摆。
 
 不过需要做几处修改，所以**留意它们的不同之处**！
 
@@ -1213,7 +1213,7 @@ self.wave_magnitude = 80
 self.wave_speed = 2
 ```
 
-然后在 `Wave:update()` 中添加让 arena 摇摆的代码。代码注释会解释这里的代码与子弹代码之间的区别。
+然后在 `Wave:update()` 中添加让战斗框摇摆的代码。代码注释会解释这里的代码与子弹代码之间的区别。
 ```lua    
 local arena = Game.battle.arena
 -- arena 在 `Wave:init()` 中还不存在，所以这里是获取其原始/中心 x 的最佳位置。这个条件确保只设置一次该值。
@@ -1231,7 +1231,7 @@ local disp_x = self.orig_x + Utils.wave(self.siner * self.wave_speed, -self.wave
 
 arena:setPosition(disp_x, arena.y)
 ```
-为了确认它有效，运行我们的 wave 看看实际效果吧！
+为了确认它有效，运行我们的波次看看实际效果吧！
 
 <video controls preload="none">
     <source src="/wiki/arena_movement.mp4" type="video/mp4" />
@@ -1335,7 +1335,7 @@ self.green = try_green and love.math.random() < 0.3 or false
 
 当 `try_green` 为 true 时，这会让子弹有 30% 的概率以绿色子弹生成。
 
-现在回到 wave，为 `try_green` 传入一个值！
+现在回到波次，为 `try_green` 传入一个值！
 
 当然，我们希望子弹有机会变绿，所以传入 `true`！在 `spawnBullet` 中把它作为一个新参数加上：
 ```lua
@@ -1351,7 +1351,7 @@ function ExampleWave2:onStart()
 end
 ```
 
-绿色子弹现在应该会开始出现在 wave 中。来看看效果！
+绿色子弹现在应该会开始出现在波次中。来看看效果！
 
 <video controls preload="none">
     <source src="/wiki/green_wiggly.mp4" type="video/mp4" />
@@ -1396,7 +1396,7 @@ end
 
 这里没有调用 `super`，因为 `onTurnEnd` 通常不会运行自己的代码。
 
-回到 wave，使用这个新变量控制子弹何时进行绿色判定。
+回到波次，使用这个新变量控制子弹何时进行绿色判定。
 
 应该在 `ExampleWave2:onStart()` 的开头添加：
 ```lua
@@ -1429,19 +1429,19 @@ self:spawnBullet("example_wiggly_bullet", x, y, smiled_at)
 </Box>
 
 <Box>
-## 敌人 Wave 覆盖
+## 敌人波次覆盖
 
-说到让子弹在使用 Smile ACT 时变绿，我们当前的解决方案在真实的敌人场景中存在**潜在问题**。
+说到让子弹在使用 Smile ACT 时变绿，我们当前的解决方案在实际的敌人场景中存在**潜在问题**。
 
-如果把 wave 的行为绑定到特定 ACT 上，通常会希望这个 wave 也在使用 ACT 的回合发生。
+如果把波次的行为绑定到特定 ACT 上，通常会希望这个波次也在使用 ACT 的回合发生。
 
-如果一个敌人拥有多个 wave，就不一定总能选中我们想要的 wave！幸运的是，我们可以修复这个问题。
+如果一个敌人拥有多个波次，就不一定总能选中我们想要的波次！幸运的是，我们可以修复这个问题。
 
-所有敌人（`EnemyBattler`）都有一个 `wave_override` 变量，作用正如它的名字所说：覆盖本回合选中的 wave。
+所有敌人（`EnemyBattler`）都有一个 `wave_override` 变量，作用正如它的名字所说：覆盖本回合选中的波次。
 
-让我们在示例中设置一个 dummy 可以从多个 wave 中选择的场景。
+让我们在示例中设置一个 dummy 可以从多个波次中选择的场景。
 
-可以把内容添加到它的 `waves` 表中，把所有默认 wave 和之前的示例 wave 加回来：
+可以把内容添加到它的 `waves` 表中，把所有默认波次和之前的示例波次加回来：
 ```lua
 self.waves = {
     "example_wave",
@@ -1461,33 +1461,33 @@ self.wave_override = "example_wave_2"
 
 就这么简单！
 
-不用担心像之前的 `smiled_at` 变量一样手动重置 wave override，`wave_override` 会在每回合结束后自动清除。
+不用担心像之前的 `smiled_at` 变量一样手动重置波次override，`wave_override` 会在每回合结束后自动清除。
 </Box>
 
 <Box>
 ## 结语 [completed-wave-2]
 
-本指南到这里就全部结束了！我们学习了很多关于 wave 及其相关对象的内容。
+本指南到这里就全部结束了！我们学习了很多关于波次及其相关对象的内容。
 
-制作 wave 需要考虑很多事情，其中还有一些内容我们没有在这里讲到！
+制作波次需要考虑很多事情，其中还有一些内容我们没有在这里讲到！
 
 把攻击从想法变成代码是一个解决问题的过程。你需要根据自己的目标，思考哪些功能和函数可以帮助你实现想要的效果。
 
-这并不总是最容易的过程，但了解 wave 的工作方式以及可用功能，应该能让这个过程更轻松。祝你制作出精彩的攻击，让它们真正活起来！
+这并不总是最容易的过程，但了解波次的工作方式以及可用功能，应该能让这个过程更轻松。祝你制作出精彩的攻击，让它们真正活起来！
 
 啊，不过在你离开之前，还有一件事！
 
-关于制作 wave，还有最后一点需要提到……
+关于制作波次，还有最后一点需要提到……
 
 *咳咳。*
 
-现在你已经*乘风破浪*地学完了 wave 的基础知识，掌握了所有重要知识，可以开始制作完全属于自己的 wave 了。
+现在你已经*乘风破浪*地学完了波次的基础知识，掌握了所有重要知识，可以开始制作完全属于自己的波次了。
 
-但 wave 制作的*海域*波涛汹涌，一场信息的*海啸*还在地平线上向你袭来……
+但波次制作的*海域*波涛汹涌，一场信息的*海啸*还在地平线上向你袭来……
 
 ……好了好了！我不再玩水的双关了。
 
-总之，除了这些指南之外，还有一篇 [Wavemaking Tricks and References](/wiki/wavemaking-reference)，其中提供了许多相关函数的快速参考，以及一些关于如何在 wave 中完成特定任务的简短指南。
+总之，除了这些指南之外，还有一篇 [Wavemaking Tricks and References](/wiki/wavemaking-reference)，其中提供了许多相关函数的快速参考，以及一些关于如何在波次中完成特定任务的简短指南。
 
 你应该查看它的[目录](/wiki/wavemaking-reference#table-of-contents)，了解其中涵盖了哪些内容。
 </Box>

@@ -1,6 +1,6 @@
 export const metadata = {
     title: '发布项目',
-    description: '了解使用 Kristal 制作的项目有哪些发布和分发方式。',
+    description: '了解使用 Kristal 制作的项目有哪些发布方式。',
 }
 
 # 发布项目
@@ -16,19 +16,19 @@ Kristal 提供了几种将项目分享给全世界的方式。让我们来看看
 <Box>
 ## 发布类型
 
-项目发布可以分为两类：
+发布项目主要有两种方式：
 
-- [仅项目发布](#mod-only-releases)是一种不附带引擎、快速分发项目的方式。用户需要另外下载引擎。
-- [独立发布](#standalone-releases)允许你将项目打包进自定义引擎构建中。它需要更多准备工作，但可定制性很高，通常也更方便用户开始游玩。
+- [只发布项目本体](#mod-only-releases)是一种不附带引擎、快速发布项目的方式。玩家需要另外下载引擎。
+- [制作独立版](#standalone-releases)允许你将项目打包进自定义引擎构建中。它需要更多准备工作，但可定制性很高，通常也更方便玩家开始游玩。
 
-当然，你也可以用不止一种形式发布项目，而且我们建议你这样做！
+当然，你也可以同时采用两种方式发布项目，我们还建议你这样做！
 
 </Box>
 
 <Box>
 ## 开始之前
 
-发布完成后，就不能在不创建新版本的情况下继续修改它了。想要修改任何内容（包括项目本身），都需要重新进行整个流程。
+项目发布后，想修改任何内容（包括项目本身），就得重新打包并发布一个新版本。
 
 因此，**请在打包发布版本之前完成所有测试**。
 </Box>
@@ -36,12 +36,12 @@ Kristal 提供了几种将项目分享给全世界的方式。让我们来看看
 <Box>
 ## 仅项目发布
 
-单独发布项目快速而直接，但用户需要另外安装 Kristal。
+只发布项目本体最省事，但玩家还需要另外安装 Kristal。
 
-这种方式最适合轻量级项目。（你也可以按照这些步骤分发库！）
+这种方式最适合轻量级项目。（你也可以用同样的方法发布库！）
 
 #### 第 1 步——备份 [mod-only-backup]
-**创建项目的安全副本，并将其存放在其他位置。** 一般不会出问题，但无论如何，**你不想承担这个风险**！
+**先把项目备份到其他位置。** 虽然一般不会出问题，但还是**别拿唯一一份项目冒险**！
 
 ---
 #### 第 2 步——创建 ZIP 压缩包 [mod-only-zip]
@@ -86,7 +86,7 @@ zip -9 -r <YourProjectName>.zip .
 ---
 ### 给玩家的说明 [mod-only-steps-for-players]
 
-如果你单独发布项目，应该向玩家提供一些额外信息：
+如果你只发布项目本体，应该向玩家提供一些额外信息：
 
 - 将 Kristal 的[下载指南](/wiki/downloading)和[游玩指南](/wiki/playing-mods)链接提供给他们。
 - 列出制作项目时使用的 Kristal 版本。
@@ -94,7 +94,7 @@ zip -9 -r <YourProjectName>.zip .
 ---
 ### 兼容性 [mod-only-compatibility]
 
-单独发布的项目与 Kristal 开箱即用支持的所有操作系统兼容，
+这种项目与 Kristal 开箱即用支持的所有操作系统兼容，
 这些系统也就是 LÖVE 11.5 所支持的桌面操作系统：
 
 - Windows（Vista 及以上）
@@ -102,33 +102,33 @@ zip -9 -r <YourProjectName>.zip .
 - Linux
 
 ---
-如果你只想用这种格式发布项目，现在可以直接跳到[分发项目](#distributing)部分。
+如果你只想用这种格式发布项目，现在可以直接跳到[发布项目](#distributing)部分。
 
 </Box>
 
 <Box>
-## 独立发布
+## 制作独立版
 
-独立发布需要构建一个专门运行你项目的自定义引擎版本。
-用户不需要安装 Kristal，但在某些平台上可能需要安装 love2d。
+制作独立版需要构建一份专门运行你项目的自定义引擎。
+玩家不需要安装 Kristal，但在某些平台上可能需要安装 love2d。
 
-独立发布适合规模较大的项目，并提供更多展示方面的自由，
+独立版适合规模较大的项目，也能让你更自由地定制展示效果，
 包括自定义主菜单的选项。
 
 ---
-### 前置条件 [standalone-prerequisites]
+### 开始前要准备的东西 [standalone-prerequisites]
 
-你应该已经在使用源代码；如果还没有，那么在创建独立发布版本之前，需要先[下载一份源代码](/wiki/downloading)。
+你应该已经在使用源代码；如果还没有，那么在制作独立版之前，需要先[下载一份源代码](/wiki/downloading)。
 
 你还需要一份 LÖVE 11.5（这是从源代码运行 Kristal 时使用的同一版本）。
 
 ---
 ### 准备引擎 [standalone-engine-prep]
 
-获得引擎源代码后，需要对它进行适当准备。下面我们会逐步介绍完整步骤以及额外的自定义选项。
+获得引擎源代码后，还需要先做一些准备。下面我们会逐步介绍完整步骤以及额外的自定义选项。
 
 #### 第 1 步——备份 [engine-prep-backup]
-如果你还没有这样做，**请将项目备份到 Kristal 之外的安全独立位置**。一般不会出问题，但**绝不要冒险**！
+如果你还没有这样做，**请先把项目备份到 Kristal 之外的其他安全位置**。一般不会出问题，但**别拿唯一一份项目冒险**！
 
 ---
 #### 第 2 步——添加项目 [engine-prep-mods]
@@ -155,7 +155,7 @@ zip -9 -r <YourProjectName>.zip .
 <CollapseBox title="自定义图标" id="icons">
 如果想使用自定义应用图标，请将 `icon.png` 和 `bigicon.png` 替换为自己的图标。
 
-如果想制作**Windows 可执行文件（融合）版本**（详情请见[构建类型](#build-types)），还需要完成一些额外操作。
+如果想制作**Windows 独立可执行文件**（详情请见[构建类型](#build-types)），还需要完成一些额外操作。
 
 首先，将 `icon.ico` 替换为自定义图标。然后，需要生成新的 `icon.res` 文件。
 
@@ -171,7 +171,7 @@ rc icon.res
 
 这应该会为你的自定义图标重新编译 `icon.res`。
 
-或者，可以查看 [LOVE 的 Windows 分发指南](https://love2d.org/wiki/Game_Distribution#Creating_a_Windows_Executable)，了解编译 `icon.res` 的其他方法。
+或者，可以查看 [LOVE 的 Windows 发布指南](https://love2d.org/wiki/Game_Distribution#Creating_a_Windows_Executable)，了解编译 `icon.res` 的其他方法。
 </CollapseBox>
 
 ---
@@ -202,16 +202,16 @@ rc icon.res
 ---
 ### 构建类型 [standalone-build-types]
 
-创建项目的独立发布版本包括两个阶段——[打包成 love 压缩包](#love-archive)，然后（可选）[融合成可执行文件](#fused-executables)。
+制作项目独立版包括两个阶段——[打包成 .love 压缩包](#love-archive)，然后（可选）[打包成可执行文件](#fused-executables)。
 
 在进行其他操作之前，始终需要先从准备好的引擎源代码创建 `.love` 压缩包。它可以作为跨平台的项目发布版本，
-但**不能直接执行**——用户需要另外下载 LÖVE，并通过它运行这个压缩包。
+但**不能直接执行**——玩家需要另外下载 LÖVE，并通过它运行这个压缩包。
 
-理想情况下，独立项目应该真正做到“独立”，这正是**融合**的作用——但你发布融合应用的每个平台都必须单独进行融合。
+理想情况下，独立项目应该真正做到“独立”，这就是把项目和 LÖVE 合在一起的作用——但每个平台都必须单独打包。
 
-通常最好同时提供项目的 `.love` 压缩包版本和融合后的可执行文件，以免损害平台兼容性。
+通常最好同时提供项目的 `.love` 压缩包版本和打包好的可执行文件，以免影响平台兼容性。
 
-从这里开始，我们基本会遵循使用 LÖVE 制作游戏的标准分发流程。你也可以查看页面底部链接的官方 LÖVE 指南。
+从这里开始，我们基本会遵循使用 LÖVE 制作游戏的标准发布流程。你也可以查看页面底部链接的官方 LÖVE 指南。
 
 ---
 ### 创建 .love 压缩包 [love-archive]
@@ -288,20 +288,20 @@ zip -9 -r <YourProjectName>.zip .
 - 安装 love 后，他们应该可以直接打开 `.love` 压缩包，或者在命令行中运行 `love <your-project-name>.love`。
 
 ---
-### 创建融合后的可执行文件 [fused-executables]
+### 打包可执行文件 [fused-executables]
 
-创建 `.love` 压缩包后，可以考虑为某些平台制作融合后的可执行文件。这会将 `.love` 压缩包和 LÖVE 本身合并，这样用户只需下载你的项目，就能像运行应用程序一样启动它。
+创建 `.love` 压缩包后，可以考虑为某些平台制作独立可执行文件。这会把 `.love` 压缩包和 LÖVE 本身合在一起，这样玩家只需下载你的项目，就能像运行应用程序一样启动它。
 
-以融合后的可执行文件分发游戏时，**必须在分发包中包含 love2d 的许可证文件 `license.txt`。**
+以独立可执行文件发布游戏时，**必须在发布包中包含 love2d 的许可证文件 `license.txt`。**
 
-融合后的可执行文件与平台相关。
+独立可执行文件与平台有关。
 
 <CollapseBox title="Windows 可执行文件" id="windows-executables">
 
 构建 Windows 可执行文件需要 Windows 版的 `love2d-11.5` 软件包。
 
 
-#### 第 1 步——融合 [windows-fusing]
+#### 第 1 步——打包 [windows-fusing]
 
 首先，需要创建可执行文件本身。这一步与平台相关。
 
@@ -321,19 +321,19 @@ zip -9 -r <YourProjectName>.zip .
    Get-Content love.exe,"<Path\To\YourLoveArchive>.love" -Encoding Byte | Set-Content <YourProjectName>.exe -Encoding Byte
 ```
 
-这会为项目创建融合后的可执行文件。
+这样就会为项目生成一个独立可执行文件。
 
 </CollapseBox>
 
 <CollapseBox title="在 macOS/Linux 上：" id="mac-linux-fusing">
 
-在终端或命令行中打开 Windows 版 `love2d-11.5` 软件包，**替换 \(\) 括号中的内容**，然后运行：
+在终端或命令行中进入 Windows 版 `love2d-11.5` 软件包所在的文件夹，**替换 \(\) 括号中的内容**，然后运行：
 
 ```cmd
    cat love.exe "(Path\To\YourLoveArchive).love" > (YourProjectName).exe
 ```
 
-这会创建融合后的 Windows 可执行文件。
+这样就会生成 Windows 独立可执行文件。
 </CollapseBox>
 
 ---
@@ -347,7 +347,7 @@ zip -9 -r <YourProjectName>.zip .
 
 ---
 
-Windows 融合发布版本已经准备好了！要分享这个版本，请分发刚才创建的压缩包。
+Windows 独立版已经准备好了！要分享这个版本，请发布刚才创建的压缩包。
 
 如果你使用 Windows，也应该尝试自行解压并运行它，确认它能够正常工作。
 
@@ -388,36 +388,36 @@ Windows 融合发布版本已经准备好了！要分享这个版本，请分发
 
 ---
 
-macOS 融合发布版本已经准备好了！要分享这个版本，请分发刚才创建的压缩包。
+macOS 独立版已经准备好了！要分享这个版本，请发布刚才创建的压缩包。
 
 如果你使用 macOS，也应该尝试自行解压并运行它，确认它能够正常工作。
 
 </CollapseBox>
 
 <CollapseBox title="Linux AppImage" id="linux-appimages">
-AppImage 是一种在 Linux 上打包应用程序的格式。LÖVE 为 Linux 提供了官方 AppImage，它可以与 `.love` 文件融合。
+AppImage 是一种在 Linux 上打包应用程序的格式。LÖVE 为 Linux 提供了官方 AppImage，它可以与 `.love` 文件合并打包。
 
-这个过程比普通的融合更复杂，因此最好按照 [LÖVE 官方 Linux 分发指南](https://love2d.org/wiki/Game_Distribution#Distribution_for_Linux)进行操作。你应该遵循“Official AppImage”小节，并将之前创建的 `.love` 压缩包作为你的“游戏”。
+这个过程比普通的合并打包更复杂，因此最好按照 [LÖVE 官方 Linux 发布指南](https://love2d.org/wiki/Game_Distribution#Distribution_for_Linux)进行操作。你应该遵循“Official AppImage”小节，并将之前创建的 `.love` 压缩包作为你的“游戏”。
 </CollapseBox>
 
 ---
 #### 兼容性 [fused-compatibility]
 
-融合后的可执行文件只能与构建它的平台兼容。
+独立可执行文件只能在构建它的平台上运行。
 
 ---
 #### 给玩家的说明 [fused-steps-for-players]
 
-从融合后的可执行文件运行项目非常简单：
+使用独立可执行文件运行项目很简单：
 - 解压下载的压缩包。
 - 运行可执行文件/应用程序。
 
 </Box>
 
 <Box>
-## 分发
+## 发布
 
-准备好项目所有首选的发布版本后，剩下的事情就是发布它们！
+准备好项目想要发布的版本后，剩下的就是把它们发布出去！
 
 你可以在任何地方分享作品；如果你想使用 Kristal 专属的平台，可以选择 [Kristal GameBanana](https://gamebanana.com/games/16251)，
 以及 [Kristal Discord 服务器](https://discord.gg/8ZGuKXJE2C)，那里有专门的 `project-releases` 论坛。

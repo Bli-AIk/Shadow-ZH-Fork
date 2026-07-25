@@ -5,7 +5,17 @@ import createNextIntlPlugin from "next-intl/plugin";
 /** @type {import('next').NextConfig} */
 const nextConfig = {
     pageExtensions: ['js', 'jsx', 'mdx', 'ts', 'tsx'],
-    deploymentId: process.env.DEPLOYMENT_VERSION
+    deploymentId: process.env.DEPLOYMENT_VERSION,
+    webpack(config) {
+        config.module.rules.push({
+            test: /\.mdx$/,
+            include: new URL('./content/en/wiki', import.meta.url).pathname,
+            enforce: 'pre',
+            use: [new URL('./src/bilingual-dependency-loader.cjs', import.meta.url).pathname],
+        });
+
+        return config;
+    },
 }
 
 const withMDX = createMDX({

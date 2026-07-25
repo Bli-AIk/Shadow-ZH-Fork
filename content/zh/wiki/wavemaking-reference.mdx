@@ -935,7 +935,7 @@ return Circle
 
 ```lua
 for _, battler in ipairs(self:getAttackers()) do
-    local circle = CircleController(battler.width / 2, battler.height / 2, 50, 0) -- 以战斗者为圆心，半径为 50
+    local circle = CircleController(battler.width / 2, battler.height / 2, 50, 0) -- 以战斗单位为圆心，半径为 50
     battler:addChild(circle)
 end
 ```
@@ -1207,7 +1207,7 @@ return Circle
 <Box>
 ## 基础残影 [afterimages]
 
-在战斗中，你可能会想给某些子弹、战斗者或其他图形添加残影效果。
+在战斗中，你可能会想给某些子弹、战斗单位或其他图形添加残影效果。
 
 Kristal 提供了 [`AfterImage`](/wiki/api/AfterImage) 对象，用来简化为对象设置残影的过程。
 
