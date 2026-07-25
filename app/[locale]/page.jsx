@@ -2,10 +2,13 @@ import styles from './page.module.css'
 import Box from "components/Box"
 import NewTab from "components/NewTab"
 import { Link } from "src/i18n/navigation"
-import { useTranslations } from 'next-intl'
+import { getTranslations } from 'next-intl/server'
+import { BilingualBlock, BilingualPart } from 'components/BilingualBlock'
 
-export default function Home() {
-    const t = useTranslations('Home')
+export default async function Home({ params }) {
+    const { locale } = await params
+    const en = await getTranslations({ locale: 'en', namespace: 'Home' })
+    const zh = await getTranslations({ locale: 'zh', namespace: 'Home' })
 
     const mods = [
         {
@@ -100,39 +103,77 @@ export default function Home() {
 
             <section className={styles.section}>
                 <Box>
-                    <h2 className={styles.header}>{t('aboutTitle')}</h2>
-                    <p>
-                        {t.rich('about', {
-                            deltarune: (chunks) => <NewTab href="https://deltarune.com/">{chunks}</NewTab>,
-                            love: (chunks) => <NewTab href="https://love2d.org/">{chunks}</NewTab>,
-                            strong: (chunks) => <b>{chunks}</b>,
-                        })}
-                    </p>
+                    <BilingualBlock>
+                        <BilingualPart language="en" key="en"><h2 className={styles.header}>{en('aboutTitle')}</h2></BilingualPart>
+                        <BilingualPart language="zh" key="zh"><h2 className={styles.header}>{zh('aboutTitle')}</h2></BilingualPart>
+                    </BilingualBlock>
+                    <BilingualBlock>
+                        <BilingualPart language="en" key="en">
+                            <p>{en.rich('about', {
+                                deltarune: (chunks) => <NewTab href="https://deltarune.com/">{chunks}</NewTab>,
+                                love: (chunks) => <NewTab href="https://love2d.org/">{chunks}</NewTab>,
+                                strong: (chunks) => <b>{chunks}</b>,
+                            })}</p>
+                        </BilingualPart>
+                        <BilingualPart language="zh" key="zh">
+                            <p>{zh.rich('about', {
+                                deltarune: (chunks) => <NewTab href="https://deltarune.com/">{chunks}</NewTab>,
+                                love: (chunks) => <NewTab href="https://love2d.org/">{chunks}</NewTab>,
+                                strong: (chunks) => <b>{chunks}</b>,
+                            })}</p>
+                        </BilingualPart>
+                    </BilingualBlock>
                 </Box>
 
                 <Box>
-                    <h2 className={styles.header}>{t('useTitle')}</h2>
-                    <p>
-                        {t.rich('use', {
-                            wiki: (chunks) => <Link href="/wiki/">{chunks}</Link>,
-                            tutorial: (chunks) => <Link href="/wiki/lua-tutorial">{chunks}</Link>,
-                            strong: (chunks) => <b>{chunks}</b>,
-                        })}
-                    </p>
+                    <BilingualBlock>
+                        <BilingualPart language="en" key="en"><h2 className={styles.header}>{en('useTitle')}</h2></BilingualPart>
+                        <BilingualPart language="zh" key="zh"><h2 className={styles.header}>{zh('useTitle')}</h2></BilingualPart>
+                    </BilingualBlock>
+                    <BilingualBlock>
+                        <BilingualPart language="en" key="en">
+                            <p>{en.rich('use', {
+                                wiki: (chunks) => <Link href="/wiki/">{chunks}</Link>,
+                                tutorial: (chunks) => <Link href="/wiki/lua-tutorial">{chunks}</Link>,
+                                strong: (chunks) => <b>{chunks}</b>,
+                            })}</p>
+                        </BilingualPart>
+                        <BilingualPart language="zh" key="zh">
+                            <p>{zh.rich('use', {
+                                wiki: (chunks) => <Link href="/wiki/">{chunks}</Link>,
+                                tutorial: (chunks) => <Link href="/wiki/lua-tutorial">{chunks}</Link>,
+                                strong: (chunks) => <b>{chunks}</b>,
+                            })}</p>
+                        </BilingualPart>
+                    </BilingualBlock>
                 </Box>
 
                 <Box>
-                    <h2 className={styles.header}>{t('helpTitle')}</h2>
-                    <p>
-                        {t.rich('help', {
-                            strong: (chunks) => <b>{chunks}</b>,
-                            source: (chunks) => <NewTab href="https://github.com/KristalTeam/Kristal">{chunks}</NewTab>,
-                        })}
-                    </p>
+                    <BilingualBlock>
+                        <BilingualPart language="en" key="en"><h2 className={styles.header}>{en('helpTitle')}</h2></BilingualPart>
+                        <BilingualPart language="zh" key="zh"><h2 className={styles.header}>{zh('helpTitle')}</h2></BilingualPart>
+                    </BilingualBlock>
+                    <BilingualBlock>
+                        <BilingualPart language="en" key="en">
+                            <p>{en.rich('help', {
+                                strong: (chunks) => <b>{chunks}</b>,
+                                source: (chunks) => <NewTab href="https://github.com/KristalTeam/Kristal">{chunks}</NewTab>,
+                            })}</p>
+                        </BilingualPart>
+                        <BilingualPart language="zh" key="zh">
+                            <p>{zh.rich('help', {
+                                strong: (chunks) => <b>{chunks}</b>,
+                                source: (chunks) => <NewTab href="https://github.com/KristalTeam/Kristal">{chunks}</NewTab>,
+                            })}</p>
+                        </BilingualPart>
+                    </BilingualBlock>
                 </Box>
 
                 <Box>
-                    <h2 className={styles.header}>{t('screenshotsTitle')}</h2>
+                    <BilingualBlock>
+                        <BilingualPart language="en" key="en"><h2 className={styles.header}>{en('screenshotsTitle')}</h2></BilingualPart>
+                        <BilingualPart language="zh" key="zh"><h2 className={styles.header}>{zh('screenshotsTitle')}</h2></BilingualPart>
+                    </BilingualBlock>
                     <br/>
                     <div className={styles.screenshots}>
                     {
@@ -141,16 +182,28 @@ export default function Home() {
                                 <img
                                     className={styles.screenshot}
                                     src={mod.image}
-                                    alt={t('screenshotAlt', { title: mod.title })}
+                                    alt={en('screenshotAlt', { title: mod.title })}
                                     width={640}
                                     height={480}
                                 />
                                 <div className={styles.screenshot_info}>
                                     <NewTab href={mod.page} className={styles.screenshot_title}>{mod.title}</NewTab>
-                                    <span className={styles.screenshot_author}>{t('by')} {
-                                        (mod.author_link !== null) ? <NewTab href={mod.author_link}>{mod.author}</NewTab> : mod.author
-                                    }</span>
-                                    <p className={styles.screenshot_description}>{t(`mods.${index}.description`)}</p>
+                                    <BilingualBlock>
+                                        <BilingualPart language="en" key="en">
+                                            <span className={styles.screenshot_author}>{en('by')} {
+                                                (mod.author_link !== null) ? <NewTab href={mod.author_link}>{mod.author}</NewTab> : mod.author
+                                            }</span>
+                                        </BilingualPart>
+                                        <BilingualPart language="zh" key="zh">
+                                            <span className={styles.screenshot_author}>{zh('by')} {
+                                                (mod.author_link !== null) ? <NewTab href={mod.author_link}>{mod.author}</NewTab> : mod.author
+                                            }</span>
+                                        </BilingualPart>
+                                    </BilingualBlock>
+                                    <BilingualBlock>
+                                        <BilingualPart language="en" key="en"><p className={styles.screenshot_description}>{en(`mods.${index}.description`)}</p></BilingualPart>
+                                        <BilingualPart language="zh" key="zh"><p className={styles.screenshot_description}>{zh(`mods.${index}.description`)}</p></BilingualPart>
+                                    </BilingualBlock>
                                 </div>
                             </div>
                         })

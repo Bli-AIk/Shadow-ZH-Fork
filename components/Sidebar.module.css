@@ -12,21 +12,27 @@
     line-height: 1.5;
 }
 
-:global([data-display-mode="both"] .bilingualInline > [data-language="zh"]),
-:global(html[data-display-mode="both"] .bilingualInline > [data-language="zh"]) {
+:global([data-display-mode="both"]) .bilingualInline > [data-language="zh"],
+:global(html[data-display-mode="both"]) .bilingualInline > [data-language="zh"] {
     display: block;
     margin-left: 0;
 }
 
-:global([data-display-mode="both"] .bilingualInline > [data-language="en"]),
-:global(html[data-display-mode="both"] .bilingualInline > [data-language="en"]) {
+:global([data-display-mode="both"]) .bilingualInline > [data-language="en"],
+:global(html[data-display-mode="both"]) .bilingualInline > [data-language="en"] {
     display: block;
 }
 
-:global([data-display-mode="en"] .bilingualInline > [data-language="zh"]),
-:global(html[data-display-mode="en"] .bilingualInline > [data-language="zh"]),
-:global([data-display-mode="zh"] .bilingualInline > [data-language="en"]),
-:global(html[data-display-mode="zh"] .bilingualInline > [data-language="en"]) {
+:global([data-display-mode="both"]) .bilingualInline,
+:global(html[data-display-mode="both"]) .bilingualInline {
+    display: inline-block;
+    vertical-align: top;
+}
+
+:global([data-display-mode="en"]) .bilingualInline > [data-language="zh"],
+:global(html[data-display-mode="en"]) .bilingualInline > [data-language="zh"],
+:global([data-display-mode="zh"]) .bilingualInline > [data-language="en"],
+:global(html[data-display-mode="zh"]) .bilingualInline > [data-language="en"] {
     display: none;
 }
 
