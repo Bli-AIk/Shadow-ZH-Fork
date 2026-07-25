@@ -114,6 +114,10 @@
   font-family: var(--font-bold);
 }
 
+.screenshot_title > [data-language="zh"] {
+  display: block;
+}
+
 .screenshot_author {
   color: lightgray;
 }

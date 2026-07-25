@@ -3,7 +3,7 @@ import Box from "components/Box"
 import NewTab from "components/NewTab"
 import { Link } from "src/i18n/navigation"
 import { getTranslations } from 'next-intl/server'
-import { BilingualBlock, BilingualPart } from 'components/BilingualBlock'
+import { BilingualBlock, BilingualPart, ChineseText } from 'components/BilingualBlock'
 
 export default async function Home({ params }) {
     const { locale } = await params
@@ -13,6 +13,7 @@ export default async function Home({ params }) {
     const mods = [
         {
             title: "#th Sanctuary",
+            titleZh: "第井圣域",
             description: "WORLDS ENTER COLLISION. THE KNIGHT IS TO NO FAULT. Join the fun gang in a liminal exploration reminiscient to Yume Nikki & Mario 64 B3313 crossed over with Dark Worlds!",
             image: "/screenshots/nthsanctuary.png",
             page: "https://gamejolt.com/games/nth_sanctum/1018037",
@@ -21,6 +22,7 @@ export default async function Home({ params }) {
         },
         {
             title: "DELTARUNE: Frostveil",
+            titleZh: "三角符文：冰封帷幕",
             description: "A take on Chapter 5's Weird Route. Explore a new Dark World, find unique weapons and armors to try and defeat the Awakened Frostmancer, Noelle.",
             image: "/screenshots/frostveil.png",
             page: "https://gamejolt.com/games/deltarune_frostveil/1058015",
@@ -37,6 +39,7 @@ export default async function Home({ params }) {
         },
         {
             title: "Deltarune: UZUMAKI",
+            titleZh: "三角符文：漩涡",
             description: "Join the DELTA WARRIORS in a journey to break the endless cycle, and free everyone from their fate. In this fangame, you can play small snippets of Deltarune: UZUMAKI's hypothetical Chapters 3 to 7. The Demo is currently in development, so please have patience!",
             image: "/screenshots/uzumaki.png",
             page: "https://deltaruneuzumaki.neocities.org/",
@@ -45,6 +48,7 @@ export default async function Home({ params }) {
         },
         {
             title: "No Words Spoken",
+            titleZh: "不发一言",
             description: "Two roads lie ahead for Kris—and they can’t hear your voice anymore. All they know is this: they will not walk either path as a puppet, and you are the last thread left to cut.",
             image: "/screenshots/nowordsspoken.png",
             page: "https://gamebanana.com/mods/642559",
@@ -53,6 +57,7 @@ export default async function Home({ params }) {
         },
         {
             title: "Godhome",
+            titleZh: "神居",
             description: "Take your place amongst the Gods. 40+ boss fights, challenge modes, and a unique ending. Contains major spoilers for Hollow Knight.",
             image: "/screenshots/godhome.png",
             page: "https://gamebanana.com/mods/376524",
@@ -69,6 +74,7 @@ export default async function Home({ params }) {
         },
         {
             title: "Frozen Heart",
+            titleZh: "冰封之心",
             description: "The end of the Snowgrave Route seen from another place. While Kris gets torn to pieces by a bootleg Mettaton NEO, Susie has to face Noelle, lost in the trance of the Thorn Ring, before she freezes her to death! And who knows, maybe the situation can get even worse than that?",
             image: "/screenshots/frozen_heart.png",
             page: "https://gamejolt.com/games/frozen-heart/659908",
@@ -187,7 +193,10 @@ export default async function Home({ params }) {
                                     height={480}
                                 />
                                 <div className={styles.screenshot_info}>
-                                    <NewTab href={mod.page} className={styles.screenshot_title}>{mod.title}</NewTab>
+                                    <NewTab href={mod.page} className={styles.screenshot_title}>
+                                        {mod.title}
+                                        {mod.titleZh && <span data-language="zh">（<ChineseText>{mod.titleZh}</ChineseText>）</span>}
+                                    </NewTab>
                                     <BilingualBlock>
                                         <BilingualPart language="en" key="en">
                                             <span className={styles.screenshot_author}>{en('by')} {
