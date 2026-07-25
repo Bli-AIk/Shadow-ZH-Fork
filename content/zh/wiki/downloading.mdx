@@ -12,13 +12,13 @@ export const metadata = {
 - 使用 [每日构建版（Nightly release）](#nightly-releases) - 推荐用于**游玩同人游戏**。
 - 使用[源代码](#source-code) - 非常适合**开发同人游戏**。
 
-每当我们认为引擎足够稳定、可以公开使用时，就会创建公开测试版。
+只要我们认为引擎已经足够稳定、可以面向公众使用，就会发布公开测试版。
 由于 Kristal 仍在开发中，**我们不推荐使用公开测试版。** 这是因为它们不经常更新，所以很容易过时。
 
-每当代码发生变化时，就会创建每日构建版。这意味着每日构建版是 Kristal 的最新版本，但未经测试。
+代码每次发生变化时，都会生成每日构建版。这意味着它始终是 Kristal 的最新版本，但未经测试。
 
-使用源代码是最复杂的方法，但它也能让你对 Kristal 拥有最大的控制权。
-推荐想要制作同人游戏或参与 Kristal 开发的开发者使用这种方法。
+使用源代码是最复杂的方式，但也能让你更好地掌控 Kristal。
+这种方式适合想要制作同人游戏或参与 Kristal 开发的开发者。
 
 **如果你想游玩同人游戏，请使用最新的每日构建版。**
 
@@ -32,10 +32,10 @@ export const metadata = {
 
 要下载公开测试版，请前往 [Kristal 发布页](https://github.com/KristalTeam/Kristal/releases)。
 
-### WINDOWS
-将最新版本下载为 `.zip` 文件。然后解压归档并运行可执行文件。
+### Windows
+下载最新版本的 `.zip` 文件，解压后运行其中的程序。
 
-### OTHER
+### 其他平台
 将最新版本下载为 `.love` 文件。然后使用 [LÖVE](https://love2d.org/) 运行该文件。
 
 </Box>
@@ -44,12 +44,12 @@ export const metadata = {
 ## 每日构建版
 ---
 
-请[在此下载最新归档](https://nightly.link/KristalTeam/Kristal/workflows/ci/main/output.zip)。
+请[在此下载最新压缩包](https://nightly.link/KristalTeam/Kristal/workflows/ci/main/output.zip)。
 
-### WINDOWS
-然后解压归档，再解压以 `-win.zip` 结尾的归档，并运行可执行文件。
+### Windows
+先解压下载的压缩包，再解压其中以 `-win.zip` 结尾的压缩包，最后运行其中的程序。
 
-### OTHER
+### 其他平台
 使用 [LÖVE](https://love2d.org/) 运行 `.love` 文件即可。
 
 </Box>
@@ -60,20 +60,20 @@ export const metadata = {
 
 使用源代码有多种方式，但它们都需要安装 [LÖVE](https://love2d.org/)。
 
-安装 LÖVE 后，你可以使用 [Git](https://git-scm.com/) 或将源代码下载为 ZIP 归档。
+安装 LÖVE 后，你可以使用 [Git](https://git-scm.com/)，也可以将源代码下载为 ZIP 压缩包。
 
 ---
 
 ### 使用 Git（推荐） [using-git]
 
-首先，你需要以下**前置条件**：
+首先，请准备好以下软件：
 
 - [Git](https://git-scm.com/downloads)
 - [LÖVE](https://love2d.org/)
 
 下面的说明应该适用于所有平台，但主要只在 Windows 上测试过。
 
-1. 如果还没有安装，请先安装上面列出的前置软件。大多数设置保持默认即可。
+1. 如果还没有安装，请先安装上面列出的软件。大多数设置保持默认即可。
 2. 打开“终端”。如果你不确定这是什么，请参阅[术语表](/wiki/glossary#terminal)。
 3. 进入你想要下载 Kristal 的文件夹。
 4. 克隆仓库。运行以下命令即可：
@@ -82,20 +82,20 @@ export const metadata = {
 git clone https://github.com/KristalTeam/Kristal
 ```
 
-这会将源代码下载到当前文件夹，并设置好未来更新所需的环境；如果你愿意，也可以在之后为 Kristal 做贡献！
+这样会把源代码下载到当前文件夹，并完成后续更新所需的设置；以后你还可以借此参与 Kristal 的开发！
 
 最后，你可以[运行 Kristal](#running-kristal-from-sources)。
 
 ---
 
-### 将源代码下载为 ZIP 归档 [using-zip]
+### 将源代码下载为 ZIP 压缩包 [using-zip]
 
-要将源代码下载为 ZIP 归档，请前往[仓库页面](https://github.com/KristalTeam/Kristal)，点击绿色的 “Code” 按钮。
-然后点击 “Download ZIP”。之后可以将归档解压到任意文件夹。
+要将源代码下载为 ZIP 压缩包，请前往[仓库页面](https://github.com/KristalTeam/Kristal)，点击绿色的“Code”按钮。
+然后点击“Download ZIP”，再将压缩包解压到任意文件夹。
 
 最后，你可以[运行 Kristal](#running-kristal-from-sources)。
 
-**注意：** 不推荐使用这种方法，因为它不方便将 Kristal 更新到最新版本，而且你也无法参与 Kristal 的贡献。要更新的话，必须重新执行这些步骤。
+**注意：** 不推荐这种方式，因为之后更新 Kristal 不方便，而且你无法参与贡献。需要更新时，必须重新执行上述步骤。
 </Box>
 
 <Box>
@@ -107,7 +107,7 @@ git clone https://github.com/KristalTeam/Kristal
 
 ### 在 Windows 上运行 Kristal 源代码
 
-现在找到 LÖVE 的可执行文件。它通常位于类似 `C:\Program Files\LOVE\` 的位置。
+现在找到 LÖVE 的程序文件。它通常位于类似 `C:\Program Files\LOVE\` 的位置。
 
 你可以在 **Kristal 文件夹**中打开终端，然后运行类似下面的命令；如果你的路径不同，请替换成自己的路径：
 
@@ -123,17 +123,17 @@ git clone https://github.com/KristalTeam/Kristal
 & "C:\\Program Files\\LOVE\\love.exe" .
 ```
 
-你可以创建一个**批处理文件**，简化 Kristal 的启动过程。
+你可以创建一个**启动脚本**，简化 Kristal 的启动过程。
 
 ```bat
 "C:\\Program Files\\Love\\love.exe" "C:\\Path\\To\\Your\\Kristal\\Folder"
 ```
 
 将它保存为类似 `run-kristal.bat` 的文件，放在任意位置（最好不要放在 Kristal 文件夹中）。
-确保它确实指向 LÖVE 可执行文件以及 Kristal 文件夹。
+确保它确实指向 LÖVE 程序以及 Kristal 文件夹。
 
-另外，如果你不想使用终端，也不想创建批处理文件，那么可以直接将 Kristal 文件夹拖到 LÖVE 可执行文件 `love.exe` 上。
-这样同样可以运行 Kristal，但不太方便。
+另外，如果你不想使用终端，也不想创建启动脚本，那么可以直接将 Kristal 文件夹拖到 LÖVE 程序 `love.exe` 上。
+这样也能启动 Kristal，只是没那么方便。
 
 如果你正在开发项目，那么**输出控制台**会很有用。使用 `lovec.exe` 而不是 `love.exe` 即可打开它。
 
