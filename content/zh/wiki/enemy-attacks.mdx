@@ -1,20 +1,20 @@
 export const metadata = {
-    title: '敌人攻击（波次）',
+    title: '敌人攻击（Enemy Attacks）',
     description: '学习敌人攻击的基础知识。',
 }
 
-# 敌人攻击
+# 敌人攻击（Enemy Attacks）
 
 <Box>
 
 在战斗中，敌人需要拥有可以用来攻击玩家的攻击方式。没有攻击的话，就根本算不上什么战斗！
 
-在 Kristal 中，我们把这类攻击称为 **Waves**。让我们学习如何制作一些吧！
+在 Kristal 中，我们把这类攻击称为 **波次（Waves）**。让我们学习如何制作一些吧！
 
 </Box>
 
 <Box>
-## Waves 基础 [basics-of-waves]
+## 波次基础 [basics-of-waves]
 
 敌人在战斗中可以使用的每种攻击，都是一个 [Wave](/wiki/api/Wave)。
 
@@ -132,15 +132,15 @@ bullet.physics.speed = 4
 
 现在，让我们试着运行这个 wave！通过 Kristal 的 Debug Menu 可以快速做到这一点。
 
-首先需要开始一场 encounter。你可能已经熟悉如何做到这一点了，不过这里还有一种在测试时快速开始 encounter 的方法。
+首先需要开始一场遭遇战（Encounter）。你可能已经熟悉如何做到这一点了，不过这里还有一种在测试时快速开始遭遇战的方法。
 
 加载项目后，同时按下 **Shift+\`** 键。这应该会打开 Debug Menu。
 
-向下滚动，直到看到 **Start Encounter**，选择这个选项，然后从下一个列表中选择想要的 encounter。
+向下滚动，直到看到 **Start Encounter**，选择这个选项，然后从下一个列表中选择想要的遭遇战。
 
-在接下来的指南中，我会使用项目模板自带的默认 `dummy` encounter。我建议你也使用它，因为这样更容易理解后面的步骤。
+在接下来的指南中，我会使用项目模板自带的默认 `dummy` 遭遇战。我建议你也使用它，因为这样更容易理解后面的步骤。
 
-Encounter 应该会立即开始。现在，再次打开 Debug Menu。
+遭遇战应该会立即开始。现在，再次打开 Debug Menu。
 
 此时在菜单靠下的位置应该能看到 **Start Wave** 选项。选择它，然后在出现的列表中选择 **example_wave**。
 
@@ -609,7 +609,7 @@ end)
 </Box>
 
 <Box>
-## 将 Waves 添加到敌人 [waves-on-enemies]
+## 将波次添加到敌人 [waves-on-enemies]
 
 到目前为止，我们一直通过 Debug menu 在战斗中测试 wave。它在测试阶段非常好用，但现在我们需要让敌人自然地使用它。
 
@@ -639,19 +639,19 @@ self.waves = {
 </Box>
 
 <Box>
-## 多个攻击者的 Waves [multiple-attackers]
+## 多个攻击者的波次 [multiple-attackers]
 
 我们已经完成了给这个 wave 添加新内容，但 wave 本身还没有讲完。
 
 这是因为我们应该谈谈如何处理多个攻击者，也就是之前简单提到过的内容。
 
-首先需要第二个敌人。让我们快速打开 encounter 文件。除非你一直在使用自己的文件，否则它就是 `scripts/battle/encounters/dummy.lua`。
+首先需要第二个敌人。让我们快速打开遭遇战文件。除非你一直在使用自己的文件，否则它就是 `scripts/battle/encounters/dummy.lua`。
 
 我们只需要复制添加第一个敌人的那一行。
 
-在 dummy encounter 文件中更简单，因为这行代码已经以注释的形式写好了。只需取消注释：
+在 dummy 遭遇战文件中更简单，因为这行代码已经以注释的形式写好了。只需取消注释：
 ```lua
--- 将 dummy 敌人添加到 encounter
+    -- 将 dummy 敌人添加到遭遇战
 self:addEnemy("dummy")
 ```
 
@@ -715,7 +715,7 @@ end
 </Box>
 
 <Box>
-## 一个完整的 Wave！ [completed-wave]
+## 一个完整的波次！ [completed-wave]
 
 没错！我们的第一个 wave 已经完成了！
 
@@ -801,7 +801,7 @@ return ExampleWave
 </Box>
 
 <Box>
-## Wave 制作 2：电光 Boogaloo [wave-making-custom-bullet]
+## 波次制作 2：电光 Boogaloo [wave-making-custom-bullet]
 
 之前使用 `spawnBullet()` 函数时，我们提到过**自定义子弹**。现在该学习它们是什么，以及如何使用它们了。
 

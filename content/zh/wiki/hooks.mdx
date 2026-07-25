@@ -288,12 +288,12 @@ end
 
 Registry 的 Hook 文件必须放进 `scripts/data/` 内对应的 data 子文件夹，而不是 hooks 文件夹。
 
-让我们以 Hook Dark（或 Darker）Candy 物品为例，完整走一遍流程。
+让我们以 Hook 黑暗糖果（或深暗糖果）物品为例，完整走一遍流程。
 
 ---
-Dark Candy 是一个物品，所以你应该进入的文件夹是 `scripts/data/items`。在其中创建一个与原始文件**同名**的新文件——在本例中就是 `dark_candy.lua`。
+黑暗糖果是一个物品，所以你应该进入的文件夹是 `scripts/data/items`。在其中创建一个与原始文件**同名**的新文件——在本例中就是 `dark_candy.lua`。
 
-这个文件的内容与其他 Hook 基本相同。下面是一个将 Dark Candy 改为恢复 400 HP 的基础示例：
+这个文件的内容与其他 Hook 基本相同。下面是一个将黑暗糖果改为恢复 400 HP 的基础示例：
 
 ```lua
 local item, super = HookSystem.hookScript("dark_candy")

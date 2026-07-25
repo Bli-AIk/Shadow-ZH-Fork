@@ -15,7 +15,7 @@ export const metadata = {
 
     |通用教程|事件教程|控制器教程|角色教程|
     |---|---|---|---|
-    |[使用文本](#text-tutorial)<br></br>[创建脚本](#making-scripts)<br></br>[路径系统教程](#path-system-tutorial)|[可交互对象](#interactable)<br></br>[脚本](#script)<br></br>[宝箱](#treasure-chest)<br></br>[赛博垃圾桶](#cyber-trash-can)<br></br>[存档点](#savepoint)<br></br>[过渡](#transitions)<br></br>[轮廓](#outline)<br></br>[滑行区域](#slide-area)<br></br>[剪影](#silhouette)<br></br>[摄像机目标](#camera-target)<br></br>[隐藏队伍](#hide-party)<br></br>[设置旗标事件](#set-flag-event)<br></br>[力场](#forcefield)<br></br>[魔法玻璃](#magic-glass)<br></br>[瓦片对象](#tile-object)<br></br>[传送门](#warp-door)<br></br>[快速存档事件](#quick-save-event)<br></br>[镜面区域](#mirror-area)<br></br>[推动方块](#push-block)<br></br>[瓦片按钮](#tile-button)<br></br>[暗泉](#making-dark-fountains)<br></br>[FountainFloor](#making-dark-fountains)|[切换控制器](#toggle-controller)<br></br>[暗泉阴影控制器](#making-dark-fountains)|[NPC](#npc)<br></br>[追逐敌人](#chaser-enemy)|
+    |[使用文本](#text-tutorial)<br></br>[创建脚本](#making-scripts)<br></br>[路径系统教程](#path-system-tutorial)|[可交互对象](#interactable)<br></br>[脚本](#script)<br></br>[宝箱](#treasure-chest)<br></br>[赛博垃圾桶](#cyber-trash-can)<br></br>[存档点](#savepoint)<br></br>[过渡](#transitions)<br></br>[轮廓](#outline)<br></br>[滑行区域](#slide-area)<br></br>[剪影](#silhouette)<br></br>[摄像机目标](#camera-target)<br></br>[隐藏队伍](#hide-party)<br></br>[设置旗标事件](#set-flag-event)<br></br>[力场](#forcefield)<br></br>[魔法玻璃](#magic-glass)<br></br>[瓦片对象](#tile-object)<br></br>[传送门](#warp-door)<br></br>[快速存档事件](#quick-save-event)<br></br>[镜面区域](#mirror-area)<br></br>[推动方块](#push-block)<br></br>[瓦片按钮](#tile-button)<br></br>[黑暗喷泉](#making-dark-fountains)<br></br>[黑暗喷泉地面（FountainFloor）](#making-dark-fountains)|[切换控制器](#toggle-controller)<br></br>[黑暗喷泉阴影控制器](#making-dark-fountains)|[NPC](#npc)<br></br>[追逐敌人](#chaser-enemy)|
 
 </Box>
 
@@ -975,7 +975,7 @@ export const metadata = {
     ![magicglass_tutorial_2](/wiki/magicglass_tutorial_2.png)
 
 
-    如果不知道对象位于哪个图层，可以在 Tiled 中使用**选择对象（S）**工具并选中对象，对象所在图层会以蓝色高亮显示。
+    如果不知道对象位于哪个图层，可以在 Tiled 中使用**选择对象（S）** 工具并选中对象，对象所在图层会以蓝色高亮显示。
 
     修改后，整体效果应该如下！
 
@@ -1457,31 +1457,31 @@ export const metadata = {
 
 <Box>
 
-    ## 制作暗泉 [making-dark-fountains]
+    ## 制作黑暗喷泉 [making-dark-fountains]
     ---
-    在 Kristal 中创建暗泉非常简单，只需要三个部分。
+    在 Kristal 中创建黑暗喷泉非常简单，只需要三个部分。
 
-    ### 暗泉 [dark-fountain]
+    ### 黑暗喷泉 [dark-fountain]
     ---
-    首先是**暗泉**本身。它是一个事件。要创建它，请在 `objects` 图层上放置一个 `point`，并将其命名为 `darkfountain`。
+    首先是**黑暗喷泉**本身。它是一个事件。要创建它，请在 `objects` 图层上放置一个 `point`，并将其命名为 `darkfountain`。
 
     该事件拥有以下可配置属性：
-    - `narrow: boolean = false` -> 如果想创建窄版暗泉（例如第 4 章第一个圣所中的暗泉），而不是普通暗泉，就使用此属性。
-    <br></br>如果为 **true**，会创建窄版暗泉。<br></br>如果为 **false**，则会创建普通暗泉。
+    - `narrow: boolean = false` -> 如果想创建窄版黑暗喷泉（例如第 4 章第一个圣所中的黑暗喷泉），而不是普通黑暗喷泉，就使用此属性。
+    <br></br>如果为 **true**，会创建窄版黑暗喷泉。<br></br>如果为 **false**，则会创建普通黑暗喷泉。
 
     #### 示例 [example]
     ---
-    我创建了一张新地图来放置暗泉，但你也可以把它放在已经创建的地图中。
+    我创建了一张新地图来放置黑暗喷泉，但你也可以把它放在已经创建的地图中。
 
     目前效果如下。
 
     ![](/wiki/darkfountain_tutorial_1.png)
 
-    你可能会想：“为什么它没有地面？”要回答这个问题，需要进入创建暗泉的下一步。
+    你可能会想：“为什么它没有地面？”要回答这个问题，需要进入创建黑暗喷泉的下一步。
 
-    ### 暗泉地面 [fountain-floor]
+    ### 黑暗喷泉地面 [fountain-floor]
     ---
-    这是会随时间改变颜色、并跟随暗泉颜色变化的地面。房间中不一定要有暗泉才能使用此对象，但如果定义了暗泉，地面的颜色会与暗泉颜色同步。
+    这是会随时间改变颜色、并跟随黑暗喷泉颜色变化的地面。房间中不一定要有黑暗喷泉才能使用此对象，但如果定义了黑暗喷泉，地面的颜色会与黑暗喷泉颜色同步。
 
     要创建此事件，请在 `objects` 图层上你希望绘制地面的地方放置一个 `area`，并将其命名为 `fountainfloor`。
 
@@ -1500,9 +1500,9 @@ export const metadata = {
         你的浏览器不支持此视频。抱歉！
     </video>
 
-    看起来不错，但暗泉房间还缺少一个重要部分：角色的阴影效果。
+    看起来不错，但黑暗喷泉房间还缺少一个重要部分：角色的阴影效果。
 
-    ### 暗泉阴影控制器 [fountain-shadow-controller]
+    ### 黑暗喷泉阴影控制器 [fountain-shadow-controller]
     ---
     创建它非常简单：在 `controllers` 图层上插入一个 `point`，并将其命名为 `fountainshadow`。
 

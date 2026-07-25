@@ -1,6 +1,7 @@
 import fs from 'node:fs';
 import path from 'node:path';
 import { remark } from 'remark';
+import remarkGfm from 'remark-gfm';
 import mdx from 'remark-mdx';
 
 function attribute(name, value) {
@@ -9,6 +10,81 @@ function attribute(name, value) {
         name,
         value: String(value),
     };
+}
+
+function nodeText(node) {
+    if (!node) return '';
+    if (Array.isArray(node)) return node.map(nodeText).join('');
+    if (node.type === 'text' || node.type === 'inlineCode' || node.type === 'code') {
+        return node.value || '';
+    }
+    return nodeText(node.children);
+}
+
+function slugify(value) {
+    const slug = value
+        .replaceAll(' ', '-')
+        .toLowerCase()
+        .replaceAll(/[^a-z0-9-]/g, '');
+    if (slug) return slug;
+
+    const codePoints = Array.from(value)
+        .map((character) => character.codePointAt(0).toString(16))
+        .join('-');
+    return codePoints ? `section-${codePoints}` : 'section';
+}
+
+function headingAnchor(node) {
+    const text = nodeText(node).trim();
+    const match = text.match(/\s*\[([^\]]+)\]\s*$/);
+    return match ? match[1] : slugify(text);
+}
+
+function localizeAnchor(anchor) {
+    return anchor.startsWith('zh-') ? anchor : `zh-${anchor}`;
+}
+
+function addChineseHeadingAnchor(node, anchor) {
+    const children = [...(node.children || [])];
+    const localizedAnchor = localizeAnchor(anchor);
+    const lastIndex = children.length - 1;
+    const lastChild = children[lastIndex];
+
+    if (lastChild?.type === 'text') {
+        const visibleText = lastChild.value.replace(/\s*\[[^\]]+\]\s*$/, '');
+        children[lastIndex] = {
+            ...lastChild,
+            value: `${visibleText} [${localizedAnchor}]`,
+        };
+    } else {
+        children.push({type: 'text', value: ` [${localizedAnchor}]`});
+    }
+
+    return {...node, children};
+}
+
+function localizeAnchorUrl(url) {
+    if (typeof url !== 'string') return url;
+
+    const hashIndex = url.indexOf('#');
+    if (hashIndex < 0) return url;
+
+    const destination = url.slice(0, hashIndex);
+    if (/^(?:[a-z][a-z0-9+.-]*:|\/\/)/i.test(destination)) return url;
+    if (destination.startsWith('/wiki/api/')) return url;
+
+    const fragment = url.slice(hashIndex + 1);
+    if (!fragment || fragment.startsWith('zh-')) return url;
+    return `${destination}#zh-${fragment}`;
+}
+
+function localizeChineseAnchors(node) {
+    if (!node || typeof node !== 'object') return node;
+
+    const output = {...node};
+    if (output.type === 'link') output.url = localizeAnchorUrl(output.url);
+    if (output.children) output.children = output.children.map(localizeChineseAnchors);
+    return output;
 }
 
 function part(language, node, key, missing = false) {
@@ -87,7 +163,9 @@ export default function remarkBilingual() {
         const zhPath = translationPath(file.path);
         let chineseTree = null;
         if (fs.existsSync(zhPath)) {
-            chineseTree = remark().use(mdx).parse(fs.readFileSync(zhPath, 'utf8'));
+            chineseTree = localizeChineseAnchors(
+                remark().use(mdx).use(remarkGfm).parse(fs.readFileSync(zhPath, 'utf8'))
+            );
         }
 
         const chineseNodes = chineseTree?.children.filter((node) => node.type !== 'mdxjsEsm') || [];
@@ -110,6 +188,13 @@ export default function remarkBilingual() {
         }
 
         function mergeNode(english, chinese, key) {
+            if (chinese?.type === 'heading') {
+                const anchor = english?.type === 'heading'
+                    ? headingAnchor(english)
+                    : headingAnchor(chinese);
+                chinese = addChineseHeadingAnchor(chinese, anchor);
+            }
+
             if (!english || !chinese) {
                 const output = block(blockIndex++, english, chinese, !chinese);
                 return output;
