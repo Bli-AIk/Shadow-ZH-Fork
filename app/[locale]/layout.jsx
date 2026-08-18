@@ -3,6 +3,7 @@ import styles from './layout.module.css';
 import Navbar from 'components/Navbar';
 import NextTopLoader from 'nextjs-toploader';
 import NewTab from 'components/NewTab';
+import SyncStatus from 'components/SyncStatus';
 import DisplayModeProvider from 'components/DisplayModeProvider';
 import { hasLocale, NextIntlClientProvider } from 'next-intl';
 import { getMessages, getTranslations, setRequestLocale } from 'next-intl/server';
@@ -72,6 +73,7 @@ export default async function RootLayout({ children, params }) {
                 <NewTab href="https://deltarune.com/">{t('footerDeltarune')}</NewTab> by Toby Fox.<br />
                 {t('footerDesignedBy')} <NewTab href="https://nyako.dev/">NyakoFox</NewTab>.<br />
                 {t('footerCopyright')}
+                <SyncStatus />
               </footer>
             </DisplayModeProvider>
           </Suspense>

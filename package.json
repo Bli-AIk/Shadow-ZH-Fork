@@ -4,11 +4,12 @@
   "private": true,
   "scripts": {
     "dev": "next dev --webpack",
-    "build": "npm run docs-make && npm run wiki-index && next build ",
+    "build": "npm run docs-make && npm run upstream-sync && npm run wiki-index && next build ",
     "build-fast": "next build",
     "build-no-wiki-index": "next build ",
     "start": "next start",
     "lint": "next lint",
+    "upstream-sync": "node scripts/upstream-sync.mjs",
     "wiki-index": "node scripts/wiki-index.mjs",
     "docs-make": "node scripts/docs-make.mjs",
     "validate-translations": "node scripts/validate-translations.mjs",

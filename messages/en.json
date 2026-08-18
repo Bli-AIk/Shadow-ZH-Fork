@@ -119,6 +119,14 @@
     "arguments": "Arguments:",
     "returns": "Returns:"
   },
+  "SyncStatus": {
+    "docsAlignedTo": "Docs aligned to upstream commit",
+    "upstreamLatest": "upstream latest",
+    "inSync": "✓ in sync",
+    "outdated": "⚠ out of date — {n} doc commit(s) behind",
+    "unknown": "sync status unknown",
+    "checkedDaily": "checked daily by CI"
+  },
   "ArticleMetadata": {
     "actors": {"title": "Actors", "description": "The actor system, and how to use it."},
     "basics": {"title": "Understanding the Basics", "description": "The basics of Kristal's code."},

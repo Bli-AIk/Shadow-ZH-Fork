@@ -119,6 +119,14 @@
     "arguments": "参数：",
     "returns": "返回值："
   },
+  "SyncStatus": {
+    "docsAlignedTo": "文档对齐上游提交",
+    "upstreamLatest": "上游最新",
+    "inSync": "✓ 已同步",
+    "outdated": "⚠ 已过时 —— 落后 {n} 个文档提交",
+    "unknown": "同步状态未知",
+    "checkedDaily": "由 CI 每日检查"
+  },
   "ArticleMetadata": {
     "actors": {"title": "Actor", "description": "Actor 系统及其使用方法。"},
     "basics": {"title": "理解基础概念", "description": "Kristal 代码的基础知识。"},

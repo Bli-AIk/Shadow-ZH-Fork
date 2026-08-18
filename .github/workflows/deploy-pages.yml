@@ -4,6 +4,10 @@ on:
   push:
     branches:
       - feat/zh-support
+  schedule:
+    # 每日 04:37 UTC（约 12:37 北京）重建，让页脚的上游哈希保持新鲜。
+    # 注意：schedule 只读取默认分支（feat/zh-support）上的本文件。
+    - cron: '37 4 * * *'
   workflow_dispatch:
 
 permissions:
@@ -21,6 +25,9 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v4
+        with:
+          # 全量历史：upstream-sync 需要根据 sync-state.json 的对齐 commit 计算落后数
+          fetch-depth: 0
 
       - name: Set up Node.js
         uses: actions/setup-node@v4
