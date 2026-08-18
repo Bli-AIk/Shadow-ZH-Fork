@@ -45,7 +45,9 @@ function SidebarContent() {
         <ul>
             <li>{link('/wiki/lua-tutorial', 'luaTutorial')}</li>
             <li>{link('/wiki/basics', 'basics')}</li>
+            <li>{link('/wiki/classes-and-instances', 'classesAndInstances')}</li>
             <li>{link('/wiki/creating-a-mod', 'creatingProject')}</li>
+            <li>{link('/wiki/objects', 'objects')}</li>
             <li>{link('/wiki/writing-text', 'writingText')}</li>
             <li>{link('/wiki/using-libraries', 'usingLibraries')}</li>
             <li>{link('/wiki/creating-an-item', 'creatingItem')}</li>
@@ -67,6 +69,7 @@ function SidebarContent() {
             <li>{link('/wiki/map-properties', 'mapProperties')}</li>
             <li>{link('/wiki/using-events', 'events')}</li>
             <li>{link('/wiki/battle-areas', 'battleAreas')}</li>
+            <li>{link('/wiki/climbing', 'climbing')}</li>
             <li>{link('/wiki/world-tool', 'worldTool')}</li>
         </ul>
         <br />

@@ -6,6 +6,7 @@ import Anchor from 'components/Anchor'
 import ScaledSprite from "components/ScaledSprite"
 import NewTab from "components/NewTab"
 import CollapseBox from 'components/CollapseBox'
+import NoteBox from 'components/NoteBox'
 import { BilingualBlock, BilingualPart } from 'components/BilingualBlock'
 import { sitePath } from 'src/site-path'
 
@@ -46,6 +47,7 @@ export function useMDXComponents(components) {
         Anchor,
         NewTab,
         CollapseBox,
+        NoteBox,
         BilingualBlock,
         BilingualPart,
         ...components,
