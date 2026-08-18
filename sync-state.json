@@ -1,0 +1,8 @@
+{
+  "upstream": {
+    "url": "https://github.com/KristalTeam/Shadow.git",
+    "branch": "main"
+  },
+  "lastSyncedUpstreamCommit": "7484ed3",
+  "syncedAt": "2026-08-18"
+}

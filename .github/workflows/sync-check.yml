@@ -1,0 +1,190 @@
+# 每日检查中文 wiki 是否落后上游，按阈值自动创建 / 更新 / 关闭提醒 issue。
+#
+# 同步基线记录在仓库根目录 sync-state.json 的 lastSyncedUpstreamCommit。
+# 完成一轮同步后更新该值，下次检查会自动关闭提醒 issue。
+#
+# 注意：GitHub 的 `schedule` 事件只读取【默认分支】上的工作流文件。
+# 本文件在 feat/zh-support 上维护；若默认分支不是它，需把本文件原样复制到默认分支，
+# 并保留下方 Checkout 步骤的 `ref: feat/zh-support`。
+#
+# 阈值（文档相关，只看上游的 app/wiki public/wiki components 及布局/MDX 配置）：
+#   - 变更 wiki 页数 >= 3，或
+#   - 新增 wiki 页 >= 1，或
+#   - 文档相关文件总数 >= 10
+# 三选一即触发；1~2 页的小改动可并入下一轮，不单独打扰。
+name: Check Chinese docs sync status
+
+on:
+  schedule:
+    # 每天 04:37 UTC（约 12:37 北京）。避开整点，减轻定时任务拥堵。
+    - cron: '37 4 * * *'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  issues: write
+
+jobs:
+  sync-check:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          ref: feat/zh-support
+
+      - name: Add upstream remote and fetch
+        run: |
+          UPSTREAM_URL=$(jq -r '.upstream.url' sync-state.json)
+          UPSTREAM_BRANCH=$(jq -r '.upstream.branch' sync-state.json)
+          git remote add upstream "$UPSTREAM_URL"
+          git fetch --quiet upstream "$UPSTREAM_BRANCH"
+
+      - name: Compute drift
+        id: drift
+        run: |
+          set -euo pipefail
+          UPSTREAM_BRANCH=$(jq -r '.upstream.branch' sync-state.json)
+          LAST_SYNCED=$(jq -r '.lastSyncedUpstreamCommit' sync-state.json)
+          UPSTREAM_HEAD=$(git rev-parse "upstream/${UPSTREAM_BRANCH}")
+
+          # 只统计文档相关内容，忽略引擎代码 / 依赖升级等无关改动
+          DOC_PATHS=(app/wiki public/wiki components app/layout.jsx app/providers.jsx mdx-components.js)
+
+          if git merge-base --is-ancestor "$LAST_SYNCED" "upstream/${UPSTREAM_BRANCH}" 2>/dev/null; then
+            ANCESTOR="true"
+            BEHIND_TOTAL=$(git rev-list --count "$LAST_SYNCED..upstream/${UPSTREAM_BRANCH}")
+            BEHIND_DOCS=$(git log --oneline "$LAST_SYNCED..upstream/${UPSTREAM_BRANCH}" -- "${DOC_PATHS[@]}" | wc -l)
+            DOC_FILES=$(git diff --name-only "$LAST_SYNCED" "upstream/${UPSTREAM_BRANCH}" -- "${DOC_PATHS[@]}" | wc -l)
+            CHANGED_PAGES=$(git diff --name-only "$LAST_SYNCED" "upstream/${UPSTREAM_BRANCH}" -- 'app/wiki/*/page.mdx' | wc -l)
+            ADDED_PAGES=$(git diff --name-status --diff-filter=A "$LAST_SYNCED" "upstream/${UPSTREAM_BRANCH}" -- 'app/wiki/*/page.mdx' | wc -l)
+          else
+            ANCESTOR="false"
+            BEHIND_TOTAL="-"
+            BEHIND_DOCS="-"
+            DOC_FILES="-"
+            CHANGED_PAGES="-"
+            ADDED_PAGES="-"
+          fi
+
+          echo "last_synced=$LAST_SYNCED" >> "$GITHUB_OUTPUT"
+          echo "upstream_head=$UPSTREAM_HEAD" >> "$GITHUB_OUTPUT"
+          echo "ancestor=$ANCESTOR" >> "$GITHUB_OUTPUT"
+          echo "behind_total=$BEHIND_TOTAL" >> "$GITHUB_OUTPUT"
+          echo "behind_docs=$BEHIND_DOCS" >> "$GITHUB_OUTPUT"
+          echo "doc_files=$DOC_FILES" >> "$GITHUB_OUTPUT"
+          echo "changed_pages=$CHANGED_PAGES" >> "$GITHUB_OUTPUT"
+          echo "added_pages=$ADDED_PAGES" >> "$GITHUB_OUTPUT"
+
+          # 阈值判定：确有文档相关提交，且满足任一阈值；基线失效（非祖先）则一律视为漂移
+          DRIFT="false"
+          if [ "$ANCESTOR" = "true" ] && [ "$BEHIND_DOCS" -gt 0 ]; then
+            if [ "$CHANGED_PAGES" -ge 3 ] || [ "$ADDED_PAGES" -ge 1 ] || [ "$DOC_FILES" -ge 10 ]; then
+              DRIFT="true"
+            fi
+          fi
+          if [ "$ANCESTOR" = "false" ]; then
+            DRIFT="true"
+          fi
+          echo "drift=$DRIFT" >> "$GITHUB_OUTPUT"
+
+          # 生成待跟进列表，供 issue 正文使用
+          {
+            echo "### 新增页面（需要翻译）"
+            git diff --name-status --diff-filter=A "$LAST_SYNCED" "upstream/${UPSTREAM_BRANCH}" -- 'app/wiki/*/page.mdx' 2>/dev/null \
+              | sed -E 's/^A[[:space:]]+//; s|app/wiki/||; s|/page\.mdx$||'
+            echo
+            echo "### 变更页面"
+            git diff --name-only "$LAST_SYNCED" "upstream/${UPSTREAM_BRANCH}" -- 'app/wiki/*/page.mdx' 2>/dev/null \
+              | sed -E 's|app/wiki/||; s|/page\.mdx$||'
+            echo
+            echo "### 变更媒体 / 组件 / 其他"
+            git diff --name-only "$LAST_SYNCED" "upstream/${UPSTREAM_BRANCH}" -- public/wiki components app/layout.jsx app/providers.jsx mdx-components.js 2>/dev/null
+          } > "$GITHUB_WORKSPACE/drift-lists.txt"
+
+      - name: Create / update / close sync issue
+        uses: actions/github-script@v7
+        env:
+          LAST_SYNCED: ${{ steps.drift.outputs.last_synced }}
+          UPSTREAM_HEAD: ${{ steps.drift.outputs.upstream_head }}
+          ANCESTOR: ${{ steps.drift.outputs.ancestor }}
+          BEHIND_TOTAL: ${{ steps.drift.outputs.behind_total }}
+          BEHIND_DOCS: ${{ steps.drift.outputs.behind_docs }}
+          DOC_FILES: ${{ steps.drift.outputs.doc_files }}
+          CHANGED_PAGES: ${{ steps.drift.outputs.changed_pages }}
+          ADDED_PAGES: ${{ steps.drift.outputs.added_pages }}
+          DRIFT: ${{ steps.drift.outputs.drift }}
+        with:
+          script: |
+            const fs = require('fs');
+            const listsPath = `${process.env.GITHUB_WORKSPACE}/drift-lists.txt`;
+            const lists = fs.existsSync(listsPath) ? fs.readFileSync(listsPath, 'utf8').trim() : '';
+            const {
+              LAST_SYNCED, UPSTREAM_HEAD, ANCESTOR, BEHIND_TOTAL, BEHIND_DOCS,
+              DOC_FILES, CHANGED_PAGES, ADDED_PAGES, DRIFT,
+            } = process.env;
+            const { owner, repo } = context.repo;
+            const isDrift = DRIFT === 'true';
+            const TITLE_PREFIX = 'docs: 中文文档落后上游';
+
+            try {
+              await github.rest.issues.createLabel({ owner, repo, name: 'sync-outdated', color: 'B60205' });
+            } catch (error) {
+              if (error.status !== 422) throw error; // 422 = label 已存在
+            }
+
+            const { data: openIssues } = await github.rest.issues.listForRepo({
+              owner, repo, state: 'open', labels: 'sync-outdated', per_page: 100,
+            });
+            const existing = openIssues.find((issue) => issue.title.startsWith(TITLE_PREFIX)) || null;
+
+            const title = `${TITLE_PREFIX}（需要同步）`;
+            const lines = [
+              '自动检查发现中文文档已落后上游，建议做一轮同步。',
+              '',
+              '## 对齐状态',
+              '| 项目 | 值 |',
+              '|---|---|',
+              `| 已同步的上游提交 | \`${LAST_SYNCED}\` |`,
+              `| 上游最新提交 | \`${UPSTREAM_HEAD}\` |`,
+              `| 落后提交数（文档相关） | ${BEHIND_DOCS} |`,
+              `| 落后提交数（全部） | ${BEHIND_TOTAL} |`,
+              `| 变更的 wiki 页数 | ${CHANGED_PAGES} |`,
+              `| 新增 wiki 页 | ${ADDED_PAGES} |`,
+            ];
+            if (ANCESTOR === 'false') {
+              lines.push(
+                '',
+                '> ⚠️ 记录的已同步提交已不在上游历史中（上游可能改写了历史），请手动确认同步基线。'
+              );
+            }
+            if (lists) {
+              lines.push('', '## 需要跟进', '', lists);
+            }
+            lines.push(
+              '',
+              '> 本 issue 由 `.github/workflows/sync-check.yml` 每日自动生成。',
+              '> 完成同步后，更新仓库根目录 `sync-state.json` 中的 `lastSyncedUpstreamCommit`，',
+              '> 下次检查时本 issue 会自动关闭。'
+            );
+            const body = lines.join('\n');
+
+            if (isDrift) {
+              if (existing) {
+                await github.rest.issues.update({ owner, repo, issue_number: existing.number, title, body });
+                console.log(`已更新 issue #${existing.number}`);
+              } else {
+                const { data: created } = await github.rest.issues.create({
+                  owner, repo, title, body, labels: ['sync-outdated'],
+                });
+                console.log(`已创建 issue #${created.number}`);
+              }
+            } else if (existing) {
+              await github.rest.issues.update({
+                owner, repo, issue_number: existing.number, state: 'closed', state_reason: 'completed',
+              });
+              console.log(`文档已同步，已关闭 issue #${existing.number}`);
+            } else {
+              console.log('文档已同步，无需 issue。');
+            }
