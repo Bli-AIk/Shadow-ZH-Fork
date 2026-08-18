@@ -1,0 +1,264 @@
+export const metadata = {
+    title: '类与实例',
+    description: 'Kristal 中的面向对象编程。'
+}
+
+# 类与实例
+
+<Box>
+    <NoteBox type="important">
+        在继续之前，掌握 Lua 非常重要。
+
+        如果你还不了解 Lua，我们的 [Lua 教程](/wiki/lua-tutorial) 是一个不错的起点。
+    </NoteBox>
+
+    虽然 Lua 语言本身没有内置类，但它让添加类变得非常容易。我们在 Kristal 中*到处*都在使用类，理解它们的工作原理非常重要。
+</Box>
+
+<Box>
+    ## 前言
+
+    ---
+
+    学习类和实例时，保持开放的心态很重要。
+
+    到目前为止，你只学习了过程式编程。你运行一行代码，然后运行另一行，再运行一行，如此往复。
+
+    类和实例是另一种思考编程的方式。每样东西都处在它们各自的小世界里，而且它们可以彼此交互。
+
+    话虽如此，但并不是*完全*不同。
+</Box>
+
+<Box>
+    ## 什么是类？ [classes]
+
+    ---
+
+    如果你熟悉**面向对象编程**，就会知道什么是类；这里也是同样的概念。
+
+    类包含一组变量和函数。
+
+    它就像一个模板或蓝图。你可以创建类的多个实例，每个实例都会按照蓝图告诉它们的方式运行。
+    但每个实例彼此之间都是独一无二的。
+
+    ### 汽车的例子
+
+    ---
+
+    汽车是一个相当简单的概念：它们有四个轮子、一个方向盘、车窗等等。这就是汽车。
+
+    但如果有人让你描述一辆*特定的*汽车，你会开始描述它的颜色、大小等等。这就是它与其他汽车*不同*的地方。
+
+    世界上不止一辆汽车，而是有很多辆。事实上，几乎有 15 亿辆。它们大部分特征都相同，但彼此之间又各不相同。
+
+    所以，你可以把汽车的概念看作一个类，把世界上的每一辆汽车看作这个类的一个实例。
+    改变一辆汽车的颜色并不会改变所有汽车的颜色，因为每辆汽车都是独一无二的。这就是实例的意义。
+
+    ---
+
+    在 Kristal 的编程中，我们会编写类似下面的代码：
+
+    ```lua
+    local Car, super = Class()
+
+    function Car:init()
+        super.init(self)
+
+        self.color = "red"
+    end
+
+    function Car:getWheelCount()
+        return 4
+    end
+
+    function Car:setColor(color)
+        self.color = color
+    end
+
+    return Car
+    ```
+
+    <NoteBox type="important">
+        需要注意的是，函数是使用冒号（`:`）而不是句点（`.`）创建的。
+
+        对于类来说，冒号很重要，它基本上让函数在每个实例中都是独一无二的。
+    </NoteBox>
+
+    创建类的新实例就像调用 `Car()` 一样简单。当你创建新实例时，会调用 `init` 函数；这里就是设置实例的地方。
+
+    `self` 是一个特殊变量，指的是实例本身。因此，设置 `self.color` 就是在设置*该实例*的颜色。
+
+    `super` 也是一个特殊变量，不过我们暂时先忽略它。
+
+    ```lua
+    local new_car = Car() -- creates a new instance of the car class, or more simply, creates a new car.
+
+    print(new_car:getWheelCount()) -- prints "4"
+    print(new_car.color) -- prints "red"
+
+    new_car:setColor("blue") -- sets the color of the car to blue
+    print(new_car.color) -- prints "blue"
+    ```
+
+    尽管所有汽车默认都是红色，但我们刚刚制作了一辆新车，并把它的颜色改成了蓝色。
+
+    其他汽车没有受到这次更改的影响，而且新的汽车仍将是红色的！
+
+    <NoteBox type="important">
+        使用冒号（`:`）而不是句点（`.`）来调用实例函数非常重要！
+    </NoteBox>
+
+    ### 构造函数
+    ---
+
+    看看我们之前使用的代码：
+
+    ```lua
+    local new_car = Car()
+    ```
+
+    这段代码负责创建 `Car` 的新实例。当你这样做时，它会调用类的 `init` 函数。这被称为**构造函数**。
+
+    当然，和函数一样，你也可以向构造函数传递参数。假设我们想制作一辆汽车，并在创建时设置它的颜色。我们可以这样做：
+
+    ```lua
+    local Car, super = Class()
+
+    function Car:init(color)
+        super.init(self)
+
+        self.color = color
+    end
+    ```
+
+    然后我们可以像这样创建一辆新车：
+
+    ```lua
+    local new_car = Car("blue") -- creates a new car, and sets its color to blue.
+
+    print(new_car.color) -- prints "blue"
+    ```
+
+</Box>
+
+<Box>
+
+## 继承
+
+---
+
+类的主要特性之一，是它们能够继承其他类。这被称为**继承**。
+
+基本上，“子类”*继承*了“父类”的所有变量和函数，但也可以添加自己的变量和函数，甚至可以覆盖父类的函数。
+
+让我们用另一个类作为例子：
+
+```lua
+local Animal, super = Class()
+
+function Animal:init()
+    super.init(self)
+end
+
+function Animal:speak()
+    print("...")
+end
+
+return Animal
+```
+
+这是一个非常基本的动物类。当你调用 `animal:speak()` 时，它会在控制台中打印 "..."。它不特指任何动物，但无论如何它都是一个动物。
+
+现在，假设我们想制作一个狗类。狗是动物，所以它应该继承动物类。
+但狗会叫，所以我们想覆盖 `speak` 函数，让它改为吠叫。
+
+```lua
+local Dog, super = Class(Animal) -- We pass in the parent class as an argument to the Class function.
+
+function Dog:speak()
+    print("Woof!")
+end
+
+return Dog
+```
+
+现在，如果我们创建一个新的 `Dog` 并调用 speak……
+
+```lua
+local dog = Dog()
+dog:speak() -- prints "Woof!"
+```
+
+这非常有用，因为它表明父类的特征可以与子类共享，但子类可以决定自己的行为。
+
+如果你有一段需要 `Animal` 的代码，以便对它调用 `speak()` 函数，那么你可以传入你新的 `Dog` 实例。
+这正是它如此强大的原因；尽管基础相同，但每只动物都可以有自己的行为，而需要动物的代码也不必为此做任何修改。
+
+### Super
+
+---
+
+`super` 变量是一个特殊变量，它指向父类。你可以使用它来调用父类的函数，即使你已经覆盖了它们。
+
+例如：
+
+```lua
+local Dog, super = Class(Animal)
+
+function Dog:speak()
+    super.speak(self) -- calls the speak function of the parent class, Animal.
+    print("Woof!")
+end
+
+return Dog
+```
+
+通过 `super.speak(self)`，我们调用了父类 `Animal` 的 `speak` 函数。然后，我们在控制台中打印 "Woof!"。
+
+最终会打印出：
+
+```bash
+...
+Woof!
+```
+
+大多数时候，当你覆盖一个函数时，你会希望这样做：在父类行为*之上*添加行为，而不是完全替换它。
+当然，你也可以那样做。
+
+<NoteBox type="important">
+    Super 函数应该使用句点来调用，而不是冒号！它们还应该将 `self` 作为第一个参数！
+</NoteBox>
+
+<NoteBox type="warning">
+    `init` 函数几乎总是应该调用父类的 `init` 函数。否则，它所需的内容不会被初始化。
+</NoteBox>
+
+记住，函数也可以接受参数。所以，当你调用 `super` 时，也必须传入任何必要的参数。
+
+如果 animal 有一个接受名称的 `init` 函数……
+
+```lua
+local Animal, super = Class()
+
+function Animal:init(name)
+    super.init(self)
+
+    self.name = name
+end
+
+return Animal
+```
+
+……那么 dog 类也必须接受一个名称，并将其传给父类的 `init` 函数。
+
+```lua
+local Dog, super = Class(Animal)
+
+function Dog:init(name)
+    super.init(self, name)
+end
+
+return Dog
+```
+
+</Box>

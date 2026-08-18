@@ -1,0 +1,144 @@
+export const metadata = {
+    title: '对象',
+    description: '什么是对象，以及如何在 Kristal 中使用它们。'
+}
+
+# 对象
+
+<Box>
+    <NoteBox type="important">
+        在继续之前，掌握 Lua 并理解类与实例非常重要。
+
+        如果你还不了解 Lua，我们的 [Lua 教程](/wiki/lua-tutorial) 是一个不错的起点。
+
+        关于类与实例，我们的[类与实例](/wiki/classes-and-instances)页面是一个不错的起点。
+    </NoteBox>
+
+    对象是与 Kristal 交互的主要方式。它们代表一个实际的“游戏对象”，会被绘制到屏幕上，还可以被移动、旋转等等。
+
+    你在 Kristal 中看到的大部分内容都是由对象处理的。只有少数例外。
+</Box>
+
+<Box>
+    ## 创建对象 [update]
+    ---
+
+    创建新对象和创建新类是一样的。只需继承 `Object`：
+
+    ```lua
+    local MyObject, super = Class(Object)
+
+    function MyObject:init()
+        super.init(self)
+
+        -- Set up the object here
+    end
+
+    return MyObject
+    ```
+
+    <NoteBox type="important">
+        请记住：创建类和实例时，使用冒号（`:`）而不是句点（`.`）来定义函数非常重要。
+    </NoteBox>
+
+    对象应该放在项目的 `scripts/objects` 文件夹中。文件名应该与类名相同，例如上面的例子使用 `MyObject.lua`。
+
+    建议给 `Class` 添加第二个参数，即类名的字符串。例如，`Class(Object, "MyObject")`。
+
+    `scripts/objects` 文件夹中的对象会被自动加载，并注册为全局对象。所以，要在项目中制作这个对象，你只需编写 `local obj = MyObject()`。
+</Box>
+
+<Box>
+    ## 更新函数 [update]
+    ---
+
+    对象有一个 `update` 函数，它每帧都会被调用。
+
+    因此，下面的代码：
+
+    ```lua
+    function MyObject:update()
+        super.update(self)
+        print("Hello, world!")
+    end
+    ```
+
+    ……每帧都会打印 "Hello, world!"。
+
+    人们经常想做的一件事是让对象在屏幕上移动，或者增加一个计时器。
+
+    Kristal 可以在**许多不同的帧率**下运行，所以你会想使用 `DT`（Delta Time，即距离上一帧的时间，以秒为单位），以确保你的代码无论帧率如何都能以相同的速度运行。
+
+    ```lua
+    function MyObject:update()
+        super.update(self)
+        self.x = self.x + (100 * DT) -- Move the object 100 pixels per second to the right
+    end
+    ```
+
+    由于 DELTARUNE 是一款 30 FPS 的游戏，`DTMULT` 的存在让 30 FPS 的处理更加容易。因此，下面的 GameMaker 代码：
+
+    ```gml
+    x += 4; // Move 4 pixels every frame
+    ```
+
+    ……在 Kristal 中可以写成：
+
+    ```lua
+    self.x = self.x + (4 * DTMULT) -- Move 4 pixels every frame
+    ```
+
+    ……前提是假设 GameMaker 项目是 30 FPS，就像 DELTARUNE 一样。
+</Box>
+
+<Box>
+    ## 绘制函数 [draw]
+    ---
+
+    对象还有一个 `draw` 函数，它会在 `update` 函数之后每帧调用一次。
+
+    这就是你将对象绘制到屏幕上的地方。你可以绘制图像、形状、文本等等。
+
+    ```lua
+    function MyObject:draw()
+        super.draw(self)
+        love.graphics.print("Hello, world!")
+    end
+    ```
+
+    上面的代码每帧都会打印 "Hello, world!"。
+
+    Kristal 会“变换”绘制操作，所以如果你在 `0, 0` 处绘制内容，它将相对于对象的左上角。
+
+    这意味着对象的缩放、旋转和位置都会影响 `draw` 函数中内容的绘制方式。
+
+    大多数情况下，你不需要做什么花哨的事情，就能让内容正常绘制。
+</Box>
+
+<Box>
+    ## 层次结构
+
+    ---
+
+    这个词很难拼写，不是吗？
+
+    对象可以有子对象。子对象的位置是相对于父对象的。如果你移动父对象，子对象也会随之移动。
+
+    对象的父对象会绘制它的子对象，这些子对象又会绘制*它们自己的*子对象，依此类推。父对象也会更新它们的子对象。
+
+    把它想象成一棵树。父对象是树干，子对象是树枝。如果移动树干，树枝也会随之移动。
+
+    这些子对象——树枝——还可以拥有自己的子对象——叶子。如果移动树干，树枝会随之移动，叶子也会跟着树枝移动。
+
+    这意味着**每个对象都有一个父对象**。唯一的例外是舞台。
+</Box>
+
+<Box>
+    ## 舞台
+
+    ---
+
+    舞台是层次结构的根。它位于这棵树的顶端。它就像连接树干的树根。
+
+    舞台是一个特殊的对象。它是唯一没有父对象的对象。它是一切的起点——它是第一个被绘制和更新的对象，它负责绘制和更新自己的子对象，而这些子对象又会绘制和更新它们的子对象，依此类推。
+</Box>

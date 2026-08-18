@@ -76,6 +76,26 @@ export const metadata = {
 1. 如果还没有安装，请先安装上面列出的软件。大多数设置保持默认即可。
 2. 打开“终端”。如果你不确定这是什么，请参阅[术语表](/wiki/glossary#terminal)。
 3. 进入你想要下载 Kristal 的文件夹。
+    <CollapseBox title="如何进入文件夹" id="how-to-navigate">
+        在终端中，你可以看到左侧的路径。那就是终端当前所在的位置。
+
+        假设你使用的是 Windows，它大概率会显示类似 `C:\Users\YourName>` 的内容。忽略 `>`，这表示终端当前位于 `C:\Users\YourName` 文件夹中。
+
+        现在，假设你有一个“Games”文件夹，位于 `C:\Users\YourName\Games`。要进入该文件夹，可以使用 `cd` 命令，它代表“切换目录”（change directory）。
+
+        所以，输入 `cd Games` 并按下回车，终端就会切换到 `C:\Users\YourName\Games` 文件夹。
+
+        例如：
+
+        ```bash
+        C:\Users\YourName> cd Games
+        C:\Users\YourName\Games> _
+        ```
+
+        离开某个目录时，可以使用 `cd ..`，它会返回“父级”文件夹（即包含当前文件夹的那个文件夹）。
+
+        你也可以输入完整路径，直接前往其他位置。例如，如果你想前往 `C:\Users\YourName\Documents`，可以输入 `cd C:\Users\YourName\Documents`。
+    </CollapseBox>
 4. 克隆仓库。运行以下命令即可：
 
 ```bash

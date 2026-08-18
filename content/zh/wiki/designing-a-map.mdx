@@ -49,13 +49,21 @@ Tiled 支持所有主流平台。你可以从[这里](https://www.mapeditor.org/
 
 <>![](/wiki/designing-a-map/maps.png)</>
 
-现在什么都没有！这正是开始的完美状态。
-
 首先，我们需要创建一个图块集。顾名思义，图块集就是一组图块。每张地图都由图块组成！我们就使用下面这个：
 
 <ScaledSprite src="/wiki/example_tileset.png" name="example_tileset.png" width={120} height={80} scale={2}/>
 
-它……算不上最好的图块集，但够用了。将它保存到 `assets/sprites/tilesets` 文件夹，并命名为 `example_tileset.png`。**图块集图片必须使用这个目录，这一点非常重要。**
+它……算不上最好的图块集，但够用了。
+
+这个图块集的图块大小为**宽 20 像素、高 20 像素**。我们将其称为 **20x20**。
+
+<NoteBox type="important">
+    你可以使用任何你想要的大小，但 DELTARUNE 的大多数图块集都是 20x20，放大到 40x40 使用。我们**强烈推荐**使用 20x20。
+
+    我们可以让 Tiled 帮我们放大图块，稍后会讲到这一点。
+</NoteBox>
+
+将它保存到 `assets/sprites/tilesets` 文件夹，并命名为 `example_tileset.png`。**图块集图片必须使用这个目录，这一点非常重要。**
 
 现在来创建图块集。
 
@@ -73,9 +81,17 @@ Tiled 支持所有主流平台。你可以从[这里](https://www.mapeditor.org/
 
 将 **Tile Render Size** 改为 `Map Grid Size`。这样图块就会按照我们需要的尺寸渲染。现在点击 **Save**。
 
+<NoteBox type="note">
+    这样会把我们之前 20x20 的图块拉伸到 40x40，这正是我们想要的效果。
+</NoteBox>
+
 保存所有内容后，按下 `CTRL+E` 来**导出**图块集。每次修改图块集后都必须重新导出，否则修改不会生效。
 
 确保将它作为 `.lua` 文件导出到与 `.tsx` 文件相同的目录。也就是说，在本例中应为 `scripts/world/tilesets/example_tileset.lua`。
+
+<NoteBox type="important">
+    必须将其导出为 `.lua` 文件。仅仅重命名是不够的！
+</NoteBox>
 
 如果你厌倦了每次保存后都手动导出，可以在首选项中启用自动导出：
 
@@ -85,26 +101,45 @@ Tiled 支持所有主流平台。你可以从[这里](https://www.mapeditor.org/
 </Box>
 
 <Box>
-## 创建地图
+## 创建新地图 [new-map]
 ---
 
-有趣的部分开始了。
+既然我们已经制作好了图块集，就可以开始制作地图了！
 
-依次点击 `File`、`New`、`New Map...` 来创建新地图。确保方向为 `Orthogonal`，
-图层格式为 `CSV`，图块渲染顺序为 `Right Down`。
+依次点击 `File`、`New`、`New Map...` 来创建新地图。
 
-同时，将图块大小设置为 `40x40`。
-你会注意到，这正好是图块集中图块大小的**两倍**。
-这是因为 DELTARUNE 实际上会将图块放大 2 倍！既然我们不想手动放大，就交给 Tiled 来完成吧！
+- 确保方向为 `Orthogonal`，
+- 图层格式为 `CSV`，
+- 图块渲染顺序为 `Right Down`。
 
-地图大小应设为 **Fixed**，宽度为 `16`，高度为 `12`。
-这是地图的最小尺寸，因为它正好是屏幕的大小。
-地图当然可以更大，但在本教程中，我们就使用 16x12。
+我们希望图块大小为 `40x40`，因为 DELTARUNE 的地图都使用这个大小。如果你的图块集比它小（比如我们之前制作的 20x20 图块集），
+它会被自动拉伸（因为我们之前更改了设置）。
 
-点击确定后，你应该会进入一张空地图。
-首先要做的是将它保存到项目中。
+地图大小应设为 **Fixed**。现在，我们制作一张宽度为 `16`、高度为 `12` 的地图。
+
+<NoteBox type="note">
+    你可以制作更大的地图，但在本教程中，我们只用 16x12。
+
+    不建议制作小于 16x12 的地图，因为任何比这更小的地图都会小于屏幕。
+</NoteBox>
+
+确保一切设置无误后，点击 **OK**。恭喜，你现在拥有一张空白地图了！
+
+---
+
+我们要做的第一件事是保存。
+
 依次点击 `File`、`Save As...`，将它保存到 `scripts/world/maps`，文件名为 `example_map.tmx`。
-**地图必须使用这个目录，这一点非常重要。** 你现在应该已经明白了。
+
+<NoteBox type="important">
+    你**必须**将它保存到 `scripts/world/maps`。Kristal 会在这个目录中查找地图。
+</NoteBox>
+
+确保将它作为 `.lua` 文件导出到与 `.tmx` 文件相同的目录。也就是说，在本例中应为 `scripts/world/maps/example_map.lua`。
+
+<NoteBox type="important">
+    必须将其导出为 `.lua` 文件。仅仅重命名是不够的！
+</NoteBox>
 
 现在可以放置图块了！随意制作你喜欢的内容，并且别忘了经常保存！这是我制作的地图：
 
@@ -132,17 +167,22 @@ Tiled 本身提供几种图层类型，其中最重要的是图块图层和对�
 ## 标记点
 ---
 
-标记点是地图中非常重要的一部分。
+标记点是地图中的“点”，可用于许多不同用途。
+
 它们用于标记出生点等位置，也可以标记一般的兴趣点。
-让我们在地图中添加一个标记点。
 
-首先，需要创建一个名为 `markers` 的新图层。
+首先，让我们创建一个新的标记点图层。
 
-<>![](/wiki/designing-a-map/new_object_layer.png)</>
+<CollapseBox title="如何创建标记点图层" defaultopen="false">
+    创建一个新的对象图层，并将其类设置为 `markers`。你可以随意命名，但请确保以后还能看懂！
+    <>![](/wiki/designing-a-map/new_object_layer.png)</>
 
-我们 Kristal 开发者很喜欢把它们设为紫色（这样一眼就能认出这个图层），但你也可以使用任何想要的颜色。
+    我们 Kristal 开发者很喜欢把它们设为紫色（这样一眼就能认出这个图层），但你也可以使用任何想要的颜色。
 
-<>![](/wiki/designing-a-map/purple_color.png)</>
+    <>![](/wiki/designing-a-map/purple_color.png)</>
+
+    更多图层信息请参阅[地图图层](/wiki/map-layers)页面。
+</CollapseBox>
 
 要放置一个点，请使用 Insert Point 工具。你可以在顶部工具栏中找到它，也可以按下 `I`。
 
@@ -153,23 +193,39 @@ Tiled 本身提供几种图层类型，其中最重要的是图块图层和对�
 
 <>![](/wiki/designing-a-map/example_map_with_spawn_marker.png)</>
 
-现在在游戏中测试一下！保存地图，然后按下 `CTRL+E` 将其导出。
-没错，地图也需要导出。记得要导出为 `.lua` 文件！
+现在在游戏中测试一下！保存并导出你的地图。
 
-现在在 Kristal 中打开你的项目。你可能会进入这里……
+<NoteBox type="note">
+    加载你的项目时，可能会显示一个错误……
+    <CollapseBox title="查看错误" defaultopen="false">
+        <>![](/wiki/designing-a-map/room1_error.png)</>
+    </CollapseBox>
 
-<>![](/wiki/designing-a-map/room1.png)</>
+    ……也可能会生成在另一个房间中。
+    <CollapseBox title="查看房间" defaultopen="false">
+        <>![](/wiki/designing-a-map/room1.png)</>
+    </CollapseBox>
 
-……也可能遇到这个错误。
+    你可以通过更改 Kristal 加载的地图来修复这个问题。
 
-<>![](/wiki/designing-a-map/room1_error.png)</>
+    <CollapseBox title="更改默认地图" defaultopen="false">
+        打开项目文件夹中的 `mod.json`。你应该会看到类似这样的行：
 
-Kristal 当前正在尝试加载名为 `room1` 的地图。如果出现错误，说明你已经删除了它。没关系，因为我们并不需要它。
+        ```json
+        "map": "room1",
+        ```
 
-告诉 Kristal 改为加载我们的地图：
+        把它改成你地图的名称，在本例中是 `example_map`。现在它应该看起来像这样：
 
-在 `mod.json` 中，将 `"map": "room1"` 改为 `"map": "example_map"`。
-现在保存文件，再试一次。应该可以正常运行！看，我们的出生点也正常工作了！
+        ```json
+        "map": "example_map",
+        ```
+
+        保存文件，再试一次！
+    </CollapseBox>
+</NoteBox>
+
+可以看到，我们成功地在放置的标记点处出生了！
 
 <>![](/wiki/designing-a-map/working_spawnpoint.png)</>
 
@@ -211,150 +267,184 @@ Kristal 当前正在尝试加载名为 `room1` 的地图。如果出现错误，
 </Box>
 
 <Box>
-## 事件
+## 放置对象
 ---
 
-    事件是地图中非常重要的一部分。它们是可以直接放置在地图中的特殊[对象](/wiki/basics#objects)。
+你在房间里看到的大部分内容都是**对象**。Kristal 中的大多数东西都是对象！
 
-    ---
+---
 
-    ### 使用事件
+### 使用对象
 
-    要使用事件，首先需要为它们创建一个图层。新建一个对象图层，并将它命名为 `objects`。我们会把这些图层设为粉色！
+要使用对象，首先需要为它们创建一个图层。
+
+首先，创建一个 "objects" 图层。
+
+<CollapseBox title="如何创建 objects 图层" defaultopen="false">
+    创建一个新的（Tiled）对象图层，并将其类设置为 `objects`。你可以随意命名，但请确保以后还能看懂！
+    <>![](/wiki/designing-a-map/new_object_layer.png)</>
+
+    它们通常是粉色的。
 
     <>![](/wiki/pink_color.png)</>
 
-    现在可以选择前面提到的 **Insert Point** 工具。在地图上的任意位置点击，一个点应该会出现。这就是一个事件！或者说，它*将会*成为事件。
+    更多图层信息请参阅[地图图层](/wiki/map-layers)页面。
+</CollapseBox>
 
-    将它命名为 `chest`。这会告诉引擎要使用哪个事件，在本例中是 [TreasureChest](/wiki/api/TreasureChest) 事件。现在给它添加一些属性。
+Kristal 对象可以通过使用 Tiled 的对象放置工具之一来放置。大多数情况下，你会使用 **Insert Rectangle** 或 **Insert Point**。
 
-    添加 `money` 自定义属性（确保类型是 `int`），并将其设置为 `999`。这样打开宝箱时，我们就能获得一大笔钱！
+放置好 Tiled 对象后（在本例中，我们使用**点**），你可以在属性面板中更改它的属性。
 
-    <>![](/wiki/chest_properties.png)</>
+要选择要使用的对象，请将 `class` 字段（如果你希望它显示在编辑器中，也可以使用 `name` 字段）更改为任何已注册的[“事件”](/wiki/using-events)的名称。
 
-    如果保存、导出，然后在 Kristal 中打开项目，就应该能看到宝箱了！与它互动还会获得 **999 黑暗币**！哇！
+让我们将它命名为 `chest`，这会生成 [TreasureChest](/wiki/api/TreasureChest) 对象。
 
-    ---
+现在添加 `money` 自定义属性（确保类型是 `int`），并将其设置为 `999`。这样打开宝箱时，我们就能获得一大笔钱！
 
-    ### 使用事件（续）
+<>![](/wiki/chest_properties.png)</>
 
-    好了，我们可以添加宝箱。但如果想添加一个不只是点、还需要更多内容的对象呢？这时可以使用 **Insert Rectangle** 工具来创建矩形！
+如果保存、导出，然后在 Kristal 中打开项目，就应该能看到宝箱了！与它互动还会获得 **999 黑暗币**！哇！
 
-    让我们制作一个可交互的方框。将它命名为 `interactable`，并添加一个字符串属性 `text`，内容设为 `* Hello, World!`
+---
 
-    <>![](/wiki/map_with_interactable.png)</>
+### 示例：可交互对象
 
-    如果我们在游戏中查看它，那么……
+可交互对象是可以与之交互的简单方框。当玩家与之交互时，它们会显示文本或开始过场动画。
 
-    <>![](/wiki/hello_world_interactable.png)</>
+让我们制作一个可交互方框，并将其类（或名称）设置为 `interactable`。
 
-    完美！
+现在，我们为它添加自定义属性 `text`（类型应为字符串），并将其内容设为 `* Hello,[wait:5] World!`。
 
-    ---
+<CollapseBox title="什么是 [wait:5]？" defaultopen="false">
+    DELTARUNE 通常在标点符号之后有 5 帧的停顿。
+    在[编写文本](/wiki/writing-text)页面了解更多关于如何组织文本以及如何使用文本修饰符的信息。
+</CollapseBox>
 
-    ### 房间转换
+<>![](/wiki/map_with_interactable.png)</>
 
-    房间转换也是事件，因此上一节的内容同样适用于它们。
+如果我们在游戏中查看它，那么……
 
-    它们的名称是 `transition`，可以使用以下属性，所有属性都是可选的：
+<>![](/wiki/hello_world_interactable.png)</>
 
-    - `map` -> 要转换到的地图
-    - `shop` -> 要转换到的商店
-    - `x` -> 出生位置的 X 坐标
-    - `y` -> 出生位置的 Y 坐标
-    - `marker` -> 出生位置的标记点
-    - `facing` -> 在地图中出生时面向的方向
-    - `stairs` -> 是否播放楼梯音效
+完美！
 
-    大多数时候，你应该使用 `marker` 属性，而不是指定 `x` 和 `y`。
+---
 
-    ---
+### 房间转换
 
-    ### 创建事件
+房间转换是矩形对象，名为 `transition`。
 
-    事件只是[对象](/wiki/basics#objects)，它们扩展了 [Event](/wiki/api/Event) 类。你可以在 `scripts/world/events` 中创建新文件并扩展 `Event` 类，来制作自己的事件。让我们制作一个风车事件！并让它在交互时旋转！
+通常，你需要设置 `map` 和 `marker` 属性（用于前往另一张地图中的标记点）。
 
-    下面是我制作的图片，虽然它们不是很好看：
+你可以使用 `facing` 属性让玩家在新地图中出生时面向某个方向；否则，他们会保持离开上一张地图时面对的方向。
 
-    <ScaledSprite src="/wiki/pinwheel.png" name="pinwheel.png" width={12} height={12}/>
-    <ScaledSprite src="/wiki/pinwheel_base.png" name="pinwheel_base.png" width={20} height={20}/>
+你可以在[使用事件](/wiki/using-events#transitions)页面了解更多关于房间转换的信息。
 
-    这是我最终写出的代码：
+---
 
-    ```lua
-    -- Extend the Event class, and set the ID to "pinwheel"
-    -- This is what you'll use to refer to the event in Tiled
-    local PinwheelEvent, super = Class(Event, "pinwheel")
+### 创建事件
 
-    -- `data` is the data directly from Tiled
-    function PinwheelEvent:init(data)
-        -- Place the event at the correct position, and make the size 20x20
-        super.init(self, data.x, data.y, 20, 20, data)
+<NoteBox type="warning">
+    本节中的信息已经**过时**，未来会被重写并移动。
 
-        -- Any custom properties are stored in `data.properties`, but we don't use any.
+    在现在的 Kristal 中，事件只需在 Objects 文件夹中制作，并通过 `Game:registerEvent()` 注册。
 
-        -- Just some variables for the pinwheel
-        self.min_speed = 2
-        self.speed_slowdown = 0.5
-        self.speed = self.min_speed
-        self.pinwheel_rotation = 0
+    <CollapseBox title="示例" defaultopen="false">
+        ```lua
+        function Mod:init()
+            -- Register our custom events
 
-        -- Most events in DELTARUNE are 2x sized
-        self:setScale(2)
-
-        -- We placed a single point in Tiled, which we want to be the bottom center of the pinwheel
-        self:setOrigin(0.5, 1)
-    end
-
-    -- Update gets called every frame
-    function PinwheelEvent:update()
-        super.update(self)
-
-        -- Make it rotate using the speed
-        self.pinwheel_rotation = self.pinwheel_rotation + (self.speed * DTMULT)
-
-        -- If it's going too fast, slow it down
-        if self.speed > self.min_speed then
-            self.speed = self.speed - self.speed_slowdown * DTMULT
+            Game:registerEvent("mycustomevent", function(data)
+                return MyCustomEvent(data.x, data.y, { data.width, data.height })
+            end)
         end
+        ```
+    </CollapseBox>
+</NoteBox>
 
-        -- Make sure it doesn't go below the minimum speed
-        self.speed = math.max(self.speed, self.min_speed)
+事件只是[对象](/wiki/objects)，它们扩展了 [Event](/wiki/api/Event) 类。你可以在 `scripts/world/events` 中创建新文件并扩展 `Event` 类，来制作自己的事件。让我们制作一个风车事件！并让它在交互时旋转！
+
+下面是我制作的图片，虽然它们不是很好看：
+
+<ScaledSprite src="/wiki/pinwheel.png" name="pinwheel.png" width={12} height={12}/>
+<ScaledSprite src="/wiki/pinwheel_base.png" name="pinwheel_base.png" width={20} height={20}/>
+
+这是我最终写出的代码：
+
+```lua
+-- Extend the Event class, and set the ID to "pinwheel"
+-- This is what you'll use to refer to the event in Tiled
+local PinwheelEvent, super = Class(Event, "pinwheel")
+
+-- `data` is the data directly from Tiled
+function PinwheelEvent:init(data)
+    -- Place the event at the correct position, and make the size 20x20
+    super.init(self, data.x, data.y, 20, 20, data)
+
+    -- Any custom properties are stored in `data.properties`, but we don't use any.
+
+    -- Just some variables for the pinwheel
+    self.min_speed = 2
+    self.speed_slowdown = 0.5
+    self.speed = self.min_speed
+    self.pinwheel_rotation = 0
+
+    -- Most events in DELTARUNE are 2x sized
+    self:setScale(2)
+
+    -- We placed a single point in Tiled, which we want to be the bottom center of the pinwheel
+    self:setOrigin(0.5, 1)
+end
+
+-- Update gets called every frame
+function PinwheelEvent:update()
+    super.update(self)
+
+    -- Make it rotate using the speed
+    self.pinwheel_rotation = self.pinwheel_rotation + (self.speed * DTMULT)
+
+    -- If it's going too fast, slow it down
+    if self.speed > self.min_speed then
+        self.speed = self.speed - self.speed_slowdown * DTMULT
     end
 
-    function PinwheelEvent:draw()
-        super.draw(self)
+    -- Make sure it doesn't go below the minimum speed
+    self.speed = math.max(self.speed, self.min_speed)
+end
 
-        -- First, draw the base
-        love.graphics.draw(Assets.getTexture("pinwheel_base"), 0, 0, 0, 1, 1)
-        -- Then draw the pinwheel, spinning
-        love.graphics.draw(Assets.getTexture("pinwheel"), 10, 10, math.rad(self.pinwheel_rotation), 1, 1, 6, 6)
-    end
+function PinwheelEvent:draw()
+    super.draw(self)
 
-    -- When we interact with the pinwheel, make it spin faster!
-    function PinwheelEvent:onInteract()
-        self.speed = 60
-    end
+    -- First, draw the base
+    love.graphics.draw(Assets.getTexture("pinwheel_base"), 0, 0, 0, 1, 1)
+    -- Then draw the pinwheel, spinning
+    love.graphics.draw(Assets.getTexture("pinwheel"), 10, 10, math.rad(self.pinwheel_rotation), 1, 1, 6, 6)
+end
 
-    return PinwheelEvent
-    ```
+-- When we interact with the pinwheel, make it spin faster!
+function PinwheelEvent:onInteract()
+    self.speed = 60
+end
 
-    然后，我们只需要使用代码中提供的 ID `pinwheel`，把它放到某个位置！
+return PinwheelEvent
+```
 
-    <>![](/wiki/pinwheel_placed.png)</>
+然后，我们只需要使用代码中提供的 ID `pinwheel`，把它放到某个位置！
 
-    这样一来，我们就拥有了自己的事件！
+<>![](/wiki/pinwheel_placed.png)</>
 
-    <>![](/wiki/pinwheel_spin.gif)</>
+这样一来，我们就拥有了自己的事件！
 
-    ---
+<>![](/wiki/pinwheel_spin.gif)</>
 
-    ### 其他引擎事件
+---
 
-    Kristal 还直接在引擎中内置了许多其他事件。
+### 其他引擎事件
 
-    前往[使用事件](/wiki/using-events)，了解 Kristal 所有的事件。
+Kristal 还直接在引擎中内置了许多其他事件。
 
-    它们全部扩展自 [Event](/wiki/api/Event) 类或 [Character](/wiki/api/Character) 类。在 [API 参考](/wiki/api) 中使用树状视图并查找 `Character` 和 `Event`，就可以看到它们全部。
+前往[使用事件](/wiki/using-events)，了解 Kristal 所有的事件。
+
+它们全部扩展自 [Event](/wiki/api/Event) 类或 [Character](/wiki/api/Character) 类。在 [API 参考](/wiki/api) 中使用树状视图并查找 `Character` 和 `Event`，就可以看到它们全部。
 
 </Box>

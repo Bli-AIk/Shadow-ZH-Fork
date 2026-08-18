@@ -1,0 +1,131 @@
+export const metadata = {
+    title: '攀爬',
+    description: '关于如何使用攀爬系统的信息。',
+}
+
+# 攀爬
+
+<Box>
+
+在 DELTARUNE 第四章中，我们接触到了一个新机制：攀爬。你可以在某些墙壁上攀爬、在它们之间跳跃等等。
+
+本页将说明如何使用攀爬系统，以及如何制作你自己的可攀爬墙壁。
+
+</Box>
+
+<Box>
+## 攀爬区域
+---
+
+我会在 Tiled 中制作一个简单的结构，并向其中添加可攀爬的墙壁。
+
+<CollapseBox title="该结构（很大）">
+<>![](/wiki/climbing/example_preview.png)</>
+</CollapseBox>
+
+基本原理很简单；玩家会走到的地方，我们都添加碰撞。对于攀爬区域，我们则不需要。
+
+现在，我们要添加一个新的 **objects 图层**。要了解更多关于图层的信息，请参阅[地图图层](/wiki/map-layers)页面。
+
+为了便于组织，我会把它命名为 `climbing`，并将其设为青色。**它仍然是一个 objects 图层！**
+
+<>![](/wiki/climbing/layer_properties.png  "注意到 class 仍然是 \"objects\" 了吗？这是一个 objects 图层！")</>
+
+我会尽可能将它向下移，因为任何可视的攀爬事件都应该出现在玩家下方。
+
+<>![](/wiki/climbing/climbing_layer.png)</>
+
+<NoteBox type="warning">
+    确保 `markers` 图层位于 `objects` 图层的正下方，否则玩家可能会生成在错误的图层上！
+</NoteBox>
+
+### 放置攀爬区域
+
+---
+
+现在图层已经设置好了，我们可以开始放置对象。这些是 [ClimbArea](/wiki/api/ClimbArea)（`climbarea`）对象；它们就是玩家可以攀爬的地方。
+
+<>![](/wiki/climbing/climbarea_placement.png "注意到 `class` 被设置为 `climbarea` 了吗？这些就是 `climbarea` 对象。")</>
+
+我决定在这里使用 `class` 字段而不是 `name`，是因为 `climbarea` 对象有很多，我不希望每个单独的名称都显示出来。
+
+当然，这与其他任何对象**没有什么不同**，所以你觉得怎样最好就怎样做。
+
+<NoteBox type="warning">
+    攀爬是**按网格对齐的**。任何未对齐都会导致意外结果，所以放置对象时一定要吸附到网格！
+</NoteBox>
+
+</Box>
+
+<Box>
+## 进入攀爬
+---
+
+现在攀爬已经设置好了，但你会注意到仍然无法进入攀爬。这是因为我们缺少一个重要的部分：真正的攀爬入口和出口对象！
+
+相关的对象是 [ClimbEntry](/wiki/api/ClimbEntry)（`climbentry`）和 [ClimbExit](/wiki/api/ClimbExit)（`climbexit`）。让我们从入口开始。
+
+<>![](/wiki/climbing/add_climbentry.png "我决定把它放在普通的 objects 图层上，这样你就能轻松看到区别。")</>
+
+这是一个玩家可以与之交互的实心方框。但是，在告诉它攀爬区域在哪里之前，它是无法工作的！（事实上，它甚至会崩溃。）
+
+每个 ClimbEntry 都需要一个 ClimbExit！
+
+一旦你与 ClimbEntry 交互，玩家就会跳到 ClimbExit。玩家也可以使用 ClimbExit 离开攀爬状态！它就像一扇双向门。
+
+<>![](/wiki/climbing/add_climbexit.png)</>
+
+<NoteBox type="important">
+    ClimbExit 必须放置在**攀爬区域内部**。否则，玩家会掉下去！
+</NoteBox>
+
+<NoteBox type="warning">
+    请记住，攀爬是**按网格对齐的**。ClimbExit 必须与攀爬区域在同一网格对齐方式上！
+</NoteBox>
+
+现在，我们必须告诉 ClimbEntry 它的 ClimbExit 在哪里。为 ClimbEntry 添加 `target` 对象属性，并选择 ClimbExit 对象。
+
+<>![](/wiki/climbing/entry_to_exit.png)</>
+
+完美！但我们还没有完成。ClimbExit 需要知道退出攀爬时要把玩家放在哪里。所以，我们会放置一个标记……
+
+<>![](/wiki/climbing/exit_marker.png "它不一定要命名。")</>
+
+现在，为 ClimbExit 添加 `target` 对象属性，并选择该标记。
+
+<>![](/wiki/climbing/exit_to_marker.png)</>
+
+然后我们就完成了！
+
+为了展示这些对象之间的关系，这是一张把东西移开后的截图：
+
+<>![](/wiki/climbing/climb_relationship.png)</>
+
+`climbentry` 指向 `climbexit`，`climbexit` 又指向标记。与 `climbentry` 交互会让玩家跳到 `climbexit`，而在 `climbexit` 处按下方向键下会让玩家离开攀爬状态并跳到标记处。
+
+把所有东西移回原位并进行测试，会发现我们可以正常攀爬了！
+
+<>![](/wiki/climbing/climbing_test.png)</>
+
+
+### 没有出口的攀爬
+
+---
+
+有些情况下，你希望进入攀爬区域，但不能离开它。这时我们就要使用 `can_exit` 布尔属性，并将其关闭！
+
+<>![](/wiki/climbing/can_exit_false.png "如果无法从 ClimbExit 离开，就不需要出口标记。")</>
+
+<>![](/wiki/climbing/cant_leave_climbarea.mp4)</>
+
+### 完成的区域
+
+---
+
+再添加几个 `ClimbEntry` 和 `ClimbExit` 之后，我们就完成了！
+
+<>![](/wiki/climbing/finished_section.png)</>
+
+<>![](/wiki/climbing/finished_section_recording.mp4)</>
+
+</Box>
