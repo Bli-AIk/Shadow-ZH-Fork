@@ -118,14 +118,95 @@ export const metadata = {
 
 <>![](/wiki/climbing/cant_leave_climbarea.mp4)</>
 
+### 没有入口的退出
+
+---
+
+另一个常见的情况是：你希望离开攀爬区域，但不能重新进入它。
+
+ClimbExit **并不要求**有 ClimbEntry，所以你可以直接在攀爬区域中放置一个 ClimbExit，并让它指向一个标记。
+
+<>![](/wiki/climbing/exit_without_entry.png)</>
+
+<NoteBox type="tip">
+    最好能让玩家再次访问这些区域，所以请确保之后还有其他方式可以回去。
+</NoteBox>
+
 ### 完成的区域
 
 ---
 
-再添加几个 `ClimbEntry` 和 `ClimbExit` 之后，我们就完成了！
+再添加几个入口和出口之后，我们就完成了！
 
 <>![](/wiki/climbing/finished_section.png)</>
 
 <>![](/wiki/climbing/finished_section_recording.mp4)</>
+
+</Box>
+
+<Box>
+## 其他攀爬对象
+
+---
+
+当然，攀爬内容远不止……好吧，只是攀爬而已。
+
+### 敌人
+
+---
+
+[ClimbEnemy](/wiki/api/ClimbEnemy) 是 [WorldBullet](/wiki/api/WorldBullet) 的一种特殊类型。当玩家在攀爬时跳进它们，就会受到伤害。
+
+和 WorldBullet 一样，你必须自己决定如何生成它们；很可能需要通过对象中的代码来实现。
+
+它们的功能相当基础，你需要在其中覆盖它们的行为，让它们更有趣。
+
+### 坠落攀爬区域
+
+---
+
+[FallingClimbArea](/wiki/api/FallingClimbArea) 是 ClimbArea 的一种特殊类型，当玩家离开它时，它就会坠落。
+
+它们主要通过图块对象放置。如果你不记得怎么放置这些，点击插入图块按钮……
+
+<>![](/wiki/climbing/insert_tile.png)</>
+
+……然后选择你想要使用的图块。
+
+<>![](/wiki/climbing/selected_falling_tile.png)</>
+
+放置后，它会以**图块集尺寸**放置，这意味着如果你有一个被地图放大了的 20x20 图块集，它看起来会小一些。
+
+<>![](/wiki/climbing/falling_tile_small.png)</>
+
+<NoteBox type="important">
+    请务必把它放置在攀爬图层上，这样它们就会位于玩家下方！
+</NoteBox>
+
+你只需要在属性框中修改宽度和高度，以匹配地图的图块尺寸即可。
+
+<>![](/wiki/climbing/falling_tile_size.png)</>
+
+现在，我们把它们的 `class` 设为 `fallingclimbarea`。
+
+<>![](/wiki/climbing/fallingclimbareas.png)</>
+
+嗯，不过还有一个问题……
+
+<>![](/wiki/climbing/falling_softlock.mp4)</>
+
+#### 修复软锁
+
+---
+
+FallingClimbArea 本应是单程旅行，但如果玩家之后决定往回走，跳到第一个上几乎总会让玩家陷入软锁。
+
+解决方案是给第一个 FallingClimbArea 添加 `dont_break` 属性，并将其设置为玩家来的方向。
+
+<>![](/wiki/climbing/dont_break_left.png)</>
+
+这样一来，我们就完成了！
+
+<>![](/wiki/climbing/dont_break_left_preview.mp4)</>
 
 </Box>
